@@ -7,8 +7,11 @@ planned, adds strength sessions for runners, and prepares race-day pacing and fu
 
 What makes it different from asking Claude for "a training plan":
 
-- **Your data first.** It reads your recent training, fitness trend and zones from TrainingPeaks
-  or Strava before planning, and honours decisions from earlier weeks.
+- **Your data first.** On onboarding it studies 12–24 months of history (seasons, peaks, breaks,
+  races, what worked), not just the last few weeks. Then it reads your recent training, fitness
+  trend and zones before every plan, and honours decisions from earlier weeks.
+- **Asks, doesn't impose.** Strength training (gym, home or bodyweight) and threshold tests are
+  discussed with you: why, what the options are, and what you prefer.
 - **Computed, not guessed.** Paces, heart-rate zones and % of threshold come from a script, so
   they're the same every week.
 - **Checked before you see it.** A load checker flags volume jumps above ~10 %, back-to-back hard
@@ -90,6 +93,7 @@ skills/running-coach/
     ├── paces.py                zones, pace ↔ % threshold, threshold from a race, predictions, splits
     ├── check_week.py           load-progression checks (TP, Strava, or weekly totals)
     ├── readiness.py            HRV / resting HR / sleep vs. personal baseline
+    ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
     └── export_ics.py           plan → calendar file
 ```
 

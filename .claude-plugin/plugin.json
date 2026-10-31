@@ -1,7 +1,7 @@
 {
   "name": "running-coach",
   "displayName": "Running Coach",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Running coach for Claude: onboarding and athlete profile, weekly plans, race blocks, reviews, daily readiness check-ins, strength for runners and race-day plans, from TrainingPeaks, Strava or manual input.",
   "author": {
     "name": "Tomas Stankovic"

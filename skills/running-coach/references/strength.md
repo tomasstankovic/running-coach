@@ -1,8 +1,35 @@
 # Strength training for runners
 
-Add strength only when the runner asks for it or agreed to it during onboarding. Its purposes:
-injury resilience (calves, Achilles, hips), running economy, and keeping power with age. It
-supports the running and never competes with it.
+Strength supports the running and never competes with it. Its purposes: injury resilience
+(calves, Achilles, hips), running economy, and keeping power with age.
+
+## Discuss it first
+
+Strength is the runner's choice, not a default. Don't add it to a plan unless they asked for it
+or agreed in onboarding. The profile records the answer, so don't ask again every week. Revisit
+it at the start of a new block, or when an injury pattern suggests it would help.
+
+The conversation, kept short:
+1. **Do they do any now?** If they already lift, or do yoga, a gym class or CrossFit, plan around
+   it rather than adding more.
+2. **Do they want it?** If unsure: the benefit (fewer overuse injuries, better economy, most
+   noticeable for calves/Achilles and hips) and the cost (2 × 25–40 min a week, mild soreness the
+   first 2–3 weeks). "Not now" is a fine answer.
+3. **Setting**, which decides the templates:
+
+| Setting | Typical equipment | Template |
+|---|---|---|
+| Gym | barbell, dumbbells, machines, box | A (base) → B (build) → C (maintenance) |
+| Home with equipment | kettlebell or dumbbells, band, step or chair | A with weights, B-home (below) |
+| Bodyweight only | floor, step, wall | BW (below) |
+| Mix | gym once, home once | one gym session (A/B) + one short home session (BW) |
+
+4. **Experience and time**: never lifted means 3–4 weeks of technique with light loads first.
+   Fit the session to the time they really have; 20 minutes done beats 40 skipped.
+5. **Preferences**: sessions they'd enjoy, the time of day, and whether they want it on run days
+   (recommended) or separate.
+
+Write the answers into the profile (`Strength:` line), then plan.
 
 ## Placement in the week
 
@@ -46,6 +73,25 @@ Count strength in the week's fatigue: after a big strength session, don't add vo
 
 **C: Maintenance (peak)**: 1 heavy lift 2 × 5, calf raises 2 × 12, 1 plyo 2 × 5, core 2 rounds.
 Done in 20 min.
+
+**B-home: Build with a kettlebell or dumbbells**
+| Block | Exercise | Sets × reps |
+|---|---|---|
+| WarmUp | skips, pogo hops, goblet squat with a light weight | 5 min |
+| SingleExercise | Rear-foot-elevated split squat holding the weight | 3 × 6–8 per side, slow lowering |
+| SingleExercise | Single-leg RDL with the weight | 3 × 6–8 per side |
+| SingleExercise | Step-ups onto a chair/step with the weight | 3 × 8 per side |
+| Superset | Single-leg calf raise holding the weight + Side plank | 3 × 10–12 / 3 × 30 s |
+| SingleExercise | Box or squat jumps (plyo) | 3 × 5 |
+
+**BW: Bodyweight only (20–30 min)**
+| Block | Exercise | Sets × reps |
+|---|---|---|
+| Circuit | Bulgarian split squat (3 s down), Single-leg glute bridge, Single-leg calf raise off a step, Side plank | 3 rounds; 10–12 per side / 30–40 s |
+| Circuit | Step-downs (slow), Dead bug, Pogo hops | 2 rounds; 8 per side / 8 per side / 20 s |
+
+Bodyweight progresses through tempo (slower lowering), range (deficit, elevated foot), single-leg
+versions and pauses, not load.
 
 Trail runners: add step-downs or eccentric (slow-lowering) work for downhill running, and step-ups
 with weight.

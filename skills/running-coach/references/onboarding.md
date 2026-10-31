@@ -31,21 +31,67 @@ already answers, and ask the runner to confirm or correct it rather than asking 
    train by pace, HR or feel.
 5. **Health**: current pains or niggles, injury history (what, when, recurring?), anything a doctor
    said to watch.
-6. **Strength & extras**: do they want strength training (where: gym or home, what equipment),
-   mobility, and how much time for it.
+6. **Strength**: whether they already do any strength work and whether they'd like it in the
+   plan. Don't decide for them. If they're unsure, give the short why (fewer injuries, better
+   economy, especially for calves, Achilles and hips) and the realistic cost (2 × 30 min a week).
+   If yes, discuss the setting: gym, home with some equipment (which: kettlebell, dumbbells,
+   bands, a step), bodyweight only, or a mix. Also their lifting experience and the time
+   available. `strength.md` has templates for each setting.
 7. **Preferences**: what kind of sessions they like or hate, how much structure they want, and
    language.
 
-## 3. Load and assess history
+## 3. Load and assess history: the long view first, then the recent detail
 
-Pull 8–12 weeks (TP: `tp_get_workouts` in ≤ 90-day windows, `tp_get_fitness`, `tp_get_peaks` for
-best efforts, and `tp_get_metrics` for baselines. Strava: `list_activities`, then
-`get_activity_performance` for races and key sessions).
+The last few weeks don't tell you who this runner is. A runner at CTL 28 who was at 48 last
+spring and has run a marathon is a very different case from a runner who has never been above 28.
+So study **12–24 months** before judging the present.
+
+**Long view (TrainingPeaks):**
+1. `tp_get_fitness` with `start_date`/`end_date` covering the last 12–24 months (one call per
+   year). Each response holds one row per day, so it's large. Save it to a file instead of
+   reading it.
+2. `tp_get_peaks` (sport `Run`, `days` 730) for `speed5K`, `speed10K`, `speedHalfMarathon` and
+   `speedMarathon`: best efforts with dates and workout titles (race names often show up there).
+3. Run the summary:
+   ```bash
+   python scripts/history_summary.py --fitness year1.json --fitness year2.json \
+       --peaks p10k.json --peaks phm.json
+   ```
+   It prints a monthly table (load, CTL, days off), peak fitness and where the runner is now
+   relative to it, build blocks with their ramp rate, breaks of 7+ days, likely races (big
+   efforts after a taper) and best efforts.
+4. Drill into what matters, without reading everything: for the best race and the peak block
+   before it, `tp_get_weekly_summary` for 3–4 representative weeks (peak week, a typical build
+   week, race week). That shows what training produced their best result: volume, long runs,
+   key sessions.
+
+**Long view (Strava):** `list_activities` page by page for the period (use the date filters if
+available). Aggregate into weekly totals and run `history_summary.py --weeks weeks.json`. Find
+races by name and pace.
+
+**Long view (no data):** ask instead: "How did last year go? Your biggest weeks, best races and
+how you prepared for them, longer breaks or injuries, and what worked and what didn't."
+
+**Recent detail:** the last 8–12 weeks as in Week mode (`tp_get_workouts` in ≤ 90-day windows,
+`tp_get_metrics` for HRV/RHR baselines).
+
+**Discuss the history with the runner** before concluding. The data shows *what* happened, and
+only they know *why*: "In May your load dropped to almost zero for four weeks. Injury, illness, or
+a planned break?" "Your best 10k effort was on 5 September. Was that a race?" "The spring block
+took you from CTL 20 to 48 in 10 weeks. How did your body handle that?" Two or three such
+questions are enough. Write their answers into the profile.
 
 Summarize as a short assessment the runner can read:
 
-- **Load**: average and range of weekly time/km, runs per week, longest run, and the trend (building,
-  stable, coming back from a break). CTL now and 6 weeks ago if available.
+- **Seasons**: when they peaked, how high, what that block looked like, and what followed (rest,
+  injury, drop-off). Recurring patterns ("you usually build January–April and drop off in
+  summer").
+- **What worked**: the block or volume that produced their best results. That's the first
+  candidate template for the next block.
+
+- **Load now**: average and range of weekly time/km, runs per week, longest run, and the trend
+  (building, stable, coming back from a break). CTL now vs. 6 weeks ago and vs. their peak
+  ("you're at 58 % of last spring's fitness").
 - **Intensity**: roughly how much is easy vs. hard. Flag "everything at the same moderate pace",
   a very common pattern.
 - **Thresholds**: threshold pace and LTHR. Their source (TP setting, race-derived, estimated) and
@@ -82,6 +128,11 @@ updated: 2026-11-02 · source: TrainingPeaks
 ## Goal
 - A race: City half marathon, 2027-03-28, road, target 1:38 (≈ 4:39/km)
 - Season goal: sub-1:38 HM, stay injury-free
+
+## History (last 24 months)
+- Spring 2026: Jan–Mar build CTL 22 → 45 (+2.5/wk), marathon 2026-04-19; best 10k effort 4:18/km (2026-09-12)
+- May 2026: 3-week break after the marathon (planned rest)
+- Pattern: builds well over 10–12 weeks; summer drop-off
 
 ## Current state (2026-11-02)
 - Threshold pace 4:20/km (race-derived 2026-10-11), LTHR 170, max HR 189

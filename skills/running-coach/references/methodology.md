@@ -138,8 +138,34 @@ Sources, from most to least reliable:
 
 When sources disagree by more than ~3 %, don't silently pick one. Say what each suggests. Until
 it's resolved, prescribe threshold work by HR (finish reps at ~LTHR − 3 to LTHR) with the
-conservative pace. Schedule a 30-min test in the next lighter week. Update the zones after the
-test, with the runner's agreement.
+conservative pace.
+
+### Settling the threshold: discuss, don't impose
+
+A test costs a hard day and some motivation, so it's a conversation, not an automatic entry in
+the plan.
+
+1. **Explain why** in two or three sentences: what the sources say, how far apart they are, and
+   what it changes. "Your 10k effort in September says 4:10, the October half says 4:20. That's
+   ~10 s/km on every threshold rep and every easy-run range."
+2. **Lay out the options**, recommending one for this runner:
+
+| Option | How | Good for | Cost |
+|---|---|---|---|
+| **30-min solo time trial** | 15 min warm-up, 30 min all-out but even on flat ground, cool-down. Average pace ≈ threshold pace; average HR of the last 20 min ≈ LTHR. | most runners; the clearest number | one hard day; needs a flat route and motivation |
+| **Race as the test** | a 10k or half already on the calendar, run all-out | runners who race anyway; no extra hard day | depends on course and weather; only when a race fits |
+| **Read it from training** | over 2–4 weeks, watch HR at the end of threshold reps and the pace at LTHR in steady efforts. Also TP's own threshold-change notifications, if the runner gets them. | runners who dislike tests; coming back from a break | slower, less precise; needs HR data |
+| **Lab or field lactate test** | a step test with blood lactate | data lovers, or a big goal | money and travel; still needs translating to the road |
+| **Do nothing for now** | keep the conservative value and prescribe by HR | early base, or a busy life | the zones may stay slightly off |
+
+3. **Let the runner choose**, then fit the choice into the plan. A test goes at the end of a
+   lighter week or after 2 easy days, never the day after a long run. It replaces that week's
+   quality session; it isn't added on top.
+4. **Afterwards**: update the zones (with agreement), note the result and its source in the
+   profile, and recompute paces for the coming weeks.
+
+Retest every 8–12 weeks of consistent training, or when sessions keep coming out clearly faster
+or slower than prescribed. Raise that in a review; don't schedule it unannounced.
 
 If an earlier coaching decision was based on mislabelled zones (e.g. "threshold" reps that were
 really Z4), say so, re-anchor to the true zone, and then progress from there. "Add a rep" still

@@ -19,14 +19,14 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 
 | Mode | Typical request | Read first |
 |---|---|---|
-| **Onboarding** | first conversation, no profile found, "let's start", new goal | `references/onboarding.md` |
+| **Onboarding** | first conversation, no profile found, "let's start", new goal: studies 12–24 months of history, not just recent weeks | `references/onboarding.md` |
 | **Week** | "plan next week" | this file, `methodology.md`, `workouts.md` |
 | **Block** | "half marathon plan for April" | + `methodology.md` §5 (block length, goal realism, overview format) |
 | **Review** | "how did my week go?" | this file |
 | **Adapt** | "I'm sick / missed Wednesday" | `methodology.md` §8 |
 | **Check-in** | "should I run today?", "slept badly" | `references/checkin-and-race.md` |
 | **Race** | "race plan / pacing / what to eat" | `references/checkin-and-race.md` |
-| **Strength** | "add strength", or the profile says they want it | `references/strength.md` |
+| **Strength** | "add strength", or the profile says they want it; discuss whether and what setting first | `references/strength.md` |
 
 Review usually flows into Week. A first conversation goes through Onboarding before any plan.
 
@@ -87,7 +87,9 @@ python scripts/paces.py predict --distance 10 --time 48:30       # equivalent ra
 
 If the evidence about the threshold disagrees by more than ~3 % (race vs. intervals vs. the
 setting), follow `methodology.md` "When the threshold evidence disagrees". Don't silently pick
-one. Change zones in TP only after the runner agrees. Name sessions after the zone they actually
+one. If a test would settle it, discuss it with the runner ("Settling the threshold"): why it
+matters, the options, and their choice. Never schedule a test unannounced. Change zones in TP
+only after the runner agrees. Name sessions after the zone they actually
 target: reps at 102–104 % are Z4, not "threshold".
 
 ## Step 3: Decide the week's role
@@ -106,7 +108,8 @@ Build the week from `references/workouts.md`. The principles that matter most:
 - Prescribe easy running by HR cap, with the runner's own easy pace range as a guide.
 - Available days are a maximum, not a target.
 - Respect earlier decisions, unless they rested on mislabelled zones. Then re-anchor and say so.
-- Add strength sessions if the runner wants them (`strength.md`: placement and phase dosage).
+- Add strength sessions only if the runner chose them (the profile says so, or ask once; see
+  `strength.md`). Use their setting (gym, home, bodyweight), placement rules and phase dosage.
 
 ## Step 5: Check with the script
 
