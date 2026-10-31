@@ -146,8 +146,10 @@ skills/running-coach/
 
 ## Releasing a new version
 
-Bump `version` in `.claude-plugin/plugin.json` (semver) with every change you want users to
-receive. Installed copies update only when the version changes. Then push to `main`.
+Run `python3 tests/check_skill.py` (CI runs it on every push: description length and YAML,
+referenced files, source tags, version). Bump `version` in `.claude-plugin/plugin.json` (semver)
+with every change you want users to receive; installed copies update only when the version
+changes. Then push to `main`.
 
 ## Disclaimer
 
