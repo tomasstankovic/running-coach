@@ -30,7 +30,9 @@ X/Z3 or harder (defaults to a rough estimate per type). Strength and cross-train
 as running volume.
 
 Checks (references/methodology.md §4, references/sources.md):
-  - every run vs the longest run of the previous 30 days: > +10 % is a FAIL (Frandsen 2025)
+  - every run vs the longest run of the previous 30 days: > +10 % is a FAIL (Frandsen 2025);
+    prints the longest allowed run for the week; races are exempt but reported; runs done in
+    the two weeks before the plan that broke the rule are flagged for the review
   - weekly volume: OK <= +15 %, WARN to +20 %, FAIL above +20 % or +30 % over two weeks
     (+10 % when "cautious"); small absolute steps (<= 30 min) are fine at low volume
   - deload rhythm, long-run share, hard days, strength placement, intensity share, rest days
@@ -42,6 +44,7 @@ import sys
 from collections import defaultdict
 from datetime import date, timedelta
 
+SPIKE_TOLERANCE_KM, SPIKE_TOLERANCE_MIN = 0.3, 3  # rounding slack on the +10 % single-run rule
 HARD_TYPES = {"tempo", "threshold", "intervals", "hills", "race"}
 SESSION_TYPES = HARD_TYPES | {"easy", "recovery", "long", "strides", "rest", "cross", "strength"}
 NON_RUN_TYPES = {"rest", "cross", "strength"}
@@ -150,28 +153,54 @@ def spike_checks(data, plan, plan_start, prior, today, report):
     """Each planned run vs the longest run of the 30 days before it (planned ones included)."""
     runs = done_runs(data, plan_start, today)
     by_km = bool(runs) and all(r[1] > 0 for r in runs)
+    unit = "km" if by_km else "min"
     if not runs:
         if prior:  # weekly totals only: compare with the longest run of the last 4 weeks
             ref = max(p["long"] for p in prior[-4:])
             longest = max((minutes(w) for w in plan if is_run(w)), default=0)
-            if ref and longest > ref * 1.10 + 5:
+            print(f"Longest allowed run this week: ~{ref * 1.10:.0f} min (30-day rule, from weekly totals)")
+            if ref and longest > ref * 1.10 + SPIKE_TOLERANCE_MIN:
                 report("FAIL", f"longest run {longest:.0f} min is {longest / ref * 100 - 100:.0f} % above the "
                                f"recent longest ({ref:.0f} min); keep each run within +10 %")
         return
+
+    # unplanned spikes in the last two weeks of real running (review mode)
+    for i, (d, k, m) in enumerate(runs):
+        if (plan_start - d).days > 14:
+            continue
+        window = [r for r in runs if 0 < (d - r[0]).days <= 30]
+        if window:
+            val, ref = (k, max(r[1] for r in window)) if by_km else (m, max(r[2] for r in window))
+            if ref and val > ref * 1.10 + (SPIKE_TOLERANCE_KM if by_km else SPIKE_TOLERANCE_MIN):
+                report("WARN", f"done {d}: {val:.0f} {unit} was {val / ref * 100 - 100:.0f} % longer than the "
+                               f"30-day longest ({ref:.0f} {unit}); a race or an unplanned spike? Mention it "
+                               f"in the review and keep the next weeks within the new reference")
+
+    tol = SPIKE_TOLERANCE_KM if by_km else SPIKE_TOLERANCE_MIN
+    # the reference moves as old runs leave the 30-day window: show it day by day
+    allowed, last = [], None
+    for i in range(7):
+        d = plan_start + timedelta(days=i)
+        window = [(r[1] if by_km else r[2]) for r in runs if 0 < (d - r[0]).days <= 30]
+        if window and max(window) != last:
+            last = max(window)
+            allowed.append(f"{last * 1.10:.1f} {unit} from {d.strftime('%d.%m')}")
+    if allowed:
+        print("Longest allowed run (30-day longest + 10 %, before this week's runs): " + ", ".join(allowed))
     seen = list(runs)
     flagged = False
     for w in sorted((w for w in plan if is_run(w)), key=workout_date):
         d = workout_date(w)
-        if w.get("type") == "race":
-            continue
         window = [r for r in seen if 0 < (d - r[0]).days <= 30]
+        val = km(w) if by_km else minutes(w)
         if window:
-            val = km(w) if by_km else minutes(w)
             ref = max((r[1] if by_km else r[2]) for r in window)
-            tolerance = 1.0 if by_km else 5
-            if ref and val > ref * 1.10 + tolerance:
-                unit = "km" if by_km else "min"
-                report("FAIL", f"{d}: {val:.0f} {unit} is {val / ref * 100 - 100:.0f} % longer than the longest run "
+            over = val / ref * 100 - 100 if ref else 0
+            if w.get("type") == "race":
+                report("OK", f"{d}: race is {over:+.0f} % vs the 30-day longest run ({ref:.0f} {unit}); races are "
+                             f"exempt, but aim for a half marathon <= ~+20 % (see methodology §5)")
+            elif ref and val > ref * 1.10 + tol:
+                report("FAIL", f"{d}: {val:.0f} {unit} is {over:.0f} % longer than the longest run "
                                f"of the last 30 days ({ref:.0f} {unit}); keep every run within +10 %")
                 flagged = True
         seen.append((d, km(w), minutes(w)))

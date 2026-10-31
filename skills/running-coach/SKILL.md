@@ -143,7 +143,9 @@ both `minutes` and `km`, whatever the runner's unit, because the volume check co
 Planned-but-skipped TP workouts are ignored automatically. Without per-run data, pass weekly totals as `history_weeks`;
 the docstring has the format. Give strength sessions `"type": "strength"`.
 
-Fix every FAIL. For each WARN, either fix it or say in the plan why it's intended (e.g. "volume
+The output starts with the longest allowed run for the week (it can change mid-week as an old long
+run leaves the 30-day window); put it in the plan's header. Fix every FAIL. For each WARN, either
+fix it or say in the plan why it's intended (e.g. "volume
 +14 %, but last week was a deload").
 
 ## Step 6: Present
@@ -153,6 +155,7 @@ Use this format, in the runner's language:
 ```
 ## Week 3–9 Nov: build (week 2 of block)
 Status: CTL 28, ATL 34, TSB −6 · last week 52 km / 5 h 10 min · threshold 4:10/km, LTHR 174
+Longest allowed run: 15.4 km (30-day longest 14 km + 10 %)
 Why: <one or two sentences: what this week is for and what changed vs. last week>
 
 | Day | Session | Volume | Intensity | Purpose |
@@ -217,6 +220,9 @@ Steady runs get decoupling, EF and time above the easy cap. Read the numbers wit
 that trend shows aerobic progress better than pace. The analysis file contains GPS positions, so
 never copy it into a project, note or artifact. Then look at the week: load planned vs. actual,
 fitness trend, readiness trend, missed or extra sessions.
+
+`check_week.py` also flags runs of the last two weeks that broke the 30-day rule (a spontaneous
+long run, a race). Mention them, and plan the next weeks from the new reference.
 
 With a season plan, also fill in the week's actuals, compare it with its row, and apply the
 re-planning rules (`season.md` §5–6). Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs

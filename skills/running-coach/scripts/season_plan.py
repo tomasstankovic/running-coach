@@ -47,6 +47,10 @@ GOALS = [
 ]
 DEFAULT_PEAK = {6: 40, 12: 45, 25: 50, 45: 65, 999: 75}
 LONG_CAP = {6: 14, 12: 16, 25: 21, 45: 32, 999: 35}
+# Longest run wanted in the 4 weeks before a race, so the race itself isn't a big single-run
+# spike (methodology.md §5). 5k/10k: the race distance; half: ~18 km (race <= ~+17 %);
+# marathon: 30 km (the race stays a ~40 % spike; that's accepted, recovery handles it).
+PRE_RACE_LONG = {6: 6, 12: 12, 25: 18, 45: 30, 999: 32}
 TSS_PER_HOUR = {"base": 55, "build": 58, "specific": 60, "taper": 56, "race": 65, "recovery": 48}
 
 LABELS = {
@@ -213,7 +217,25 @@ def generate(spec):
         start = date.fromisoformat(seg[-1]["week_start"]) + timedelta(weeks=1)
     for i, w in enumerate(weeks, 1):
         w["n"] = i
+    pre_race_check(spec, weeks, warnings)
     return {"spec": spec, "weeks": weeks, "changes": [], "warnings": warnings}
+
+
+def pre_race_check(spec, weeks, warnings):
+    """Warn when the long runs before an A/B race stay too short for the race distance."""
+    for r in spec.get("races", []):
+        if r.get("priority") not in ("A", "B"):
+            continue
+        dist = float(r["distance_km"])
+        target = PRE_RACE_LONG[goal_row(dist)[0]]
+        race_week = monday(date.fromisoformat(r["date"]))
+        before = [w["long_km"] for w in weeks
+                  if 0 < (race_week - date.fromisoformat(w["week_start"])).days <= 35
+                  and w["role"] not in ("race", "race-B")]
+        if before and max(before) < target:
+            warnings.append(f"{r['name']}: longest run in the 5 weeks before is {max(before)} km; "
+                            f"aim for ~{target} km so the race isn't a large single-run spike "
+                            f"(raise peak_km, or accept and say so)")
 
 
 def cmd_replan(plan, args):

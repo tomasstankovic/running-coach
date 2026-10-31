@@ -113,6 +113,16 @@ Base: volume, easy running, strides, hills. Build: threshold work (cruise interv
 gradually longer long runs. Specific: race-pace in the long run and in intervals. B/C races fit
 into build weeks as a hard session, with 2–3 easy days around them.
 
+**Longest run before the race.** A race is a single run too, so plan the long runs so the race
+isn't a big spike over the longest run of the previous weeks [S1]. Races are exempt from the
++10 % rule (they're the goal), but:
+- 5k / 10k: long runs are longer than the race anyway; nothing to do.
+- Half marathon: reach ~18–20 km in the last 4–5 weeks, so the race is ≤ ~+15–20 %.
+- Marathon: 30–32 km in the specific phase. The race stays a ~30–40 % spike; that's accepted,
+  and it's why marathon recovery takes 2–3 weeks.
+`season_plan.py` warns when a plan falls short. With a low-volume runner, say so and choose
+together: more volume, a later race, or accepting the spike.
+
 **More weeks than the table needs** (e.g. 24 weeks to a half marathon): lengthen base first, and
 consider two cycles (base → build → a tune-up race such as a 10k ~8 weeks before the A race →
 short recovery → build/specific → taper). Never lengthen the taper. **Fewer weeks than needed**:
