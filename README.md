@@ -132,6 +132,7 @@ skills/running-coach/
 ├── SKILL.md                    modes and the core workflow
 ├── assets/
 │   └── season-plan.html        the season plan page (published once, then updated in place)
+├── evals/                      8 test cases (claude plugin eval): load rules, check-ins, pushback
 ├── references/
 │   ├── onboarding.md           questionnaire, history assessment, athlete profile
 │   ├── season.md               season plan, races A/B/C, re-planning rules, plan page, weekly review
@@ -151,6 +152,7 @@ skills/running-coach/
     ├── analyze_session.py      one session from TrainingPeaks → reps, drift, efficiency
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
     ├── season_plan.py          rough season plan, re-planning, actuals, export to the plan page
+    ├── page_docs.py            any list of rows → plan page database writes
     ├── terrain.py              elevation gain per km → flat / rolling / hilly / mountain
     ├── tp_structure.py         session → TrainingPeaks structure in km or time
     └── export_ics.py           plan → calendar file
@@ -160,7 +162,14 @@ skills/running-coach/
 
 Run `python3 tests/check_skill.py` and `python3 -m unittest discover -s tests` (CI runs both on
 every push: description length and YAML, referenced files, source tags, version, and behaviour
-tests of every script on fictional data). Add an entry to `CHANGELOG.md`. Bump `version` in `.claude-plugin/plugin.json` (semver)
+tests of every script on fictional data). For coaching behaviour, run the eval cases from
+`skills/running-coach` (real, billed model runs):
+
+```bash
+claude plugin eval . --scaffold --allow-tools Bash Write Edit --runs 1
+```
+
+Add an entry to `CHANGELOG.md`. The release ZIP leaves `evals/` out. Bump `version` in `.claude-plugin/plugin.json` (semver)
 with every change you want users to receive; installed copies update only when the version
 changes. Then push to `main`.
 

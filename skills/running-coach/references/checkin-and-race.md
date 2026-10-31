@@ -41,6 +41,24 @@ than elites, who lose ~1–3 %) [S39]. Above ~28 °C (or WBGT ~25 °C) move key 
 cool of the day or shorten them. Dizziness, nausea, headache, chills or goose bumps in the heat:
 stop, cool down, drink. Confusion or collapse: an emergency, cool first and call for help [S40].
 
+### Morning brief (scheduled)
+
+The check-in can run by itself every morning, so the runner wakes up to a three-line answer. If
+the `create_scheduled_task` tool is available (Claude desktop app), offer it once after the
+first check-in, e.g. daily at 06:30 (`cronExpression` `30 6 * * *`). Self-contained prompt, filled
+in, in the runner's language:
+
+> Use the running-coach skill for <name>'s morning check-in. Data: TrainingPeaks (trainingpeaks
+> MCP). Load `tp_get_metrics` for the last 56 days and today's planned workout
+> (`tp_get_workouts` for today). Run `scripts/readiness.py --brief` on the metrics. Answer in
+> 3–5 lines: the verdict, what to do today exactly (keep, trim or swap the session, with paces and
+> HR cap), and what moves if something changes. If a plan page URL is in the profile, add today's
+> readiness row to its `trends` collection. Never change the TrainingPeaks calendar: if the
+> session should change, say so and wait for the runner's yes.
+
+Tell the runner it runs only while the app is open (otherwise at the next launch). Without
+scheduled tasks, the runner just asks "mám dnes behať?".
+
 ## Race day
 
 Triggered by "race plan", "pacing for Sunday", "what should I eat before the race", or the

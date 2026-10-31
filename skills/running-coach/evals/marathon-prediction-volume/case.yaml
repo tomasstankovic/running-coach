@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: marathon-prediction-volume
+expected_outcome: |
+  The coach does not just quote Riegel (~3:43). It uses the volume-aware prediction (Vickers & Vertosick, ~4:00-4:05 at 40 km a week), explains that Riegel is optimistic for runners without marathon volume, and suggests planning from the slower estimate and revisiting after a tune-up race. Slovak.

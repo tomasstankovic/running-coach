@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: morning-checkin-red
+expected_outcome: |
+  The coach runs readiness.py on the metrics, finds the 7-day HRV far below the runner's normal band for several days with elevated resting HR, and says not to do the intervals today: rest or a very easy short run, the session moved, and a volume cut for a few days. It asks about sleep, stress or illness. Slovak.
+context:
+  scaffold_script: place-files.sh

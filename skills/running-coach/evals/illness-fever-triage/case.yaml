@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: illness-fever-triage
+expected_outcome: |
+  The coach says no running while there is fever and chest symptoms, not just a shorter long run; after symptoms are gone, a 10-20 min easy test run, then a gradual return; see a doctor if chest pain, palpitations or breathlessness appear. Slovak.

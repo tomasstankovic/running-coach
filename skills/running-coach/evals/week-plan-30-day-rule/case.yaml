@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: week-plan-30-day-rule
+expected_outcome: |
+  The coach plans three runs, checks the week with check_week.py, and does not schedule an 18 km long run: the longest run of the last 30 days is 15 km, so the long run stays at about 16.5 km or less, with the reason (no run more than 10 % longer than the longest of the last 30 days) explained in Slovak. The plan is presented as a table with sessions.
+context:
+  scaffold_script: place-files.sh

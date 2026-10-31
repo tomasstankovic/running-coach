@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: interval-analysis-retest
+expected_outcome: |
+  The coach runs analyze_session.py, reports the reps (around 4:02-4:06/km, ~102 % of threshold speed, very even, last rep slightly faster, max HR reaching ~LTHR), notes that reps were faster than threshold pace without HR above LTHR so the threshold may be stale and a retest is worth discussing, and gives a concrete decision for next time. Slovak.
+context:
+  scaffold_script: place-files.sh

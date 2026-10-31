@@ -290,7 +290,7 @@ def main():
     z.add_argument("--tp-settings", help="JSON file with tp_get_athlete_settings output")
     z.set_defaults(func=cmd_zones)
 
-    c = sub.add_parser("convert", help="pace <-> % of threshold speed")
+    c = sub.add_parser("convert", help="pace <-> %% of threshold speed")
     c.add_argument("--threshold-pace", required=True)
     c.add_argument("values", nargs="+", help="paces like 4:25 or 4:00-4:05, or percents like 95 or 102-104")
     c.set_defaults(func=cmd_convert)
@@ -309,7 +309,7 @@ def main():
     p.add_argument("--training-pace", help="mean pace of all runs over weeks -9 to -1, m:ss (Tanda)")
     p.set_defaults(func=cmd_predict)
 
-    w = sub.add_parser("power", help="running power zones and watts <-> % of rFTP")
+    w = sub.add_parser("power", help="running power zones and watts <-> %% of rFTP")
     w.add_argument("--rftp", type=float, help="running FTP in watts")
     w.add_argument("--effort-watts", type=float, help="average power of a hard effort (race or test)")
     w.add_argument("--effort-minutes", type=float)

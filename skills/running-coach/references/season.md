@@ -90,8 +90,21 @@ setup allows, and keep one visible view of it.
    second page for the same runner; update the one in the profile. The page is private until the
    runner shares it from its Share menu.
 
-The page shows the races, this week, the next race countdown, the volume chart (planned bars by
-phase, actual line, today marker), the week table and the change log. It is in the runner's
+5. Keep it alive (each of these is optional; the page hides a section without data):
+   - **This week**: when a week is planned in detail, `update` its `weeks/<monday>` document with
+     `days`: `[{"date", "title", "km" or "minutes", "done": false}, ...]`. Mark `done: true` in
+     the review or the morning check-in.
+   - **Readiness**: `readiness.py metrics.json --trend 56` → rows for the `trends` collection
+     (one per day: HRV 7-day mean, the normal band, verdict, resting HR, sleep).
+   - **Aerobic fitness**: `analyze_session.py <data_file> --json --title "..."` for long and
+     steady runs → rows for the `sessions` collection (EF, decoupling, km, date).
+   - `scripts/page_docs.py rows.json --collection trends --id date --out-dir docs` turns any of
+     these lists into document files plus the `ArtifactData` batch writes, like the plan export.
+
+The page shows the races, this week's sessions, the next race countdown, the volume chart
+(planned bars by phase, actual line, today marker), readiness (HRV 7-day mean in the runner's
+band, coloured by verdict), aerobic fitness (EF of steady runs, coloured by decoupling), the week
+table and the change log. It is in the runner's
 language when `lang` is `sk` or `en`; for other languages the labels stay English, while the
 week rows (key sessions, notes) are in the runner's language.
 
@@ -128,7 +141,8 @@ log (`changes`) and, briefly, into the profile's decision log.
 
 Review mode (`SKILL.md`) is the weekly checkpoint. With the plan it also:
 1. Fills in the actuals: `season_plan.py actuals plan.json --history <last weeks' tp_get_workouts>`.
-   Then update those week documents on the page.
+   Then update those week documents on the page, mark the week's `days` done, and add the
+   long run's `analyze_session.py --json` row to `sessions`.
 2. Compares the week with its row: volume ±15 %, the key session done, the long run.
 3. Applies section 5 if something changed, then plans next week in detail (Week mode) from the
    next row.

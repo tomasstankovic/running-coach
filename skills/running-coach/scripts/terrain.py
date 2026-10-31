@@ -68,8 +68,9 @@ def summary(label, runs):
 
 
 def main():
-    if len(sys.argv) < 2:
-        sys.exit(__doc__)
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+        print(__doc__)
+        sys.exit(0 if len(sys.argv) >= 2 else 2)
     runs = load(sys.argv[1:])
     if not runs:
         sys.exit("no runs with distance and elevation gain found")

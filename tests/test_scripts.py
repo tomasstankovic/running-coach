@@ -30,6 +30,16 @@ def run(script, *args, expect_ok=True):
     return proc
 
 
+class Help(unittest.TestCase):
+    def test_every_script_prints_help(self):
+        for script in sorted(SCRIPTS.glob("*.py")):
+            proc = subprocess.run([sys.executable, str(script), "--help"], capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, f"{script.name} --help failed: {proc.stderr[-300:]}")
+            proc = subprocess.run([sys.executable, str(script), "power", "--help"] if script.name == "paces.py" else
+                                  [sys.executable, str(script), "--help"], capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, script.name)
+
+
 class TempDir(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -198,6 +208,13 @@ class Readiness(TempDir):
         self.assertIn(": RED", out)
         self.assertIn("cut volume ~25 %", out)
 
+    def test_brief_and_trend_outputs(self):
+        path = self.write("m.json", self.series())
+        brief = run("readiness.py", path, "--brief").stdout
+        self.assertRegex(brief, r"^2026-10-26 GREEN: .*HRV 7d")
+        trend = json.loads(run("readiness.py", path, "--trend", 14).stdout)
+        self.assertTrue(trend and {"date", "verdict", "hrv7", "band_lo", "band_hi"} <= set(trend[-1]))
+
     def test_short_history_is_not_judged(self):
         out = run("readiness.py", self.write("m.json", self.series()[:15])).stdout
         self.assertIn("not judged", out)
@@ -248,6 +265,11 @@ class AnalyzeSession(TempDir):
         self.assertIn("pace variation", out)
         self.assertIn("LTHR 174", out)
 
+    def test_json_row_for_intervals(self):
+        data = dict(self.laps(), startTimestamp="2026-10-28T11:15:14")
+        row = json.loads(run("analyze_session.py", self.write("a.json", data), "--json", "--title", "5x1k").stdout)
+        self.assertEqual((row["date"], row["kind"], row["reps"], row["title"]), ("2026-10-28", "intervals", 5, "5x1k"))
+
     def test_steady_run_decoupling_from_series(self):
         series = []
         for i in range(0, 4200, 5):
@@ -262,6 +284,18 @@ class AnalyzeSession(TempDir):
         self.assertIn("Steady run", out)
         self.assertIn("decoupling after warm-up", out)
         self.assertIn("efficiency factor", out)
+
+
+class PageDocs(TempDir):
+    def test_rows_become_batch_writes(self):
+        rows = [{"date": f"2026-10-{d:02d}", "hrv7": 50} for d in range(1, 61) if d <= 31] * 2
+        rows = [dict(r, date=f"{r['date']}-{i}") for i, r in enumerate(rows)]  # 62 unique ids
+        out = run("page_docs.py", self.write("rows.json", rows), "--collection", "trends", "--id", "date",
+                  "--out-dir", self.dir / "docs").stdout
+        batches = json.loads(out)
+        self.assertEqual([len(b) for b in batches], [50, 12])
+        self.assertTrue(pathlib.Path(batches[0][0]["file_path"]).exists())
+        self.assertEqual(batches[0][0]["collection"], "trends")
 
 
 class Terrain(TempDir):

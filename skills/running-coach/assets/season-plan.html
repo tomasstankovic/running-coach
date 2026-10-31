@@ -75,6 +75,18 @@ tr.now td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 .log li:last-child { border-bottom: 0; }
 .empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 28px; display: grid; gap: 6px; }
 footer { font-size: .8rem; color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.panel svg { display: block; width: 100%; height: auto; }
+.panel .cap { font-size: .82rem; color: var(--muted); margin-top: 6px; }
+.days { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.days li { display: grid; grid-template-columns: 74px 1fr auto; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.days li:last-child { border-bottom: 0; }
+.days li.today .d { color: var(--accent); font-weight: 600; }
+.days li.done .t { color: var(--muted); }
+.days .d { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.days .v { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: .9rem; }
+.ok { color: var(--good); }
 @media (max-width: 480px) { .log li { grid-template-columns: 1fr; gap: 0; } }
 </style>
 
@@ -94,11 +106,29 @@ footer { font-size: .8rem; color: var(--muted); }
     <div class="wrap" style="padding:0">
       <div class="stats" id="stats"></div>
 
+      <section id="weekSection" hidden>
+        <h2 id="hWeek">This week</h2>
+        <div class="panel"><ul class="days" id="days"></ul></div>
+      </section>
+
       <section>
         <h2 id="hChart">Volume by week</h2>
         <div class="chart"><svg id="chart" role="img" aria-label="Planned and actual weekly volume"></svg></div>
         <div class="legend" id="legend"></div>
       </section>
+
+      <div class="two" id="trendRow" hidden>
+        <section id="readySection" hidden>
+          <h2 id="hReady">Readiness</h2>
+          <div class="panel"><svg id="readyChart" role="img" aria-label="7-day HRV against the normal band"></svg>
+            <div class="cap" id="readyCap"></div></div>
+        </section>
+        <section id="efSection" hidden>
+          <h2 id="hEf">Aerobic fitness</h2>
+          <div class="panel"><svg id="efChart" role="img" aria-label="Efficiency factor of steady runs"></svg>
+            <div class="cap" id="efCap"></div></div>
+        </section>
+      </div>
 
       <section>
         <h2 id="hWeeks">Weeks</h2>
@@ -129,7 +159,11 @@ const T = {
     cols: ["#", "Week", "Phase", "Plan", "Actual", "Long", "Key session"],
     phase: { base: "base", build: "build", specific: "specific", taper: "taper", race: "race", recovery: "recovery" },
     role: { deload: "deload", busy: "busy week", "race-B": "B race", taper: "taper", race: "race", recovery: "recovery", build: "" },
-    of: "of", pastWeeks: "weeks with data" },
+    of: "of", pastWeeks: "weeks with data",
+    week: "This week", ready: "Readiness", ef: "Aerobic fitness",
+    readyCap: (v, lo, hi) => `HRV 7-day mean ${v} · normal band ${lo}–${hi}. Below the band: no quality, then −25 % volume.`,
+    efCap: (n, d) => `Efficiency factor of ${n} steady runs (higher = fitter)` + (d != null ? ` · last decoupling ${d} %` : ""),
+    verdict: { GREEN: "green", AMBER: "amber", RED: "red" } },
   sk: { loading: "Načítavam plán…", emptyT: "Plán ešte nie je uložený",
     emptyX: "Týždne sa tu objavia, keď tréner uloží plán sezóny.",
     failT: "Plán sa nepodarilo načítať", failX: "Obnov stránku. Ak to nepomôže, požiadaj trénera, aby plán zverejnil znova.",
@@ -139,10 +173,14 @@ const T = {
     cols: ["#", "Týždeň", "Fáza", "Plán", "Skutočnosť", "Dlhý", "Kľúčový tréning"],
     phase: { base: "základ", build: "budovanie", specific: "špecifická", taper: "ladenie", race: "závod", recovery: "regenerácia" },
     role: { deload: "odľahčenie", busy: "vyťažený týždeň", "race-B": "B závod", taper: "ladenie", race: "závod", recovery: "regenerácia", build: "" },
-    of: "z", pastWeeks: "týždňov s dátami" },
+    of: "z", pastWeeks: "týždňov s dátami",
+    week: "Tento týždeň", ready: "Pripravenosť", ef: "Aerobná forma",
+    readyCap: (v, lo, hi) => `HRV 7-dňový priemer ${v} · bežné pásmo ${lo}–${hi}. Pod pásmom: bez kvality, potom −25 % objemu.`,
+    efCap: (n, d) => `Efektivita (EF) ${n} ustálených behov (vyššie = lepšia forma)` + (d != null ? ` · posledný decoupling ${d} %` : ""),
+    verdict: { GREEN: "zelená", AMBER: "oranžová", RED: "červená" } },
 };
 const PHASES = ["base", "build", "specific", "taper", "race", "recovery"];
-const state = { meta: null, weeks: null, changes: [] };
+const state = { meta: null, weeks: null, changes: [], trends: [], sessions: [] };
 const $ = id => document.getElementById(id);
 const el = (tag, attrs = {}, text) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
 const svgEl = (tag, attrs = {}, text) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
@@ -192,6 +230,8 @@ function render() {
   if (past.length) stat(t.done, vol(doneKm, doneMin), `${past.length} ${t.pastWeeks}`);
 
   drawChart(weeks, today, t);
+  renderWeek(cur, t);
+  renderTrends(t);
 
   // legend
   const lg = $("legend"); lg.replaceChildren();
@@ -267,6 +307,70 @@ function drawChart(weeks, today, t) {
   actualPts.forEach(([cx, cy]) => svg.append(svgEl("circle", { cx, cy, r: 4, fill: "var(--fg)", stroke: "var(--surface)", "stroke-width": 1.5 })));
 }
 
+function renderWeek(cur, t) {
+  const days = (cur && cur.days) || [];
+  $("weekSection").hidden = !days.length;
+  $("hWeek").textContent = t.week;
+  const todayIso = new Date().toISOString().slice(0, 10);
+  $("days").replaceChildren(...days.slice().sort((a, b) => a.date < b.date ? -1 : 1).map(d => {
+    const li = el("li", { class: (d.date === todayIso ? "today " : "") + (d.done ? "done" : "") });
+    const title = el("span", { class: "t" }, d.title || "");
+    if (d.done) title.prepend(el("span", { class: "ok" }, "✓ "));
+    const vol = d.km ? `${d.km} km` : d.minutes ? `${d.minutes} min` : "";
+    li.append(el("span", { class: "d" }, fmtDate(d.date, { weekday: "short", day: "numeric", month: "numeric" })), title,
+      el("span", { class: "v" }, vol));
+    return li;
+  }));
+}
+
+function miniChart(svg, points, opts) {
+  // points: [{x: Date, y: number, lo?, hi?, color?}]; draws a band, a line and dots on one scale
+  svg.replaceChildren();
+  const W = 520, H = 180, pl = 34, pr = 10, pt = 10, pb = 24;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  if (!points.length) return;
+  const xs = points.map(p => +p.x), x0 = Math.min(...xs), x1 = Math.max(...xs) || x0 + 1;
+  const ys = points.flatMap(p => [p.y, p.lo, p.hi].filter(v => v != null));
+  let y0 = Math.min(...ys), y1 = Math.max(...ys); const pad = (y1 - y0) * 0.15 || 1; y0 -= pad; y1 += pad;
+  const X = v => pl + (W - pl - pr) * ((+v - x0) / ((x1 - x0) || 1)), Y = v => pt + (H - pt - pb) * (1 - (v - y0) / (y1 - y0));
+  [y0 + pad, (y0 + y1) / 2, y1 - pad].forEach(v => {
+    svg.append(svgEl("line", { x1: pl, x2: W - pr, y1: Y(v), y2: Y(v), stroke: "var(--line)" }));
+    svg.append(svgEl("text", { x: pl - 6, y: Y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--muted)" }, opts.fmt(v)));
+  });
+  const banded = points.filter(p => p.lo != null && p.hi != null);
+  if (banded.length > 1) {
+    const top = banded.map(p => `${X(p.x)},${Y(p.hi)}`), bottom = banded.slice().reverse().map(p => `${X(p.x)},${Y(p.lo)}`);
+    svg.append(svgEl("polygon", { points: top.concat(bottom).join(" "), fill: "var(--good)", opacity: 0.15 }));
+  }
+  if (opts.line && points.length > 1)
+    svg.append(svgEl("polyline", { points: points.map(p => `${X(p.x)},${Y(p.y)}`).join(" "), fill: "none", stroke: "var(--fg)", "stroke-width": 2 }));
+  points.forEach(p => svg.append(svgEl("circle", { cx: X(p.x), cy: Y(p.y), r: opts.line ? 2.5 : 4, fill: p.color || "var(--fg)" })));
+  const first = new Date(x0), last = new Date(x1);
+  svg.append(svgEl("text", { x: pl, y: H - 6, "font-size": 11, fill: "var(--muted)" }, fmtDate(first.toISOString().slice(0, 10))));
+  svg.append(svgEl("text", { x: W - pr, y: H - 6, "text-anchor": "end", "font-size": 11, fill: "var(--muted)" }, fmtDate(last.toISOString().slice(0, 10))));
+}
+
+function renderTrends(t) {
+  const tr = state.trends.filter(r => r.hrv7 != null).sort((a, b) => a.date < b.date ? -1 : 1).slice(-56);
+  const se = state.sessions.filter(r => r.kind === "steady" && r.ef).sort((a, b) => a.date < b.date ? -1 : 1).slice(-20);
+  $("readySection").hidden = !tr.length; $("efSection").hidden = !se.length;
+  $("trendRow").hidden = !tr.length && !se.length;
+  $("hReady").textContent = t.ready; $("hEf").textContent = t.ef;
+  const col = v => v === "RED" ? "var(--race)" : v === "AMBER" ? "var(--warn)" : "var(--good)";
+  if (tr.length) {
+    miniChart($("readyChart"), tr.map(r => ({ x: new Date(r.date + "T12:00:00"), y: r.hrv7, lo: r.band_lo, hi: r.band_hi, color: col(r.verdict) })),
+      { line: true, fmt: v => v.toFixed(0) });
+    const l = tr[tr.length - 1];
+    $("readyCap").textContent = `${fmtDate(l.date)} · ${t.verdict[l.verdict] || l.verdict} · ` + t.readyCap(l.hrv7.toFixed(0), (l.band_lo || 0).toFixed(0), (l.band_hi || 0).toFixed(0));
+  }
+  if (se.length) {
+    miniChart($("efChart"), se.map(r => ({ x: new Date(r.date + "T12:00:00"), y: r.ef, color: r.decoupling > 10 ? "var(--race)" : r.decoupling > 5 ? "var(--warn)" : "var(--good)" })),
+      { line: false, fmt: v => v.toFixed(2) });
+    const l = se[se.length - 1];
+    $("efCap").textContent = t.efCap(se.length, l.decoupling != null ? l.decoupling.toFixed(1) : null);
+  }
+}
+
 async function start() {
   showEmpty("loading", "emptyX");
   let settled = false;
@@ -278,6 +382,8 @@ async function start() {
   db.doc("plan/meta").onSnapshot(s => { state.meta = s.data() || {}; done(); render(); }, fail);
   db.collection("weeks").onSnapshot(s => { state.weeks = s.docs.map(d => d.data()); done(); render(); }, fail);
   db.collection("changes").onSnapshot(s => { state.changes = s.docs.map(d => d.data()); render(); }, () => {});
+  db.collection("trends").onSnapshot(s => { state.trends = s.docs.map(d => d.data()); render(); }, () => {});
+  db.collection("sessions").onSnapshot(s => { state.sessions = s.docs.map(d => d.data()); render(); }, () => {});
 }
 start();
 </script>

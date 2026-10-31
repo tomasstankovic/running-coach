@@ -3,6 +3,23 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.8.0
+
+- **Morning brief**: `readiness.py --brief` (one line), `--json` and `--trend DAYS`; a
+  scheduled daily check-in template in `checkin-and-race.md` that never changes the calendar
+  without a yes.
+- **Plan page 2.0**: this week's sessions (with done marks), readiness (HRV 7-day mean in the
+  runner's band, coloured by verdict) and aerobic fitness (EF of steady runs, coloured by
+  decoupling). Fed by `readiness.py --trend`, `analyze_session.py --json` and the new
+  `page_docs.py`, which turns any row list into plan-page database writes.
+- **Evals**: 8 test cases for `claude plugin eval` (unrealistic goal, 30-day rule, red
+  check-in, fever, beginner, interval analysis, marathon prediction, no write without a yes).
+  First run, 4 cases with the skill on Sonnet: 15 of 15 checks passed (long run capped at
+  16.4 km instead of the requested 18 km; red check-in with no intervals; 1:30 goal pushed back
+  with numbers and options; reps read as even with a stale threshold flagged).
+- **Fix**: `paces.py --help` crashed on a bare `%` in the help text; `check_week.py` and
+  `terrain.py` now answer `--help`. A test runs `--help` on every script.
+
 ## 0.7.0
 
 - **Running power**: `paces.py power` gives zones from running FTP (or estimates rFTP from a race

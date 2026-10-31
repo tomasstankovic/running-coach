@@ -13,6 +13,9 @@ mean +- 0.5 SD over the 28-60 days before the week. Inside the band: train as pl
 no quality today; still below after 3 more days: cut volume ~25 % for 3-4 days. A single low night
 counts only together with another sign. At least 21 baseline days are needed before HRV is judged.
 
+Output: text (default), --brief (one line for a morning message), --json, or --trend DAYS
+(JSON rows for the plan page's readiness chart).
+
 Resting HR: the 7-day mean above baseline + 1 SD is a flag; a single day +8 bpm or more is a flag
 (practice-based). Sleep under 6 h (or 5 h) is a flag. Prints GREEN / AMBER / RED with reasons.
 """
@@ -47,22 +50,15 @@ def load(path):
     return [days[k] for k in sorted(days)]
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("metrics_json")
-    ap.add_argument("--date", help="day to assess (default: latest day in the file)")
-    args = ap.parse_args()
-
-    rows = load(args.metrics_json)
-    if not rows:
-        sys.exit("no metrics found")
-    target = args.date or rows[-1]["date"]
+def assess(rows, target):
+    """Verdict, flags and the numbers behind them for one day."""
     today = next((r for r in rows if r["date"] == target), None)
     if today is None:
-        sys.exit(f"no metrics for {target}")
+        return None
     base = [r for r in rows if r["date"] < target][-28:]
 
     flags, notes = [], []
+    hrv_info, rhr7 = (None, None), None
 
     def baseline(key):
         vals = [r[key] for r in base if key in r]
@@ -98,6 +94,7 @@ def main():
 
     single_low = False
     state, mean7, b = hrv_state(target)
+    hrv_info = (mean7, b)
     if "hrv" in today and state is not None:
         mean, sd, n = b
         notes.append(f"HRV {today['hrv']:.0f}; 7-day mean {math.exp(mean7):.0f} vs normal band "
@@ -119,6 +116,7 @@ def main():
         diff = today["rhr"] - mean
         last7 = window("rhr", target, 7)
         mean7 = statistics.mean(last7) if last7 else today["rhr"]
+        rhr7 = mean7
         notes.append(f"resting HR {today['rhr']:.0f} (7-day {mean7:.0f}) vs baseline {mean:.0f} ± {sd:.0f}")
         if diff >= 8:
             flags.append(("amber", f"resting HR {diff:+.0f} bpm today"))
@@ -148,11 +146,56 @@ def main():
     else:
         verdict = "GREEN"
 
-    print(f"{target}: {verdict}")
-    for lvl, msg in flags:
-        print(f"  {lvl.upper():<5} {msg}")
-    for n in notes:
-        print(f"  ·     {n}")
+    mean7, b = hrv_info
+    band = (math.exp(b[0] - BAND_SD * b[1]), math.exp(b[0] + BAND_SD * b[1])) if b else (None, None)
+    return {"date": target, "verdict": verdict.split(" ")[0], "verdict_text": verdict,
+            "flags": flags, "notes": notes, "hrv": today.get("hrv"),
+            "hrv7": round(math.exp(mean7), 1) if mean7 else None,
+            "band_lo": round(band[0], 1) if band[0] else None, "band_hi": round(band[1], 1) if band[1] else None,
+            "rhr": today.get("rhr"), "rhr7": round(rhr7, 1) if rhr7 else None,
+            "sleep_h": round(today["sleep_h"], 1) if today.get("sleep_h") else None}
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("metrics_json")
+    ap.add_argument("--date", help="day to assess (default: latest day in the file)")
+    ap.add_argument("--brief", action="store_true", help="one line for a morning message")
+    ap.add_argument("--json", action="store_true", help="machine-readable result")
+    ap.add_argument("--trend", type=int, metavar="DAYS",
+                    help="JSON rows for the last DAYS judged days (plan page trends)")
+    args = ap.parse_args()
+
+    rows = load(args.metrics_json)
+    if not rows:
+        sys.exit("no metrics found")
+    if args.trend:
+        out = [a for a in (assess(rows, r["date"]) for r in rows[-args.trend:]) if a and a["hrv7"]]
+        print(json.dumps([{k: a[k] for k in ("date", "verdict", "hrv", "hrv7", "band_lo", "band_hi",
+                                              "rhr", "rhr7", "sleep_h")} for a in out]))
+        return
+    target = args.date or rows[-1]["date"]
+    a = assess(rows, target)
+    if a is None:
+        sys.exit(f"no metrics for {target}")
+    if args.json:
+        print(json.dumps(a, ensure_ascii=False))
+    elif args.brief:
+        reasons = "; ".join(m for _, m in a["flags"]) or "all within your normal range"
+        nums = []
+        if a["hrv7"]:
+            nums.append(f"HRV 7d {a['hrv7']:.0f} (band {a['band_lo']:.0f}-{a['band_hi']:.0f})")
+        if a["rhr"]:
+            nums.append(f"RHR {a['rhr']:.0f}")
+        if a["sleep_h"]:
+            nums.append(f"sleep {a['sleep_h']:.1f} h")
+        print(f"{target} {a['verdict']}: {reasons} [{', '.join(nums)}]")
+    else:
+        print(f"{target}: {a['verdict_text']}")
+        for lvl, msg in a["flags"]:
+            print(f"  {lvl.upper():<5} {msg}")
+        for n in a["notes"]:
+            print(f"  ·     {n}")
 
 
 if __name__ == "__main__":

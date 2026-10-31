@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: unrealistic-goal-pushback
+expected_outcome: |
+  The coach does not hand over a sub-1:30 plan. It explains with numbers that 1:30 (4:16/km) is far from the ~1:47 the 10k predicts and that one run a week can't close the gap, then offers realistic options (adjusted target, more runs, later race or a two-step goal) and asks the runner to choose. Replies in Slovak.

@@ -3,6 +3,7 @@
 
 Usage:
   analyze_session.py analysis.json [--lthr 174] [--threshold-pace 4:10] [--easy-cap 145] [--rftp 420]
+  analyze_session.py analysis.json --json      # one row for the plan page's "sessions" collection
 
 analysis.json is TrainingPeaks' tp_analyze_workout output: either the tool's response saved to a
 file, or the file it writes itself (its "data_file", e.g. /tmp/tp-mcp/analysis/workout_<id>.json,
@@ -48,9 +49,11 @@ def fmt_time(sec):
     return f"{sec // 3600}:{sec % 3600 // 60:02d}:{sec % 60:02d}" if sec >= 3600 else f"{sec // 60}:{sec % 60:02d}"
 
 
-def load(path):
+def load(path, raw=False):
     with open(path) as f:
         d = json.load(f)
+    if raw:
+        return d
     totals = d.get("totals") or {}
     if isinstance(totals, list):  # the saved data_file stores totals as a list
         totals = {t["name"]: {"value": t.get("value"), "unit": t.get("unit")} for t in totals}
@@ -171,6 +174,27 @@ def analyze_steady(total, laps, series, args):
         print(f"{'OK' if above < 10 else 'NOTE'} {above:.0f} % of the run above the easy cap {args.easy_cap}")
 
 
+def summary_row(path, args):
+    """Date, type and the key numbers of one session, for the plan page."""
+    d = load(path, raw=True)
+    total, laps, series = load(path)
+    row = {"date": str(d.get("startTimestamp", ""))[:10], "km": round(total.get("Distance") or 0, 1),
+           "minutes": round((total.get("Duration") or 0) / 60)}
+    if is_interval(laps):
+        reps = [l for l in laps if l.get("Intensity") == "Active"]
+        paces = [r.get("AveragePace") or r["TotalTimerTime"] / r["TotalDistance"] for r in reps]
+        row.update(kind="intervals", reps=len(reps), rep_pace=round(statistics.mean(paces)),
+                   rep_cv=round(statistics.pstdev(paces) / statistics.mean(paces) * 100, 1),
+                   rep_max_hr=max((r.get("MaximumHeartRate") or 0) for r in reps))
+    else:
+        own = series_halves(series) if series else None
+        ngp, hr = total.get("NGP"), total.get("Avg heart rate")
+        row.update(kind="steady", ef=round((1000 / ngp) / hr, 2) if ngp and hr else None,
+                   decoupling=round(own[0], 1) if own else total.get("Pa:Hr"),
+                   avg_hr=hr, gain_per_km=round((total.get("El. Gain") or 0) / max(row["km"], 1)))
+    return row
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("analysis")
@@ -178,7 +202,15 @@ def main():
     ap.add_argument("--threshold-pace")
     ap.add_argument("--easy-cap", type=int, help="easy-run HR cap, e.g. 145")
     ap.add_argument("--rftp", type=float, help="running FTP in watts (adds power columns)")
+    ap.add_argument("--json", action="store_true", help="one summary row (plan page sessions)")
+    ap.add_argument("--title", help="session title to include in the --json row")
     args = ap.parse_args()
+    if args.json:
+        row = summary_row(args.analysis, args)
+        if args.title:
+            row["title"] = args.title
+        print(json.dumps(row, ensure_ascii=False))
+        return
     try:
         total, laps, series = load(args.analysis)
     except (OSError, ValueError, KeyError) as e:
