@@ -181,7 +181,9 @@ starts from it.
 
 Recommend the block structure (phases and their lengths, from `methodology.md`), weekly volume to
 start at and to peak at, runs per week, where strength fits, and the next 1–2 weeks in detail
-(then continue as in Week mode).
+(then continue as in Week mode). With a race goal, build the season plan (`season.md`): races
+with priorities, the TP ATP question, the rough weekly plan, its page, and the offer of a
+scheduled weekly review.
 
 ## 6. Save the profile
 
@@ -237,6 +239,9 @@ updated: 2026-11-02 · source: TrainingPeaks
 ## Plan shape
 - Base to 2026-12-06 → Build to 2027-02-14 → Specific to 2027-03-14 → Taper
 - Peak volume ~60 km / 6 h
+- Races: A City half marathon 2027-03-28 · C Parkrun 2027-02-06
+- Season plan: page https://claude.ai/artifact/… · plan.json in the Project · ATP: ignored
+- Weekly review: scheduled Sunday 19:00
 
 ## Decision log (latest first)
 - 2026-11-02: start 5× 1 km @ 98–100 %; add a rep before pace

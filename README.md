@@ -28,6 +28,10 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   with numbers and offers real alternatives. Then you decide together.
 - **Asks, doesn't impose.** Strength training (gym, home or bodyweight) and threshold tests are
   discussed with you: why, what the options are, and what you prefer.
+- **The whole season on one page.** A rough week-by-week plan to your A race (phases, volume,
+  long run, key session), with B and C races built in. It lives on a page with a fixed link that
+  shows plan vs. actual and every change. Illness, a work deadline or a missed week re-plans the
+  rest by clear rules, and the weekly review can run by itself every Sunday.
 - **Your units, your ground.** Kilometres or minutes, as you prefer. It reads how hilly your runs
   are, asks where you can run fast, and steers by pace on the flat and by heart rate on hills.
   "This week I'm in the mountains" reshapes the rest of the week.
@@ -93,14 +97,19 @@ connect.
 - "Add two strength sessions a week, I have a kettlebell at home."
 - "Race plan for Sunday's half: pacing and what to eat."
 - "I'm in the mountains until Sunday. Adjust the rest of the week."
+- "Plan my season up to the marathon in April; there's a half in March."
+- "Work is crazy for the next two weeks."
 
 ## What's inside
 
 ```
 skills/running-coach/
 ├── SKILL.md                    modes and the core workflow
+├── assets/
+│   └── season-plan.html        the season plan page (published once, then updated in place)
 ├── references/
 │   ├── onboarding.md           questionnaire, history assessment, athlete profile
+│   ├── season.md               season plan, races A/B/C, re-planning rules, plan page, weekly review
 │   ├── methodology.md          intensity, progression, periodization, thresholds, illness
 │   ├── workouts.md             session library with TrainingPeaks structures
 │   ├── strength.md             strength for runners: placement, phases, TP strength workouts
@@ -112,6 +121,7 @@ skills/running-coach/
     ├── check_week.py           load-progression checks (TP, Strava, or weekly totals)
     ├── readiness.py            HRV / resting HR / sleep vs. personal baseline
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
+    ├── season_plan.py          rough season plan, re-planning, actuals, export to the plan page
     ├── terrain.py              elevation gain per km → flat / rolling / hilly / mountain
     ├── tp_structure.py         session → TrainingPeaks structure in km or time
     └── export_ics.py           plan → calendar file
@@ -135,7 +145,9 @@ Skill pre Claude, ktorý ti plánuje beh týždeň po týždni. Naplánuje týž
 závodu, vyhodnotí uplynulý týždeň a upraví plán, keď ochorieš alebo vynecháš tréning. Na
 začiatku si ťa „vyspovedá“ (ciele, čas, história, posúdenie stavu) a uloží si tvoj profil.
 Vie ranný check-in podľa HRV a spánku, silové tréningy pre bežcov aj plán na závod. Tréningy
-píše v kilometroch alebo v minútach, ako chceš, a prispôsobí ich terénu (rovina, kopce, hory). Tempá a
+píše v kilometroch alebo v minútach, ako chceš, a prispôsobí ich terénu (rovina, kopce, hory).
+Celú sezónu do hlavného závodu naplánuje nahrubo po týždňoch a ukáže na stránke so stálym
+odkazom. Keď ochorieš alebo máš náročné obdobie v práci, plán podľa jasných pravidiel prepočíta. Tempá a
 zóny počíta skriptom a každý týždeň pred zobrazením skontroluje (nárast objemu, tvrdé dni po
 sebe, dlhý beh, odľahčovací týždeň). S TrainingPeaks zapíše štruktúrované tréningy do kalendára
 (až po tvojom súhlase). So Stravou alebo bez dát dostaneš plán ako text a `.ics` súbor do

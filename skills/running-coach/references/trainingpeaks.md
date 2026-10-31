@@ -19,6 +19,7 @@ tell the athlete to run `tp-mcp auth` again. The session cookie expires every fe
 | `tp_analyze_workout` | deeper analysis of one workout (laps, zones) | when the review needs rep-by-rep data |
 | `tp_get_weekly_summary` | weekly totals | quick history |
 | `tp_get_focus_event`, `tp_get_next_event`, `tp_get_events` | goal race and other races | |
+| `tp_get_atp` | the runner's Annual Training Plan: weekly TSS target, period, races | read-only through the MCP, max 90 days per call; ask whether to respect it (`season.md` §3) |
 | `tp_get_metrics` | HRV, sleep, resting HR, weight (if logged) | |
 | `tp_get_peaks`, `tp_get_workout_prs` | best efforts | threshold sanity check |
 
@@ -33,7 +34,7 @@ training matters for the plan.
 | `tp_create_workout` | create a planned workout |
 | `tp_update_workout` | change a planned workout (moving a day, editing the description) |
 | `tp_delete_workout` | remove a *planned* workout. Ask first; never delete completed ones. |
-| `tp_create_event` | add a goal race |
+| `tp_create_event` | add a race, with `priority` A, B or C (defaults to C) |
 | `tp_update_speed_zones`, `tp_update_hr_zones` | update threshold. Ask first. Test-based zone methods return `TEST_BASED_METHOD` and must be changed in the TP web UI. |
 
 ### tp_create_workout for a run

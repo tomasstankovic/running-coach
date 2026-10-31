@@ -1,0 +1,283 @@
+<title>Season Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a race-season ledger. Header with races, a strip of key numbers, the week-by-week
+   volume chart with phases underneath, then the full week table and the change log. */
+:root {
+  --bg: #F6F7F9; --surface: #FFFFFF; --fg: #1E2A44; --muted: #5E6A80; --line: #DDE2EA;
+  --accent: #FF6B4A; --accent-soft: #FFE3DB;
+  --base: #8FB3D9; --build: #3F7CBF; --specific: #1E2A44; --taper: #F2A541; --race: #FF6B4A; --recovery: #A9B4C4;
+  --good: #2E8B57; --warn: #C27C0E;
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Public Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161F; --surface: #19202C; --fg: #EEF1F6; --muted: #9AA6BA; --line: #2A3342;
+  --accent: #FF7D5E; --accent-soft: #3A2620;
+  --base: #5F86B0; --build: #6FA3DD; --specific: #C9D6EA; --taper: #F2B35E; --race: #FF7D5E; --recovery: #6B778A;
+  --good: #5CC08A; --warn: #E6A43C; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161F; --surface: #19202C; --fg: #EEF1F6; --muted: #9AA6BA; --line: #2A3342;
+  --accent: #FF7D5E; --accent-soft: #3A2620;
+  --base: #5F86B0; --build: #6FA3DD; --specific: #C9D6EA; --taper: #F2B35E; --race: #FF7D5E; --recovery: #6B778A;
+  --good: #5CC08A; --warn: #E6A43C; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+h1, h2 { font-family: var(--display); font-weight: 700; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.05; }
+h2 { font-size: 1.35rem; text-transform: uppercase; letter-spacing: .06em; }
+.eyebrow { font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); }
+.num { font-family: var(--display); font-variant-numeric: tabular-nums; }
+
+header { display: grid; gap: 12px; }
+.races { display: flex; flex-wrap: wrap; gap: 8px; }
+.race { display: inline-flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line); font-size: .9rem; }
+.race b { font-family: var(--display); font-size: 1rem; }
+.prio { font-family: var(--display); font-weight: 700; color: var(--bg); background: var(--muted);
+  border-radius: 4px; padding: 0 6px; font-size: .85rem; }
+.prio.A { background: var(--race); } .prio.B { background: var(--build); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; min-width: 0; }
+.stat .big { font-family: var(--display); font-size: 2rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat .sub { font-size: .85rem; color: var(--muted); }
+
+section { display: grid; gap: 12px; min-width: 0; }
+.chart { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 8px 8px; overflow-x: auto; }
+.chart svg { display: block; min-width: 560px; width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.dot { border-radius: 50%; background: var(--fg); width: 8px; height: 8px; }
+
+.table { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: .9rem; }
+th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+  font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.n { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+tr.now td { background: var(--accent-soft); }
+tr.now td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.pill { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.role { font-size: .78rem; color: var(--muted); }
+.delta.ok { color: var(--good); } .delta.off { color: var(--warn); }
+
+.log { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.log li { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.log li:last-child { border-bottom: 0; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 28px; display: grid; gap: 6px; }
+footer { font-size: .8rem; color: var(--muted); }
+@media (max-width: 480px) { .log li { grid-template-columns: 1fr; gap: 0; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow">Running Coach</div>
+    <h1 id="title">Season plan</h1>
+    <div class="races" id="races"></div>
+  </header>
+
+  <div id="empty" class="empty">
+    <strong id="emptyTitle">Loading the plan…</strong>
+    <span class="muted" id="emptyText">The weeks appear here once your coach has saved the season plan.</span>
+  </div>
+
+  <div id="content" hidden>
+    <div class="wrap" style="padding:0">
+      <div class="stats" id="stats"></div>
+
+      <section>
+        <h2 id="hChart">Volume by week</h2>
+        <div class="chart"><svg id="chart" role="img" aria-label="Planned and actual weekly volume"></svg></div>
+        <div class="legend" id="legend"></div>
+      </section>
+
+      <section>
+        <h2 id="hWeeks">Weeks</h2>
+        <div class="table"><table>
+          <thead><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table></div>
+      </section>
+
+      <section id="logSection" hidden>
+        <h2 id="hLog">Changes</h2>
+        <ul class="log" id="log"></ul>
+      </section>
+
+      <footer id="footer"></footer>
+    </div>
+  </div>
+</div>
+
+<script>
+const T = {
+  en: { loading: "Loading the plan…", emptyT: "No plan saved yet",
+    emptyX: "The weeks appear here once your coach has saved the season plan.",
+    failT: "The plan couldn't be loaded", failX: "Reload the page. If it keeps failing, ask your coach to publish the plan again.",
+    chart: "Volume by week", weeks: "Weeks", log: "Changes", thisWeek: "This week", nextRace: "Next race",
+    peak: "Peak week", done: "Done so far", weeksTo: w => w === 0 ? "this week" : w === 1 ? "in 1 week" : `in ${w} weeks`,
+    planned: "planned", actual: "actual", long: "long run", updated: "Updated",
+    cols: ["#", "Week", "Phase", "Plan", "Actual", "Long", "Key session"],
+    phase: { base: "base", build: "build", specific: "specific", taper: "taper", race: "race", recovery: "recovery" },
+    role: { deload: "deload", busy: "busy week", "race-B": "B race", taper: "taper", race: "race", recovery: "recovery", build: "" },
+    of: "of", pastWeeks: "weeks with data" },
+  sk: { loading: "Načítavam plán…", emptyT: "Plán ešte nie je uložený",
+    emptyX: "Týždne sa tu objavia, keď tréner uloží plán sezóny.",
+    failT: "Plán sa nepodarilo načítať", failX: "Obnov stránku. Ak to nepomôže, požiadaj trénera, aby plán zverejnil znova.",
+    chart: "Objem po týždňoch", weeks: "Týždne", log: "Zmeny", thisWeek: "Tento týždeň", nextRace: "Najbližší závod",
+    peak: "Najväčší týždeň", done: "Zatiaľ odbehnuté", weeksTo: w => w === 0 ? "tento týždeň" : w === 1 ? "o 1 týždeň" : w < 5 ? `o ${w} týždne` : `o ${w} týždňov`,
+    planned: "plán", actual: "skutočnosť", long: "dlhý beh", updated: "Aktualizované",
+    cols: ["#", "Týždeň", "Fáza", "Plán", "Skutočnosť", "Dlhý", "Kľúčový tréning"],
+    phase: { base: "základ", build: "budovanie", specific: "špecifická", taper: "ladenie", race: "závod", recovery: "regenerácia" },
+    role: { deload: "odľahčenie", busy: "vyťažený týždeň", "race-B": "B závod", taper: "ladenie", race: "závod", recovery: "regenerácia", build: "" },
+    of: "z", pastWeeks: "týždňov s dátami" },
+};
+const PHASES = ["base", "build", "specific", "taper", "race", "recovery"];
+const state = { meta: null, weeks: null, changes: [] };
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, text) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
+const svgEl = (tag, attrs = {}, text) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
+
+function lang() { return T[(state.meta && state.meta.lang) || "en"] || T.en; }
+function mondayISO(d) { const x = new Date(d); x.setHours(12); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x.toISOString().slice(0, 10); }
+function fmtDate(iso, opts = { day: "numeric", month: "numeric" }) {
+  const l = (state.meta && state.meta.lang) === "sk" ? "sk-SK" : "en-GB";
+  return new Date(iso + "T12:00:00").toLocaleDateString(l, opts);
+}
+function useTime() { return state.meta && state.meta.unit === "time"; }
+function vol(km, minutes) { return useTime() ? `${(minutes / 60).toFixed(1)} h` : `${Math.round(km)} km`; }
+function phaseColor(p) { return `var(--${PHASES.includes(p) ? p : "base"})`; }
+
+function showEmpty(titleKey, textKey) {
+  const t = lang(); $("content").hidden = true; $("empty").hidden = false;
+  $("emptyTitle").textContent = t[titleKey]; $("emptyText").textContent = t[textKey];
+}
+
+function render() {
+  const t = lang(), m = state.meta || {}, weeks = (state.weeks || []).slice().sort((a, b) => a.week_start < b.week_start ? -1 : 1);
+  if (m.title) { $("title").textContent = m.title; document.title = m.title; }
+  if (!weeks.length) { if (state.weeks) showEmpty("emptyT", "emptyX"); return; }
+  $("empty").hidden = true; $("content").hidden = false;
+  const today = mondayISO(new Date());
+
+  // races
+  const races = $("races"); races.replaceChildren();
+  (m.races || []).slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach(r => {
+    const c = el("span", { class: "race" });
+    c.append(el("span", { class: `prio ${r.priority}` }, r.priority), el("b", {}, r.name),
+      el("span", { class: "muted" }, `${fmtDate(r.date, { day: "numeric", month: "numeric", year: "numeric" })}${r.distance_km ? " · " + r.distance_km + " km" : ""}`));
+    races.append(c);
+  });
+
+  // stats
+  const cur = weeks.find(w => w.week_start === today);
+  const next = (m.races || []).filter(r => r.date >= today).sort((a, b) => a.date < b.date ? -1 : 1)[0];
+  const peak = weeks.reduce((a, w) => (w.km > a.km ? w : a), weeks[0]);
+  const past = weeks.filter(w => w.week_start < today && w.actual_km != null);
+  const doneKm = past.reduce((s, w) => s + (w.actual_km || 0), 0), doneMin = past.reduce((s, w) => s + (w.actual_minutes || 0), 0);
+  const stats = $("stats"); stats.replaceChildren();
+  const stat = (label, big, sub) => { const s = el("div", { class: "stat" }); s.append(el("div", { class: "eyebrow" }, label), el("div", { class: "big" }, big), el("div", { class: "sub" }, sub)); stats.append(s); };
+  if (cur) stat(t.thisWeek, vol(cur.km, cur.minutes), `${t.phase[cur.phase] || cur.phase}${t.role[cur.role] ? " · " + t.role[cur.role] : ""} · ${cur.key}`);
+  if (next) { const wks = Math.round((new Date(mondayISO(next.date)) - new Date(today)) / 6048e5); stat(t.nextRace, t.weeksTo(wks), `${next.priority} · ${next.name} · ${fmtDate(next.date)}`); }
+  stat(t.peak, vol(peak.km, peak.minutes), `${fmtDate(peak.week_start)} · ${t.long} ${peak.long_km} km`);
+  if (past.length) stat(t.done, vol(doneKm, doneMin), `${past.length} ${t.pastWeeks}`);
+
+  drawChart(weeks, today, t);
+
+  // legend
+  const lg = $("legend"); lg.replaceChildren();
+  PHASES.filter(p => weeks.some(w => w.phase === p)).forEach(p => { const s = el("span"); const sw = el("i", { class: "sw" }); sw.style.background = phaseColor(p); s.append(sw, t.phase[p]); lg.append(s); });
+  const a = el("span"); a.append(el("i", { class: "sw dot" }), t.actual); lg.append(a);
+
+  // table
+  $("hChart").textContent = t.chart; $("hWeeks").textContent = t.weeks; $("hLog").textContent = t.log;
+  const th = $("thead"); th.replaceChildren(...t.cols.map((c, i) => el("th", i === 0 || (i >= 3 && i <= 5) ? { style: "text-align:right" } : {}, c)));
+  const tb = $("tbody"); tb.replaceChildren();
+  weeks.forEach((w, i) => {
+    const tr = el("tr", w.week_start === today ? { class: "now" } : {});
+    const ph = el("td"); const pill = el("span", { class: "pill" }); const sw = el("i", { class: "sw" }); sw.style.background = phaseColor(w.phase);
+    pill.append(sw, t.phase[w.phase] || w.phase_label || w.phase); ph.append(pill);
+    if (t.role[w.role]) ph.append(el("div", { class: "role" }, t.role[w.role]));
+    const act = el("td", { class: "n" });
+    if (w.actual_km != null) {
+      const ratio = w.km ? w.actual_km / w.km : 1;
+      act.append(el("span", { class: `delta ${ratio >= 0.85 && ratio <= 1.15 ? "ok" : "off"}` }, vol(w.actual_km, w.actual_minutes || 0)));
+    } else act.textContent = "–";
+    const key = el("td", {}, w.key || "");
+    if (w.note) key.append(el("div", { class: "role" }, w.note));
+    tr.append(el("td", { class: "n" }, String(w.n || i + 1)), el("td", {}, fmtDate(w.week_start)), ph,
+      el("td", { class: "n" }, vol(w.km, w.minutes)), act, el("td", { class: "n" }, `${w.long_km} km`), key);
+    tb.append(tr);
+  });
+
+  // change log
+  const changes = state.changes.slice().sort((a, b) => a.date < b.date ? 1 : -1);
+  $("logSection").hidden = !changes.length;
+  $("log").replaceChildren(...changes.map(c => { const li = el("li"); li.append(el("span", { class: "muted num" }, fmtDate(c.date, { day: "numeric", month: "numeric", year: "numeric" })), el("span", {}, c.text)); return li; }));
+  $("footer").textContent = m.updated ? `${t.updated} ${fmtDate(m.updated, { day: "numeric", month: "numeric", year: "numeric" })}` : "";
+}
+
+function drawChart(weeks, today, t) {
+  const svg = $("chart"); svg.replaceChildren();
+  const W = 1000, H = 300, padL = 44, padR = 12, padT = 28, padB = 52;
+  const val = w => useTime() ? (w.minutes || 0) / 60 : w.km;
+  const act = w => w.actual_km == null ? null : (useTime() ? (w.actual_minutes || 0) / 60 : w.actual_km);
+  const max = Math.max(...weeks.map(w => Math.max(val(w), act(w) || 0))) * 1.1 || 1;
+  const step = Math.pow(10, Math.floor(Math.log10(max))) * (max / Math.pow(10, Math.floor(Math.log10(max))) > 5 ? 2 : 1);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const bw = (W - padL - padR) / weeks.length, y = v => padT + (H - padT - padB) * (1 - v / max);
+  for (let v = 0; v <= max; v += step) {
+    svg.append(svgEl("line", { x1: padL, x2: W - padR, y1: y(v), y2: y(v), stroke: "var(--line)", "stroke-width": 1 }));
+    svg.append(svgEl("text", { x: padL - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 12, fill: "var(--muted)", "font-family": "var(--body)" }, String(Math.round(v))));
+  }
+  svg.append(svgEl("text", { x: padL - 8, y: 14, "text-anchor": "end", "font-size": 11, fill: "var(--muted)" }, useTime() ? "h" : "km"));
+  const actualPts = [];
+  weeks.forEach((w, i) => {
+    const x = padL + i * bw, light = ["deload", "busy", "recovery"].includes(w.role);
+    const r = svgEl("rect", { x: x + bw * 0.15, y: y(val(w)), width: bw * 0.7, height: Math.max(0, y(0) - y(val(w))), rx: 2,
+      fill: phaseColor(w.phase), opacity: light ? 0.55 : 1 });
+    r.append(svgEl("title", {}, `${fmtDate(w.week_start)} · ${t.planned} ${vol(w.km, w.minutes)}${act(w) != null ? " · " + t.actual + " " + vol(w.actual_km, w.actual_minutes || 0) : ""} · ${w.key}`));
+    svg.append(r);
+    if (act(w) != null) actualPts.push([x + bw / 2, y(act(w))]);
+    if (w.week_start === today) {
+      svg.append(svgEl("rect", { x: x + 1, y: padT - 6, width: bw - 2, height: y(0) - padT + 6, fill: "none", stroke: "var(--accent)", "stroke-width": 2, rx: 3 }));
+    }
+    if (w.role === "race" || w.role === "race-B") {
+      svg.append(svgEl("text", { x: x + bw / 2, y: y(val(w)) - 8, "text-anchor": "middle", "font-size": 13, "font-weight": 700, fill: "var(--race)", "font-family": "var(--display)" }, w.role === "race" ? "A" : "B"));
+    }
+    const first = i === 0 || new Date(w.week_start).getMonth() !== new Date(weeks[i - 1].week_start).getMonth();
+    if (first) svg.append(svgEl("text", { x: x + 2, y: H - padB + 18, "font-size": 12, fill: "var(--muted)" }, fmtDate(w.week_start, { month: "short" })));
+    if (i === 0 || weeks[i - 1].phase !== w.phase) {
+      let j = i; while (j < weeks.length && weeks[j].phase === w.phase) j++;
+      svg.append(svgEl("rect", { x: x + 1, y: H - padB + 28, width: (j - i) * bw - 2, height: 6, rx: 3, fill: phaseColor(w.phase) }));
+      if ((j - i) * bw > 60) svg.append(svgEl("text", { x: x + 2, y: H - padB + 48, "font-size": 12, fill: "var(--fg)" }, t.phase[w.phase] || w.phase));
+    }
+  });
+  svg.append(svgEl("line", { x1: padL, x2: W - padR, y1: y(0), y2: y(0), stroke: "var(--muted)", "stroke-width": 1 }));
+  if (actualPts.length > 1) svg.append(svgEl("polyline", { points: actualPts.map(p => p.join(",")).join(" "), fill: "none", stroke: "var(--fg)", "stroke-width": 2 }));
+  actualPts.forEach(([cx, cy]) => svg.append(svgEl("circle", { cx, cy, r: 4, fill: "var(--fg)", stroke: "var(--surface)", "stroke-width": 1.5 })));
+}
+
+async function start() {
+  showEmpty("loading", "emptyX");
+  let settled = false;
+  const timer = setTimeout(() => { if (!settled) showEmpty("failT", "failX"); }, 10000);
+  const db = await claude.use("db");
+  if (!db) { clearTimeout(timer); showEmpty("failT", "failX"); return; }
+  const done = () => { if (!settled) { settled = true; clearTimeout(timer); } };
+  const fail = () => { done(); if (!state.weeks) showEmpty("failT", "failX"); };
+  db.doc("plan/meta").onSnapshot(s => { state.meta = s.data() || {}; done(); render(); }, fail);
+  db.collection("weeks").onSnapshot(s => { state.weeks = s.docs.map(d => d.data()); done(); render(); }, fail);
+  db.collection("changes").onSnapshot(s => { state.changes = s.docs.map(d => d.data()); render(); }, () => {});
+}
+start();
+</script>

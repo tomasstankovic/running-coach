@@ -1,6 +1,6 @@
 ---
 name: running-coach
-description: Personal running coach that onboards a runner (goals, availability, history, current-state assessment, saved profile), then plans and adapts their training — next week's workouts, a full block toward a race (base → build → peak → taper), weekly reviews (planned vs. actual), daily readiness check-ins from HRV/sleep, strength sessions for runners, and race-day pacing and fuelling. Works from TrainingPeaks (reads zones, fitness and metrics; writes structured workouts and strength sessions after confirmation), from Strava, or from what the runner tells it; computes paces, zones and race predictions with scripts and checks load progression before presenting a plan. Use it whenever the conversation is about running training — "plan my next week", "half marathon plan for April", "how did my week go", "should I run today", "I'm sick, adjust the plan", "I'm in the mountains this week", "add strength training", "race pacing for Sunday", "naplánuj mi týždeň", "tréningový plán na polmaratón", intervals, tempo, long runs, CTL/TSB, HRV, pace zones — even if the user doesn't name the skill.
+description: Personal running coach that onboards a runner (goals, availability, history, current-state assessment, saved profile), then plans and adapts their training — next week's workouts, a full block or season toward A/B/C races (base → build → peak → taper) kept on a plan page and re-planned when illness or work gets in the way, weekly reviews (planned vs. actual), daily readiness check-ins from HRV/sleep, strength sessions for runners, and race-day pacing and fuelling. Works from TrainingPeaks (reads zones, fitness and metrics; writes structured workouts and strength sessions after confirmation), from Strava, or from what the runner tells it; computes paces, zones and race predictions with scripts and checks load progression before presenting a plan. Use it whenever the conversation is about running training — "plan my next week", "half marathon plan for April", "plan my season up to the marathon", "show me my plan", "how did my week go", "should I run today", "I'm sick, adjust the plan", "I'm in the mountains this week", "add strength training", "race pacing for Sunday", "naplánuj mi týždeň", "tréningový plán na polmaratón", intervals, tempo, long runs, CTL/TSB, HRV, pace zones — even if the user doesn't name the skill.
 ---
 
 # Running coach
@@ -22,13 +22,16 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 | **Onboarding** | first conversation, no profile found, "let's start", new goal: studies 12–24 months of history, not just recent weeks | `references/onboarding.md` |
 | **Week** | "plan next week" | this file, `methodology.md`, `workouts.md` |
 | **Block** | "half marathon plan for April" | + `methodology.md` §5 (block length, goal realism, overview format) |
-| **Review** | "how did my week go?" | this file |
+| **Season** | "plan my season up to the marathon", "show me the plan", "I have a work deadline for two weeks" | `references/season.md` |
+| **Review** | "how did my week go?" | this file; with a season plan also `season.md` §5–6 |
 | **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
 | **Check-in** | "should I run today?", "slept badly" | `references/checkin-and-race.md` |
 | **Race** | "race plan / pacing / what to eat" | `references/checkin-and-race.md` |
 | **Strength** | "add strength", or the profile says they want it; discuss whether and what setting first | `references/strength.md` |
 
 Review usually flows into Week. A first conversation goes through Onboarding before any plan.
+When a season plan exists (its page URL or plan file is in the profile), every week is planned
+from its row, and changes go through `season.md` §5.
 
 ## Be a coach, not a vending machine
 
@@ -192,8 +195,10 @@ that calendar.
 python scripts/export_ics.py week.json --out plan-2026-11-03.ics --time 07:00
 ```
 
-For a **Block**, save only the first 1–2 weeks. Later weeks are planned from what actually
-happens. With TP, offer to add the goal race with `tp_create_event` if it's missing.
+For a **Block** or **Season**, save only the first 1–2 weeks of sessions. Later weeks are
+planned from what actually happens. The rough plan itself is stored and shown as in
+`season.md` §4. With TP, offer to add the races with `tp_create_event` (priority A/B/C) if
+they're missing.
 
 ## Review mode
 
@@ -204,7 +209,8 @@ not pace. For rep-by-rep data use `tp_analyze_workout`, which returns a large
 response, so use it only on the 1–2 sessions that matter. Then look at the week: load planned vs.
 actual, fitness trend, readiness trend, missed or extra sessions.
 
-Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
+With a season plan, also fill in the week's actuals, compare it with its row, and apply the
+re-planning rules (`season.md` §5–6). Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
 were above 150 bpm, so slow down, don't lengthen"). Add them to the profile's decision log and
 carry them into next week's descriptions.
 
