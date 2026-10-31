@@ -1,30 +1,44 @@
-# Running Coach for Claude
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-wordmark-dark.svg">
+    <img src="assets/logo-wordmark-light.svg" width="330" alt="Running Coach">
+  </picture>
+</p>
 
-A Claude skill that coaches your running week to week. It gets to know you first (goals,
-availability, history, an honest assessment of where you are), then plans the next week, builds
-a block toward a race, reviews how last week went, tells you each morning whether to train as
-planned, adds strength sessions for runners, and prepares race-day pacing and fuelling.
+<p align="center">
+  <b>Running Coach for Claude</b>: a running coach that knows your history, tells you the truth, and puts the plan on your watch.<br>
+  Weekly plans · race blocks · reviews · morning check-ins · strength · race day<br>
+  TrainingPeaks · Strava · or just a conversation
+</p>
 
-What makes it different from asking Claude for "a training plan":
+---
 
-- **Your data first.** On onboarding it studies 12–24 months of history (seasons, peaks, breaks,
-  races, what worked), not just the last few weeks. Then it reads your recent training, fitness
-  trend and zones before every plan, and honours decisions from earlier weeks.
+> **You:** I want a half marathon under 1:30 in April. I can run once a week.
+>
+> **Coach:** 1:30 means 4:16/km. Your recent 10k (48:30) points to about 1:47, so that's a 16 %
+> jump, and one run a week won't get you there; 1:30 usually takes 5–6 runs and 55–75 km a week.
+> Three honest options: aim for **1:42–1:45** this spring on 4 runs a week, keep 1:30 as a
+> **next-season** goal, or tell me what time you could add. What sounds right?
+
+Most "AI training plans" are a fresh guess every time. This one works like a coach:
+
+- **Gets to know you first.** Goals, the time you really have, which days suit you, injuries,
+  and 12–24 months of your history: seasons, peaks, breaks, races, what worked.
+- **Honest, not agreeable.** If the goal doesn't match your time or current level, it says so
+  with numbers and offers real alternatives. Then you decide together.
 - **Asks, doesn't impose.** Strength training (gym, home or bodyweight) and threshold tests are
   discussed with you: why, what the options are, and what you prefer.
-- **Computed, not guessed.** Paces, heart-rate zones and % of threshold come from a script, so
-  they're the same every week.
+- **Computed, not guessed.** Paces, heart-rate zones, race predictions and splits come from
+  scripts, so they're the same every week.
 - **Checked before you see it.** A load checker flags volume jumps above ~10 %, back-to-back hard
   days, an oversized long run, too much intensity and missing deload weeks.
-- **Lands where you train.** With TrainingPeaks it writes structured workouts to your calendar
-  (after you confirm), so they sync to your watch. Without it, you get an `.ics` file for
-  Google/Apple/Outlook calendar.
-
-- **Remembers you.** Your profile (goals, availability, injuries, decisions from past reviews)
-  is saved as a TrainingPeaks note or a file in your Claude Project, and read at the start of
-  every conversation.
-- **Daily check-in.** Compares today's HRV, resting HR and sleep with your own baseline (green,
+- **Remembers you.** Your profile (goals, weekly template, injuries, decisions from past reviews)
+  is saved as a TrainingPeaks note or a file in your Claude Project.
+- **Morning check-in.** Compares today's HRV, resting HR and sleep with your own baseline (green,
   amber or red) and adjusts today's session.
+- **Lands where you train.** With TrainingPeaks it writes structured workouts and strength sessions
+  to your calendar (after you confirm), so they sync to your watch. Without it, you get an `.ics`
+  file for Google/Apple/Outlook calendar.
 
 It replies in your language (tested in English and Slovak).
 

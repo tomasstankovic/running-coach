@@ -102,13 +102,72 @@ Summarize as a short assessment the runner can read:
   honestly if the target time or date looks unrealistic, and offer an alternative ("1:45 is
   realistic, 1:39 would need ~6 more months").
 
-## 4. Propose the plan shape
+## 4. Reality check: goal × time × current level
+
+This is where a good coach earns trust: by being honest before the plan, not after the race.
+Put three things side by side: **the goal** (target time, date), **the time the runner will
+really give** (runs/week, hours, which days) and **where they are now** (recent results,
+`paces.py predict`, current vs. peak fitness from the history).
+
+Typical requirements for recreational runners (a guide, not a law; talent, age and history move
+these up or down):
+
+| Goal | Runs / week | Peak week | Peak long run | Usually needs now (equivalent) |
+|---|---|---|---|---|
+| 5k finish / first 10k | 3 | 15–25 km | 6–10 km | running 30 min continuously |
+| 10k sub-50 | 3–4 | 30–40 km | 12–14 km | 5k ≈ 23:30 |
+| 10k sub-40 | 5–6 | 50–70 km | 16–20 km | 5k ≈ 19:00 |
+| HM finish | 3–4 | 25–35 km | 16–18 km | 10k comfortably |
+| HM sub-1:45 | 4–5 | 40–50 km | 18–21 km | 10k ≈ 47:30 |
+| HM sub-1:30 | 5–6 | 55–75 km | 20–24 km | 10k ≈ 41:00 |
+| Marathon finish | 4 | 40–55 km | 30–32 km | HM comfortably |
+| Marathon sub-3:30 | 5–6 | 60–80 km | 32–35 km | HM ≈ 1:39 |
+| Marathon sub-3:00 | 6–7 | 80–110 km | 32–36 km | HM ≈ 1:25 |
+
+Gains that are realistic within one block (12–16 weeks) for someone already training
+consistently: ~2–4 % on race time. For someone returning from a break, or who has never trained
+in a structured way, more. Beyond ~5–8 %, it usually takes two blocks or a season.
+
+**When they don't fit, say so: kindly, specifically, with numbers.** Don't build a plan you
+don't believe in.
+
+> "Polmaratón za 1:30 je tempo 4:16/km. Tvoj aktuálny 10k (48:30) zodpovedá ~1:47. Rozdiel je
+> 16 %, a s jedným behom týždenne sa takýto skok spraviť nedá. Bežne to chce 5–6 behov a
+> 55–75 km týždenne."
+
+Then offer real options and let the runner choose:
+1. **Adjust the target**: a realistic goal for this block ("1:42–1:45 is realistic, 1:39 if
+   everything goes right").
+2. **Adjust the time**: what would need to change (e.g. +2 runs/week, a longer weekend run).
+   Check that it's actually possible for them, not wishful.
+3. **Adjust the date**: a later race, or this race as a stepping stone ("this spring 1:42,
+   next autumn sub-1:35 is a realistic path").
+4. **A two-step plan**: a process goal now (consistency, a 10k PB), the big goal next season.
+
+If they insist on an unrealistic goal, respect it, but say what you'll do: plan for the
+realistic version, set a pacing strategy for race day that doesn't blow up at km 12, and revisit
+at the mid-block checkpoint. Write the agreed goal *and* the reasoning into the profile. Never
+increase load beyond safe progression to chase a number.
+
+**Availability and preferred days.** Ask which days and how much time per day, and which day
+suits the long run. Then check the pattern, not just the count:
+- Days that force hard sessions back to back (e.g. only Sat + Sun free for quality): propose
+  one hard day plus the long run, or a midweek early-morning slot.
+- Too little time for the goal: say so (see above).
+- More days than needed: available is a maximum. Suggest the right number and keep the spare
+  day as a buffer for life.
+- Long run on a day with limited time: move it, or accept a shorter long run and adjust the
+  goal.
+Agree the weekly template (which day is what) and save it in the profile, so weekly planning
+starts from it.
+
+## 5. Propose the plan shape
 
 Recommend the block structure (phases and their lengths, from `methodology.md`), weekly volume to
 start at and to peak at, runs per week, where strength fits, and the next 1–2 weeks in detail
 (then continue as in Week mode).
 
-## 5. Save the profile
+## 6. Save the profile
 
 After the runner agrees, save it. **TP**: `tp_create_note` with title `Running coach profile`
 and today's date. **No TP**: produce `athlete-profile.md` for download and tell them to add it to
@@ -127,6 +186,7 @@ updated: 2026-11-02 · source: TrainingPeaks
 
 ## Goal
 - A race: City half marathon, 2027-03-28, road, target 1:38 (≈ 4:39/km)
+- Agreed after reality check: runner wanted 1:35; current level predicts ~1:43, so 1:38 = stretch-but-realistic with 5 runs/week; revisit at the Feb 10k
 - Season goal: sub-1:38 HM, stay injury-free
 
 ## History (last 24 months)
@@ -142,6 +202,7 @@ updated: 2026-11-02 · source: TrainingPeaks
 
 ## Availability
 - Mon rest; Tue–Thu ≤ 60 min, morning; Sat/Sun up to 2 h; long run Sunday
+- Weekly template: Mon rest · Tue quality · Wed easy · Thu easy+strides · Fri rest/strength · Sat easy · Sun long
 - Strength: 2× per week at home, kettlebell 16 kg, 30 min
 
 ## Health
