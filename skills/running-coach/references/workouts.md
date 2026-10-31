@@ -19,7 +19,28 @@ them in the runner's language. Example (Slovak):
 Include: paces (min/km) and HR cap/target, recovery type, the goal of the session, and a bail-out
 rule for quality sessions ("ak sa cítiš rozbitý…, urob z toho ľahkých 8 km").
 
-## Structure format (tp_create_workout `structure`)
+## Structure format
+
+Write the session as a spec for `scripts/tp_structure.py` in the runner's unit. The script returns
+TP's native `structured_workout` (kilometre or time steps) plus the time-based `structure` below
+for `tp_validate_structure`. Example spec, km-based (the 2-minute jog is written as ~300 m):
+
+```json
+{"threshold_pace": "4:10", "unit": "km", "metric": "pace", "steps": [
+  {"name": "Rozklus 2,5 km", "km": 2.5, "pct": [68, 76], "class": "warmUp", "pace": "6:00"},
+  {"repeat": 5, "steps": [
+    {"name": "1 km @ 4:00–4:05", "km": 1, "pct": [102, 104]},
+    {"name": "Klus 2 min", "seconds": 120, "pct": [55, 66], "class": "rest", "pace": "6:40"}]},
+  {"name": "Výklus 1,5 km", "km": 1.5, "pct": [62, 70], "class": "coolDown", "pace": "6:10"}]}
+```
+
+Give easy steps a `pace` from the runner's real easy runs on their terrain, because the % midpoint
+is a flat-road estimate. With `"metric": "hr"` (hilly ground, no flat option) the targets are
+% of LTHR (easy ≈ 75–83 %, threshold reps ≈ 97–100 %), and every step needs a `pace` estimate
+for the conversion.
+
+The time-based `structure` the script produces (and that `tp_validate_structure` reads) looks
+like this:
 
 ```json
 {"primaryIntensityMetric": "percentOfThresholdPace", "steps": [
@@ -32,8 +53,9 @@ rule for quality sessions ("ak sa cítiš rozbitý…, urob z toho ľahkých 8 k
 ]}
 ```
 
-Distance reps are written as their expected duration at the target pace (1 km at 4:12 ≈ 252 s).
-Name the step with the distance ("1 km @ 4:10–4:15") so it's clear on the watch.
+In it, distance reps are written as their expected duration at the target pace (1 km at
+4:12 ≈ 252 s). For a time-based runner that's what goes to TP. Either way, name the step with
+the distance or time and the pace ("1 km @ 4:10–4:15"), so the watch screen says what to do.
 
 ---
 

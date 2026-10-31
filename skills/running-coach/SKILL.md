@@ -1,6 +1,6 @@
 ---
 name: running-coach
-description: Personal running coach that onboards a runner (goals, availability, history, current-state assessment, saved profile), then plans and adapts their training — next week's workouts, a full block toward a race (base → build → peak → taper), weekly reviews (planned vs. actual), daily readiness check-ins from HRV/sleep, strength sessions for runners, and race-day pacing and fuelling. Works from TrainingPeaks (reads zones, fitness and metrics; writes structured workouts and strength sessions after confirmation), from Strava, or from what the runner tells it; computes paces, zones and race predictions with scripts and checks load progression before presenting a plan. Use it whenever the conversation is about running training — "plan my next week", "half marathon plan for April", "how did my week go", "should I run today", "I'm sick, adjust the plan", "add strength training", "race pacing for Sunday", "naplánuj mi týždeň", "tréningový plán na polmaratón", intervals, tempo, long runs, CTL/TSB, HRV, pace zones — even if the user doesn't name the skill.
+description: Personal running coach that onboards a runner (goals, availability, history, current-state assessment, saved profile), then plans and adapts their training — next week's workouts, a full block toward a race (base → build → peak → taper), weekly reviews (planned vs. actual), daily readiness check-ins from HRV/sleep, strength sessions for runners, and race-day pacing and fuelling. Works from TrainingPeaks (reads zones, fitness and metrics; writes structured workouts and strength sessions after confirmation), from Strava, or from what the runner tells it; computes paces, zones and race predictions with scripts and checks load progression before presenting a plan. Use it whenever the conversation is about running training — "plan my next week", "half marathon plan for April", "how did my week go", "should I run today", "I'm sick, adjust the plan", "I'm in the mountains this week", "add strength training", "race pacing for Sunday", "naplánuj mi týždeň", "tréningový plán na polmaratón", intervals, tempo, long runs, CTL/TSB, HRV, pace zones — even if the user doesn't name the skill.
 ---
 
 # Running coach
@@ -23,7 +23,7 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 | **Week** | "plan next week" | this file, `methodology.md`, `workouts.md` |
 | **Block** | "half marathon plan for April" | + `methodology.md` §5 (block length, goal realism, overview format) |
 | **Review** | "how did my week go?" | this file |
-| **Adapt** | "I'm sick / missed Wednesday" | `methodology.md` §8 |
+| **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
 | **Check-in** | "should I run today?", "slept badly" | `references/checkin-and-race.md` |
 | **Race** | "race plan / pacing / what to eat" | `references/checkin-and-race.md` |
 | **Strength** | "add strength", or the profile says they want it; discuss whether and what setting first | `references/strength.md` |
@@ -116,6 +116,10 @@ Build the week from `references/workouts.md`. The principles that matter most:
 - Never two hard days in a row. Keep the long run away from hard days when possible.
 - Progress one variable at a time: add a rep or some minutes before adding pace.
 - Prescribe easy running by HR cap, with the runner's own easy pace range as a guide.
+- Write sessions in the runner's unit from the profile (km or time), with the other in brackets:
+  "10 km (~60 min)". Fit intensity to their terrain and to where quality can happen: pace on
+  the flat, HR or effort on hills (`methodology.md` §9). If the profile has no `Units:` line yet,
+  ask once.
 - Available days are a maximum, not a target.
 - Respect earlier decisions, unless they rested on mislabelled zones. Then re-anchor and say so.
 - Add strength sessions only if the runner chose them (the profile says so, or ask once; see
@@ -129,8 +133,9 @@ Write the plan and history to a JSON file and run:
 python scripts/check_week.py week.json
 ```
 
-History can be raw `tp_get_workouts` or Strava `list_activities` output. Planned-but-skipped TP
-workouts are ignored automatically. Without per-run data, pass weekly totals as `history_weeks`;
+History can be raw `tp_get_workouts` or Strava `list_activities` output. Give every plan item
+both `minutes` and `km`, whatever the runner's unit, because the volume check compares time.
+Planned-but-skipped TP workouts are ignored automatically. Without per-run data, pass weekly totals as `history_weeks`;
 the docstring has the format. Give strength sessions `"type": "strength"`.
 
 Fix every FAIL. For each WARN, either fix it or say in the plan why it's intended (e.g. "volume
@@ -169,9 +174,14 @@ write the week to the calendar; without it, the calendar file.
 that calendar.
 1. Check the target days with `tp_get_workouts` (and `tp_get_strength_workouts`). If something is
    already planned there, ask whether to replace or keep it. Never touch completed workouts.
-2. Runs: build the `structure` in `percentOfThresholdPace`, run `tp_validate_structure`, then
-   `tp_create_workout` (sport `Run`, title, description, `distance_km`, `tss_planned` from the
-   validation). Easy and long runs get a one-step structure too, so the watch shows a target.
+2. Runs: write the session as a spec and run `scripts/tp_structure.py` with the runner's unit
+   (`km` or `time`) and intensity metric (`pace`, or `hr` for hilly runs without a flat option).
+   It returns a native `structured_workout`, a time-equivalent `structure`, `duration_minutes`
+   and `distance_km`. Run `tp_validate_structure` on the `structure` to get the TSS, then
+   `tp_create_workout` with sport `Run`, title, description, `structured_workout`,
+   `duration_minutes`, `distance_km` and `tss_planned`. Kilometre steps need the native payload;
+   the simplified `structure` is time-only. Easy and long runs get a one-step structure too, so
+   the watch shows a target. See `trainingpeaks.md`.
 3. Strength: `tp_create_strength_workout`, as in `strength.md`.
 4. Report what was created (date, title, planned TSS) and anything that failed.
 
@@ -189,7 +199,8 @@ happens. With TP, offer to add the goal race with `tp_create_event` if it's miss
 
 For each key session compare planned vs. actual: duration, distance, rep pacing (even? fading?
 faster than prescribed?), HR at the end of reps relative to LTHR, HR on easy runs (above the
-cap?), RPE and comments. For rep-by-rep data use `tp_analyze_workout`, which returns a large
+cap?), RPE and comments. On hilly runs (`metrics.elevation_gain` ≥ ~10 m per km), judge by HR,
+not pace. For rep-by-rep data use `tp_analyze_workout`, which returns a large
 response, so use it only on the 1–2 sessions that matter. Then look at the week: load planned vs.
 actual, fitness trend, readiness trend, missed or extra sessions.
 
@@ -200,7 +211,9 @@ carry them into next week's descriptions.
 ## Adapt mode
 
 Re-plan only the remaining days. A missed quality session is dropped, not crammed in, and never
-stacked next to another hard day. After illness, follow `methodology.md` §8. If something hurts
+stacked next to another hard day. A temporary change of terrain ("this week I'm in the
+mountains") moves the rest of the week to time and HR, with pace intervals swapped for uphill
+reps or fartlek by effort (`methodology.md` §9). After illness, follow `methodology.md` §8. If something hurts
 in a way that changes the gait, or the pain is sharp or worsening, plan rest and suggest seeing a
 physio or doctor. Don't program around it.
 

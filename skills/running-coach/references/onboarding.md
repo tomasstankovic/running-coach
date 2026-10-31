@@ -27,8 +27,13 @@ already answers, and ask the runner to confirm or correct it rather than asking 
    biggest weekly volume they've handled, and other sports.
 3. **Availability**: runs per week, which days, the longest time available on weekdays and on
    weekends, preferred long-run day, and morning or evening.
-4. **Terrain & tools**: road, trail, track or treadmill; hills nearby; watch brand; whether they
-   train by pace, HR or feel.
+4. **Units, terrain & tools** (`methodology.md` §9):
+   - Kilometres or time: how they want sessions written ("10 km easy" vs. "60 min easy").
+   - Where they usually run (road, gravel, forest, trail; flat or hilly). Pre-fill from the
+     terrain read in §3 and ask them to confirm.
+   - Where they can do faster sessions: a flat stretch, a track or a treadmill? This decides
+     whether quality is prescribed by pace or by HR/effort.
+   - What they steer by (pace, HR, feel, power) and their watch (does it show running power?).
 5. **Health**: current pains or niggles, injury history (what, when, recurring?), anything a doctor
    said to watch.
 6. **Strength**: whether they already do any strength work and whether they'd like it in the
@@ -74,6 +79,17 @@ how you prepared for them, longer breaks or injuries, and what worked and what d
 
 **Recent detail:** the last 8–12 weeks as in Week mode (`tp_get_workouts` in ≤ 90-day windows,
 `tp_get_metrics` for HRV/RHR baselines).
+
+**Terrain:** `tp_get_workouts` has no elevation, so open 8–12 recent runs with `tp_get_workout`
+(a mix: easy, long, quality, a race) and take `metrics.elevation_gain` and
+`metrics.distance_actual_km`. With Strava, `list_activities` already has `total_elevation_gain`.
+Tag each run with a `kind` and run:
+```bash
+python scripts/terrain.py runs.json
+```
+It prints gain per km per run and the median by kind. The typical finding is "easy runs rolling
+(~15–20 m/km), quality and races flat". That's what the questionnaire's terrain answers get
+pre-filled with. Also note whether the runs carry `avg_power` (running power is available).
 
 **Discuss the history with the runner** before concluding. The data shows *what* happened, and
 only they know *why*: "In May your load dropped to almost zero for four weeks. Injury, illness, or
@@ -198,18 +214,25 @@ updated: 2026-11-02 · source: TrainingPeaks
 - Threshold pace 4:20/km (race-derived 2026-10-11), LTHR 170, max HR 189
 - Typical week: 5 runs, 42–48 km, 4.5 h; longest run 15 km / 90 min
 - CTL 31 (6 weeks ago 33); HRV baseline ~58, resting HR ~52
-- Assessment: solid base, little threshold work so far, easy runs on hilly trails
+- Assessment: solid base, little threshold work so far
 
 ## Availability
 - Mon rest; Tue–Thu ≤ 60 min, morning; Sat/Sun up to 2 h; long run Sunday
 - Weekly template: Mon rest · Tue quality · Wed easy · Thu easy+strides · Fri rest/strength · Sat easy · Sun long
 - Strength: 2× per week at home, kettlebell 16 kg, 30 min
 
+## Units and terrain
+- Units: km for everything (time in brackets); hilly runs: km stays, HR cap rules
+- Terrain: easy/long runs rolling, gravel + forest (median 16 m/km); quality on a flat road loop (3 m/km)
+- Quality: by pace on the flat loop; on hills by HR
+- Intensity guide: easy by HR cap ≤ 145; quality by pace, HR as a check; running power available (Garmin), not used yet
+- Goal race: flat road
+
 ## Health
 - Left Achilles tightness 2025 (resolved); watch calf load
 
 ## Preferences
-- Likes intervals on flat road, dislikes treadmill; descriptions in Slovak; trains by HR on trails
+- Likes intervals on flat road, dislikes treadmill; descriptions in Slovak
 
 ## Plan shape
 - Base to 2026-12-06 → Build to 2027-02-14 → Specific to 2027-03-14 → Taper

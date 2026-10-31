@@ -28,6 +28,9 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   with numbers and offers real alternatives. Then you decide together.
 - **Asks, doesn't impose.** Strength training (gym, home or bodyweight) and threshold tests are
   discussed with you: why, what the options are, and what you prefer.
+- **Your units, your ground.** Kilometres or minutes, as you prefer. It reads how hilly your runs
+  are, asks where you can run fast, and steers by pace on the flat and by heart rate on hills.
+  "This week I'm in the mountains" reshapes the rest of the week.
 - **Computed, not guessed.** Paces, heart-rate zones, race predictions and splits come from
   scripts, so they're the same every week.
 - **Checked before you see it.** A load checker flags volume jumps above ~10 %, back-to-back hard
@@ -89,6 +92,7 @@ connect.
 - "Slept 5 hours, intervals are planned today. Should I go?"
 - "Add two strength sessions a week, I have a kettlebell at home."
 - "Race plan for Sunday's half: pacing and what to eat."
+- "I'm in the mountains until Sunday. Adjust the rest of the week."
 
 ## What's inside
 
@@ -108,6 +112,8 @@ skills/running-coach/
     ├── check_week.py           load-progression checks (TP, Strava, or weekly totals)
     ├── readiness.py            HRV / resting HR / sleep vs. personal baseline
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
+    ├── terrain.py              elevation gain per km → flat / rolling / hilly / mountain
+    ├── tp_structure.py         session → TrainingPeaks structure in km or time
     └── export_ics.py           plan → calendar file
 ```
 
@@ -128,7 +134,8 @@ your stride, chest pain, dizziness or unusual heart-rate responses: stop and see
 Skill pre Claude, ktorý ti plánuje beh týždeň po týždni. Naplánuje týždeň, pripraví blok k
 závodu, vyhodnotí uplynulý týždeň a upraví plán, keď ochorieš alebo vynecháš tréning. Na
 začiatku si ťa „vyspovedá“ (ciele, čas, história, posúdenie stavu) a uloží si tvoj profil.
-Vie ranný check-in podľa HRV a spánku, silové tréningy pre bežcov aj plán na závod. Tempá a
+Vie ranný check-in podľa HRV a spánku, silové tréningy pre bežcov aj plán na závod. Tréningy
+píše v kilometroch alebo v minútach, ako chceš, a prispôsobí ich terénu (rovina, kopce, hory). Tempá a
 zóny počíta skriptom a každý týždeň pred zobrazením skontroluje (nárast objemu, tvrdé dni po
 sebe, dlhý beh, odľahčovací týždeň). S TrainingPeaks zapíše štruktúrované tréningy do kalendára
 (až po tvojom súhlase). So Stravou alebo bez dát dostaneš plán ako text a `.ics` súbor do

@@ -13,6 +13,7 @@ leaving them flat), adapt and say why.
 6. Taper and race week
 7. Reading fitness data (CTL / ATL / TSB, HR, HRV)
 8. Missed sessions, illness, return after a break
+9. Units and terrain
 
 ---
 
@@ -183,3 +184,46 @@ holds, but at the corrected intensity.
   strides in week 2, quality in week 3.
 - Pain that changes the gait, sharp or worsening pain: rest and get it checked. Don't plan
   around it.
+
+## 9. Units and terrain
+
+**Units are the runner's choice.** Some think in kilometres ("10 km easy"), some in time ("60 min
+easy"). Ask in onboarding and keep it in the profile (`Units:`). Write every session in that unit,
+with the other one in brackets as a guide: "10 km (~60 min)" or "60 min (~10 km)". The watch
+shows the primary one (`scripts/tp_structure.py` builds both kinds for TP).
+
+Time is the more honest measure on hills and trails, because the effort of a kilometre depends on
+the ground. So suggest it there, but don't impose it. A runner who prefers km on a hilly easy run
+just gets the note that the km will be slower and the HR cap rules. `check_week.py` compares
+weekly *time*, so give plan items both `minutes` and `km` whatever the unit: estimate the other one
+from the runner's real pace on that terrain.
+
+**Terrain** is measured, not guessed. Gain per km (`scripts/terrain.py`) from 8–15 recent runs:
+
+| Class | Gain | What it changes |
+|---|---|---|
+| flat | < 10 m/km | nothing; pace targets work |
+| rolling | 10–25 m/km | easy and long runs by HR cap, pace as a loose guide; quality on a flat stretch |
+| hilly | 25–50 m/km | easy/long by HR (or time); quality on a flat stretch, track or treadmill, or as uphill reps by HR/effort |
+| mountain | > 50 m/km | everything by time and HR/effort; volume in hours and vertical metres |
+
+What matters most is **where quality happens**. Ask: "Do you have a flat stretch, a track or a
+treadmill for faster sessions?" With one, quality stays pace-based there even if every easy run is
+hilly. Without one, prescribe threshold work by HR (finish reps at ~LTHR − 3 to LTHR, structure in
+`percentOfThresholdHr`) and VO2 work as uphill reps by effort. Running power (Stryd, newer Garmin
+watches) doesn't depend on the gradient; if the runner has it and trusts it, it's the best target
+on hills (`percentOfFtp` against their running FTP).
+
+**Terrain vs. the goal race.** Hilly home, flat race: keep at least one flat pace session a week
+in build and peak, and put race-pace segments on flat ground. Flat home, hilly or trail race: add
+hills (uphill reps, hilly long runs), downhill running and step-downs in strength, and grow weekly
+vertical gradually (+10 % like volume). For trail goals, plan volume in hours plus vertical metres.
+
+**Temporary change** ("this week I'm in the mountains", "running on the beach on holiday"):
+re-plan the rest of the week in time and HR, swap pace intervals for uphill reps or fartlek by
+effort, and say in the review that slow paces were the terrain, not fitness. Note it in the
+decision log; the profile's terrain doesn't change.
+
+**Reviewing hilly runs:** judge easy runs by HR (was it under the cap?), not pace. TP's rTSS
+already accounts for gradient (it uses normalized graded pace), so load numbers stay comparable.
+If a "slow" week was hilly, say so before concluding anything about fitness.

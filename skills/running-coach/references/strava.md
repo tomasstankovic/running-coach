@@ -30,7 +30,10 @@ Tool names can carry a client prefix. Match on the suffix.
 
 ## Units
 
-`list_activities` returns distance in metres and times in seconds. `check_week.py` accepts these
+`list_activities` returns distance in metres, times in seconds and `total_elevation_gain` in
+metres. Pass the activities to `scripts/terrain.py` to classify the runner's terrain
+(`methodology.md` §9). The profile's `Units:` line still decides whether the `.ics` titles say
+"10 km" or "60 min". `check_week.py` accepts these
 fields directly (`distance`, `moving_time`, `start_date_local`, `sport_type`). Non-running
 activities (rides, swims, walks) are excluded from running volume, but mention significant
 cross-training when judging fatigue.

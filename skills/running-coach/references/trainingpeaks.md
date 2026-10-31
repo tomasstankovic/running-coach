@@ -15,7 +15,7 @@ tell the athlete to run `tp-mcp auth` again. The session cookie expires every fe
 | `tp_get_athlete_settings` | threshold pace, LTHR, max HR, zones | `speedZones[0].threshold` is m/s → pace = 1000 / speed |
 | `tp_get_fitness` | CTL / ATL / TSB per day | `days: 90` |
 | `tp_get_workouts` | list of planned + completed workouts | max 90 days per call; `type: all`; durations are in **hours** |
-| `tp_get_workout` | details: structure, avg HR, RPE, feeling, comments | use for key sessions |
+| `tp_get_workout` | details: structure, avg HR, RPE, feeling, comments; `metrics.elevation_gain`, `metrics.avg_power` | use for key sessions; the only source of elevation (the list has none) |
 | `tp_analyze_workout` | deeper analysis of one workout (laps, zones) | when the review needs rep-by-rep data |
 | `tp_get_weekly_summary` | weekly totals | quick history |
 | `tp_get_focus_event`, `tp_get_next_event`, `tp_get_events` | goal race and other races | |
@@ -38,20 +38,36 @@ training matters for the plan.
 
 ### tp_create_workout for a run
 
+`tp_create_workout` takes either a simplified `structure` (time steps only) or TP's native
+`structured_workout` (time *or* distance steps: `"unit": "meter"` with
+`"primaryLengthMetric": "distance"`). `scripts/tp_structure.py` builds the native one from a spec,
+in km or time, plus a time-equivalent `structure` for validation:
+
+```bash
+python scripts/tp_structure.py spec.json --out workout.json
+```
+
 ```json
 {
   "date": "2026-11-04",
   "sport": "Run",
   "title": "Cruise intervaly 6× 1 km @ prah",
   "description": "…",
+  "structured_workout": { …from workout.json… },
+  "duration_minutes": 55,
   "distance_km": 11,
-  "tss_planned": 70,
-  "structure": {"primaryIntensityMetric": "percentOfThresholdPace", "steps": [ … ]}
+  "tss_planned": 70
 }
 ```
 
-- Intensity numbers are **% of threshold speed** (faster = higher). Use `scripts/paces.py convert`.
-- `duration_minutes` is computed from the structure. Pass it only for workouts without a structure.
+- `tp_validate_structure` reads only the simplified format, so validate `workout.json`'s
+  `structure` and take `tss_planned` from it.
+- With `structured_workout`, TP doesn't compute the duration, so always pass `duration_minutes`
+  and `distance_km` from the script.
+- Intensity metric: `percentOfThresholdPace` (% of threshold **speed**: faster = higher; use
+  `scripts/paces.py convert`), `percentOfThresholdHr` (% LTHR, for hilly ground) or
+  `percentOfFtp` (running power vs. running FTP). All three validate.
+- A time-based runner can still pass the simplified `structure` directly, as before.
 - Take `tss_planned` from `tp_validate_structure`. Its estimate for long easy runs may be higher than
   the athlete's real rTSS. That's fine; mention it if it's far off from similar past runs.
 - One workout per call. Create the week's workouts in parallel calls only after checking the
