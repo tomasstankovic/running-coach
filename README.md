@@ -51,9 +51,15 @@ It replies in your language (tested in English and Slovak).
 
 ## Install
 
-**claude.ai (web, desktop, mobile):** download `running-coach.zip` from the
-[latest release](https://github.com/tomasstankovic/running-coach/releases/latest), then go to *Settings → Capabilities*, enable *Code
-execution*, and upload the zip under *Skills*.
+**Claude chat and Cowork (web, desktop):** open *Customize → Plugins*, click *Add → Add
+marketplace → Add from a repository*, enter `tomasstankovic/running-coach`, then add the
+*Running Coach* plugin. New versions come from this repository; if one doesn't show up, use
+*Update* on the marketplace.
+
+**claude.ai without plugins:** download `running-coach.zip` from the
+[latest release](https://github.com/tomasstankovic/running-coach/releases/latest), enable *Code
+execution* in *Settings → Capabilities*, and upload the zip under *Skills*. Upload the new zip
+again for each new version.
 
 **Claude Code:** at the prompt of a terminal session:
 
@@ -153,8 +159,10 @@ sebe, dlhý beh, odľahčovací týždeň). S TrainingPeaks zapíše štruktúro
 (až po tvojom súhlase). So Stravou alebo bez dát dostaneš plán ako text a `.ics` súbor do
 kalendára.
 
-**Inštalácia v claude.ai:** stiahni `running-coach.zip` z releases, zapni *Code execution* v
-*Settings → Capabilities* a zip nahraj v sekcii *Skills*.
+**Inštalácia v Claude chate a Cowork:** *Customize → Plugins → Add → Add marketplace → Add from
+a repository*, zadaj `tomasstankovic/running-coach` a pridaj plugin *Running Coach*. Bez pluginov:
+stiahni `running-coach.zip` z releases, zapni *Code execution* v *Settings → Capabilities* a zip
+nahraj v sekcii *Skills* (pri novej verzii znova).
 
 ## License
 
