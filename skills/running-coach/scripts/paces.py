@@ -11,9 +11,12 @@ Usage:
   paces.py convert --threshold-pace 4:10 4:25 4:00-4:05 95 102-104
   paces.py race --distance 21.0975 --time 1:34:23  # estimate threshold from a race
   paces.py predict --distance 10 --time 48:30      # equivalent times for other distances
+  paces.py predict --distance 10 --time 48:30 --weekly-km 45 [--race2-distance 21.1 --race2-time 1:47:00]
+                   [--training-pace 5:45]          # + marathon models that use training volume
   paces.py splits --distance 21.0975 --goal 1:35:00 --every 5 --negative 1
 """
 import argparse
+import math
 import json
 import re
 import sys
@@ -160,15 +163,54 @@ def fmt_time(secs):
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
 
 
+def vickers_model1(d_m, t_s, miles):
+    """Vickers & Vertosick 2016, model 1: one non-marathon race + typical weekly mileage."""
+    v_riegel = 42195 / (t_s * (42195 / d_m) ** 1.07)
+    v = 0.16018617 + 0.83076202 * v_riegel + 0.06423826 * (miles / 10)
+    return 42195 / v
+
+
+def vickers_model2(d1, t1, d2, t2, miles):
+    """Vickers & Vertosick 2016, model 2: two races (d1 < d2) + weekly mileage."""
+    k21 = math.log(t2 / t1) / math.log(d2 / d1)
+    k_mar = 1.4510756 - 0.23797948 * k21 - 0.01410023 * (miles / 10)
+    return t2 * (42195 / d2) ** k_mar
+
+
+def tanda(weekly_km, training_pace_s):
+    """Tanda 2011: marathon pace from mean weekly km and mean training pace (weeks -9 to -1)."""
+    pm = 17.1 + 140.0 * math.exp(-0.0053 * weekly_km) + 0.55 * training_pace_s
+    return 42.195 * pm
+
+
 def cmd_predict(args):
-    # Riegel: T2 = T1 * (D2 / D1) ^ 1.06. Optimistic for longer distances unless the runner
-    # has the volume for them (marathon especially).
+    # Riegel: T2 = T1 * (D2 / D1) ^ 1.06. Fine up to the half marathon; for the marathon it is
+    # optimistic unless the runner has the volume (Vickers & Vertosick 2016: often 10+ min too fast).
     secs = parse_time(args.time)
     print(f"From {args.distance} km in {fmt_time(secs)} ({fmt_pace(secs / args.distance)}/km):")
     for name, dist in [("5 km", 5.0), ("10 km", 10.0), ("Half marathon", 21.0975), ("Marathon", 42.195)]:
         t = secs * (dist / args.distance) ** 1.06
-        note = "  (assumes marathon-specific training)" if dist > 30 else ""
+        note = "  (Riegel; optimistic without marathon volume)" if dist > 30 else ""
         print(f"  {name:<14} {fmt_time(t):>8}  {fmt_pace(t / dist)}/km{note}")
+    if not (args.weekly_km or args.training_pace):
+        return
+    print("\nMarathon with training volume:")
+    if args.weekly_km:
+        miles = args.weekly_km / 1.609344
+        if args.distance < 42:
+            t = vickers_model1(args.distance * 1000, secs, miles)
+            print(f"  Vickers model 1 {fmt_time(t):>8}  {fmt_pace(t / 42.195)}/km  "
+                  f"(race + {args.weekly_km:g} km/week)")
+        if args.race2_distance and args.race2_time:
+            (d1, t1), (d2, t2) = sorted([(args.distance * 1000, secs),
+                                         (args.race2_distance * 1000, parse_time(args.race2_time))])
+            t = vickers_model2(d1, t1, d2, t2, miles)
+            print(f"  Vickers model 2 {fmt_time(t):>8}  {fmt_pace(t / 42.195)}/km  (two races + volume; most accurate)")
+    if args.training_pace and args.weekly_km:
+        t = tanda(args.weekly_km, parse_pace(args.training_pace))
+        print(f"  Tanda           {fmt_time(t):>8}  {fmt_pace(t / 42.195)}/km  "
+              f"(mean pace of all runs, weeks -9 to -1; validated for ~2:47-3:36)")
+    print("  Plan from the slowest credible estimate; revisit after the next race or long-run test.")
 
 
 def cmd_splits(args):
@@ -222,6 +264,10 @@ def main():
     p = sub.add_parser("predict", help="equivalent race times (Riegel)")
     p.add_argument("--distance", type=float, required=True, help="km")
     p.add_argument("--time", required=True, help="h:mm:ss or mm:ss")
+    p.add_argument("--weekly-km", type=float, help="typical weekly km in the build (marathon models)")
+    p.add_argument("--race2-distance", type=float, help="a second recent race, km (Vickers model 2)")
+    p.add_argument("--race2-time")
+    p.add_argument("--training-pace", help="mean pace of all runs over weeks -9 to -1, m:ss (Tanda)")
     p.set_defaults(func=cmd_predict)
 
     s = sub.add_parser("splits", help="race pacing table")

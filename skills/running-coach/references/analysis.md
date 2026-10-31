@@ -1,0 +1,71 @@
+# Reading a completed session
+
+`scripts/analyze_session.py` turns `tp_analyze_workout`'s file into numbers. This is how to read
+them. Most thresholds here are practice-based, so the runner's own trend over weeks matters more
+than any single cut-off. Bracketed tags point to `sources.md`.
+
+## Steady runs: easy, long, steady
+
+**Aerobic decoupling (Pa:Hr)** compares efficiency (graded speed per heartbeat) in the first and
+second half of a steady run [S21]. Positive = heart rate drifted up, or pace drifted down, at the
+same effort.
+
+| Decoupling | Reading |
+|---|---|
+| < 5 % | good aerobic endurance at this intensity and duration |
+| 5–10 % | some limitation, or fatigue, heat, dehydration, low fuel |
+| > 10 % | probably above the aerobic threshold, or not enough endurance for this duration yet |
+| negative | fine; often a warm-up or weather artefact |
+
+- Only meaningful on runs of ~60 min or more, steady and below threshold. Intervals, fartleks
+  and races don't count.
+- Hills: the script uses graded pace (NGP), but long descents and heat still distort it. On a
+  hilly route compare only with the same route.
+- Use it as a **test of the long run**: when a runner's long runs stay under 5 % at their easy
+  HR, the aerobic base supports more volume or a longer long run. Over 10 % at an easy HR: more
+  easy volume before more intensity.
+
+**Efficiency factor (EF)**, graded speed (m/min) per beat. Higher means more speed for the same
+heart rate. Compare only similar runs (same type, route, weather, freshness); a rising EF over
+4–8 weeks is the clearest sign aerobic fitness is improving, often before race results show it.
+Keep a short EF log in the profile (date, run, EF, decoupling).
+
+**Durability** (how well the runner holds pace at the same HR late in long efforts) predicts
+marathon performance: runners whose HR-to-speed ratio drifted least in the marathon finished
+faster [S22, S23]. In training, read it from the long run's decoupling and from the last third of
+long runs with a fast finish: steady HR and pace there is the goal of the marathon-specific
+phase.
+
+**Time above the easy cap**: under ~10 % of the run is fine (hills, a bridge, a stop). More means
+the easy run wasn't easy. The fix is slower pace or walking the hills, not a shorter run.
+
+## Interval sessions
+
+| Number | Reading |
+|---|---|
+| pace variation (CV) | < 2 % even, 2–4 % acceptable, > 4 % uneven (practice-based [S24]) |
+| first → last rep | > 3 % slower: faded (too fast a start, too short recoveries, or fatigue). > 2 % faster: the runner pushed the end; fine if planned, otherwise the reps were too easy |
+| % of threshold speed | is it the zone the session was meant for? Reps at 102–104 % are Z4, not threshold |
+| max HR at the end of reps vs LTHR | threshold reps end around LTHR − 3 to LTHR. Well above means the reps were above threshold |
+| reps faster than threshold without HR above LTHR | the threshold may be stale: raise a retest (`methodology.md` "Settling the threshold") |
+| HR drop in recoveries | compare with the same session type in earlier weeks; a shrinking drop through the session means accumulating fatigue |
+
+Judge against the runner's own previous sessions of the same type, not a fixed number [S24].
+
+## Turning numbers into decisions
+
+End every analysis with what changes next time, in the runner's language:
+- even reps, HR at or under LTHR, felt controlled → progress one variable (one more rep)
+- faded → same session, slower first rep or longer recoveries
+- reps clearly faster than prescribed at low HR → discuss the threshold
+- long run decoupling > 10 % → keep the long run, slow it down, check fuel and heat
+- EF rising over weeks → say so; it's motivating and it's real progress
+
+## Race predictions
+
+`paces.py predict` gives Riegel equivalents, which fit well up to the half marathon. For the
+marathon, Riegel is often 10+ minutes too optimistic for recreational runners [S25]. With
+`--weekly-km` it adds the Vickers & Vertosick models (a race plus weekly volume; with two races
+the most accurate) and, with `--training-pace`, Tanda's model (weekly km plus mean pace of all
+runs in weeks −9 to −1; validated for roughly 2:47–3:36) [S25, S26]. Plan the marathon from the
+slowest credible estimate and refine it after the tune-up race.

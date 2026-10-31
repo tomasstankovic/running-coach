@@ -6,6 +6,7 @@ Input is one JSON file:
 {
   "week_role": "build",            # base | build | peak | deload | taper | race | return
   "today": "2026-10-31",           # optional, defaults to today's date
+  "cautious": false,               # novice, or injured in the last 12 months: +10 % weekly limit
   "history": [ ...workouts... ],   # last 4-8 weeks of workouts, raw tool output is fine
   "history_weeks": [ ... ],        # OR weekly totals when there is no per-run data
   "plan":    [ ...workouts... ]    # the week being planned (Mon-Sun)
@@ -27,6 +28,12 @@ Plan workouts carry "type": rest | recovery | easy | long | strides | tempo | th
 intervals | hills | race | cross | strength. Optional "quality_minutes" is the time spent at
 X/Z3 or harder (defaults to a rough estimate per type). Strength and cross-training don't count
 as running volume.
+
+Checks (references/methodology.md §4, references/sources.md):
+  - every run vs the longest run of the previous 30 days: > +10 % is a FAIL (Frandsen 2025)
+  - weekly volume: OK <= +15 %, WARN to +20 %, FAIL above +20 % or +30 % over two weeks
+    (+10 % when "cautious"); small absolute steps (<= 30 min) are fine at low volume
+  - deload rhythm, long-run share, hard days, strength placement, intensity share, rest days
 
 Output: one line per check, prefixed OK / WARN / FAIL. Exit code 1 if any FAIL.
 """
@@ -127,6 +134,51 @@ def weekly_history(data, plan_start, today):
     return [weeks[k] | {"start": k} for k in sorted(weeks) if k < plan_start]
 
 
+def done_runs(data, before, today):
+    """(date, km, minutes) of completed runs before `before`, from per-run history."""
+    history = data.get("history", [])
+    if isinstance(history, dict):
+        history = history.get("workouts") or history.get("activities") or []
+    out = []
+    for w in history:
+        if is_run(w) and counts_as_done(w, today) and workout_date(w) < before:
+            out.append((workout_date(w), km(w), minutes(w)))
+    return out
+
+
+def spike_checks(data, plan, plan_start, prior, today, report):
+    """Each planned run vs the longest run of the 30 days before it (planned ones included)."""
+    runs = done_runs(data, plan_start, today)
+    by_km = bool(runs) and all(r[1] > 0 for r in runs)
+    if not runs:
+        if prior:  # weekly totals only: compare with the longest run of the last 4 weeks
+            ref = max(p["long"] for p in prior[-4:])
+            longest = max((minutes(w) for w in plan if is_run(w)), default=0)
+            if ref and longest > ref * 1.10 + 5:
+                report("FAIL", f"longest run {longest:.0f} min is {longest / ref * 100 - 100:.0f} % above the "
+                               f"recent longest ({ref:.0f} min); keep each run within +10 %")
+        return
+    seen = list(runs)
+    flagged = False
+    for w in sorted((w for w in plan if is_run(w)), key=workout_date):
+        d = workout_date(w)
+        if w.get("type") == "race":
+            continue
+        window = [r for r in seen if 0 < (d - r[0]).days <= 30]
+        if window:
+            val = km(w) if by_km else minutes(w)
+            ref = max((r[1] if by_km else r[2]) for r in window)
+            tolerance = 1.0 if by_km else 5
+            if ref and val > ref * 1.10 + tolerance:
+                unit = "km" if by_km else "min"
+                report("FAIL", f"{d}: {val:.0f} {unit} is {val / ref * 100 - 100:.0f} % longer than the longest run "
+                               f"of the last 30 days ({ref:.0f} {unit}); keep every run within +10 %")
+                flagged = True
+        seen.append((d, km(w), minutes(w)))
+    if not flagged:
+        report("OK", "no run is more than 10 % longer than the longest of the previous 30 days")
+
+
 def main(path):
     with open(path) as f:
         data = json.load(f)
@@ -178,10 +230,16 @@ def main(path):
                 change, small = change_ref, total_min - base_ref <= 30
             else:
                 note = ""
-            if change > 15 and not small:
-                report("FAIL", f"volume {change:+.0f} % ({base:.0f} → {total_min:.0f} min){note}; keep ≤ +10 %")
-            elif change > 10 and not small:
-                report("WARN", f"volume {change:+.0f} %{note}; +10 % is the usual ceiling")
+            cautious = bool(data.get("cautious"))
+            warn_at, fail_at = (10, 15) if cautious else (15, 20)
+            two_weeks = (total_min - prior[-2]["min"]) / max(prior[-2]["min"], 1) * 100 if len(prior) >= 2 else 0
+            if change > fail_at and not small:
+                report("FAIL", f"volume {change:+.0f} % ({base:.0f} → {total_min:.0f} min){note}; "
+                               f"keep ≤ +{warn_at} % (hard limit +{fail_at} %)")
+            elif two_weeks > 30 and not small and not note:
+                report("FAIL", f"volume {two_weeks:+.0f} % over two weeks; keep two-week growth ≤ +30 %")
+            elif change > warn_at and not small:
+                report("WARN", f"volume {change:+.0f} %{note}; +{warn_at} % is the usual ceiling")
             else:
                 report("OK", f"volume {change:+.0f} %{note}, {change_avg:+.0f} % vs 3-week average")
 
@@ -194,13 +252,11 @@ def main(path):
             if no_lighter and rising:
                 report("WARN", "3 weeks of rising load without a lighter week; consider making this a deload")
 
-        prev_long = max(p["long"] for p in recent)
-        if long_min - prev_long > 20 and role != "race":
-            report("WARN", f"longest run grows {long_min - prev_long:.0f} min vs recent max ({prev_long:.0f} min); +10–15 min is safer")
-        else:
-            report("OK", f"longest run {long_min:.0f} min (recent max {prev_long:.0f} min)")
     else:
         report("WARN", "no history given; cannot check progression (pass history or history_weeks)")
+
+    # ---- single-run spikes ---------------------------------------------------
+    spike_checks(data, plan, plan_start, prior, today, report)
 
     # ---- long run share ------------------------------------------------------
     if total_min > 0 and role not in ("race", "taper"):

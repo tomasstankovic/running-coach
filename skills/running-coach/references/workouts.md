@@ -87,6 +87,29 @@ them that way.
 | **3× 2 km @ prah** | WU 15' · 3 × (2 km @ 97–99 % / 2' klus) · CD 10' | 4:12–4:18 | |
 | **Kopce tempo** | 4–6 × 3–4 min uphill by HR 165–174 / jog down | HR, not pace | trail-friendly threshold |
 
+### Option: sub-threshold weeks ("Norwegian singles")
+
+Many short reps just under threshold, with short rests, two or three times a week, everything
+else truly easy. Elite runners do a lactate-guided double-threshold version [S28]. The amateur
+"singles" version is coaching practice without trials, so offer it as an option, never as the
+default, and say so.
+
+- **Who:** 4+ runs a week, injury-free for 8+ weeks, an established base, and a runner who likes
+  structure.
+- **Dose:** 2 sessions a week (3 only with 6 runs), at least one easy day between them, 15–25 % of
+  weekly time at sub-threshold. VO2 work is dropped except strides or short hills, and comes
+  back 4–6 weeks before a 5k/10k.
+- **Intensity:** ~90–96 % of threshold speed (about half-marathon to 30k pace), HR at least
+  ~5 bpm under LTHR, RPE 6–7/10. The rule without a lactate meter: finish feeling 1–2 more reps
+  were possible. (The % translation is an estimate, not a measured value.)
+
+| Session | Structure |
+|---|---|
+| **5–6 × 6 min** | WU 15' · 5–6 × (6' @ 90–94 % / 1' klus) · CD 10' |
+| **8–10 × 1 km** | WU 15' · 8–10 × (1 km @ 92–96 % / 1' klus) · CD 10' |
+| **3 × 10 min** | WU 15' · 3 × (10' @ 90–93 % / 2' klus) · CD 10' |
+| **20 × 400 m** | WU 15' · 20 × (400 m @ 95–98 % / 30 s stoj) · CD 10' |
+
 ## VO2max / speed (Z4–Z5)
 
 | Session | Structure | Example paces | Notes |

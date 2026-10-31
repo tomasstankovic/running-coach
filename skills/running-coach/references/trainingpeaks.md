@@ -16,7 +16,7 @@ tell the athlete to run `tp-mcp auth` again. The session cookie expires every fe
 | `tp_get_fitness` | CTL / ATL / TSB per day | `days: 90` |
 | `tp_get_workouts` | list of planned + completed workouts | max 90 days per call; `type: all`; durations are in **hours** |
 | `tp_get_workout` | details: structure, avg HR, RPE, feeling, comments; `metrics.elevation_gain`, `metrics.avg_power` | use for key sessions; the only source of elevation (the list has none) |
-| `tp_analyze_workout` | deeper analysis of one workout (laps, zones) | when the review needs rep-by-rep data |
+| `tp_analyze_workout` | laps (Active/Rest from the structure), totals incl. NGP, Pa:Hr decoupling and EF, plus a 1,000-point time series saved to `data_file` | large response: only for 1–2 key sessions; pass `data_file` to `scripts/analyze_session.py`. Contains GPS positions: don't copy it anywhere. |
 | `tp_get_weekly_summary` | weekly totals | quick history |
 | `tp_get_focus_event`, `tp_get_next_event`, `tp_get_events` | goal race and other races | |
 | `tp_get_atp` | the runner's Annual Training Plan: weekly TSS target, period, races | read-only through the MCP, max 90 days per call; ask whether to respect it (`season.md` §3) |

@@ -35,6 +35,13 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
 - **Your units, your ground.** Kilometres or minutes, as you prefer. It reads how hilly your runs
   are, asks where you can run fast, and steers by pace on the flat and by heart rate on hills.
   "This week I'm in the mountains" reshapes the rest of the week.
+- **Grounded in research.** Load limits from a 5,200-runner injury study (no single run more
+  than 10 % longer than your longest in the last month), HRV-guided readiness, evidence-based
+  tapers, strength, fuelling and heat guidance, each rule tagged with its source and how strong
+  the evidence is.
+- **Reads your sessions like a coach.** Rep-by-rep evenness and fade, heart rate vs. threshold,
+  aerobic decoupling and efficiency on long runs, and marathon predictions that account for your
+  weekly volume.
 - **Computed, not guessed.** Paces, heart-rate zones, race predictions and splits come from
   scripts, so they're the same every week.
 - **Checked before you see it.** A load checker flags volume jumps above ~10 %, back-to-back hard
@@ -116,16 +123,20 @@ skills/running-coach/
 ├── references/
 │   ├── onboarding.md           questionnaire, history assessment, athlete profile
 │   ├── season.md               season plan, races A/B/C, re-planning rules, plan page, weekly review
-│   ├── methodology.md          intensity, progression, periodization, thresholds, illness
+│   ├── methodology.md          intensity, progression, periodization, thresholds, illness, age, health
+│   ├── analysis.md             reading a session: reps, decoupling, efficiency, race predictions
+│   ├── sources.md              the research behind each rule, with evidence strength
 │   ├── workouts.md             session library with TrainingPeaks structures
 │   ├── strength.md             strength for runners: placement, phases, TP strength workouts
 │   ├── checkin-and-race.md     daily readiness check-in, race pacing and fuelling
 │   ├── trainingpeaks.md        TP tools, structure format, pitfalls
 │   └── strava.md               Strava tools and how to fill what Strava lacks
 └── scripts/
-    ├── paces.py                zones, pace ↔ % threshold, threshold from a race, predictions, splits
+    ├── paces.py                zones, pace ↔ % threshold, threshold from a race, predictions
+    │                           (incl. volume-aware marathon models), splits
     ├── check_week.py           load-progression checks (TP, Strava, or weekly totals)
-    ├── readiness.py            HRV / resting HR / sleep vs. personal baseline
+    ├── readiness.py            HRV 7-day trend / resting HR / sleep vs. personal baseline
+    ├── analyze_session.py      one session from TrainingPeaks → reps, drift, efficiency
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
     ├── season_plan.py          rough season plan, re-planning, actuals, export to the plan page
     ├── terrain.py              elevation gain per km → flat / rolling / hilly / mountain
@@ -150,7 +161,7 @@ your stride, chest pain, dizziness or unusual heart-rate responses: stop and see
 Skill pre Claude, ktorý ti plánuje beh týždeň po týždni. Naplánuje týždeň, pripraví blok k
 závodu, vyhodnotí uplynulý týždeň a upraví plán, keď ochorieš alebo vynecháš tréning. Na
 začiatku si ťa „vyspovedá“ (ciele, čas, história, posúdenie stavu) a uloží si tvoj profil.
-Vie ranný check-in podľa HRV a spánku, silové tréningy pre bežcov aj plán na závod. Tréningy
+Pravidlá stoja na výskume (zdroje v `references/sources.md`). Vie ranný check-in podľa HRV a spánku, silové tréningy pre bežcov aj plán na závod. Tréningy
 píše v kilometroch alebo v minútach, ako chceš, a prispôsobí ich terénu (rovina, kopce, hory).
 Celú sezónu do hlavného závodu naplánuje nahrubo po týždňoch a ukáže na stránke so stálym
 odkazom. Keď ochorieš alebo máš náročné obdobie v práci, plán podľa jasných pravidiel prepočíta. Tempá a

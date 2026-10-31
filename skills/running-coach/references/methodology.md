@@ -14,6 +14,7 @@ leaving them flat), adapt and say why.
 7. Reading fitness data (CTL / ATL / TSB, HR, HRV)
 8. Missed sessions, illness, return after a break
 9. Units and terrain
+10. Age, energy and health flags
 
 ---
 
@@ -41,7 +42,16 @@ purpose (progression runs, long-run finishes).
 
 ## 2. Intensity distribution
 
-- ~80 % of running time in Z1–Z2, ~20 % in X and above (count only the work, not warm-ups).
+Bracketed tags like [S1] point to `sources.md`, with the strength of the evidence behind each rule.
+
+- **Default: pyramidal, counted by time.** ~75–85 % of running time easy (Z1–Z2), 10–20 % at
+  steady-to-threshold (X–Y), 0–10 % at VO2 and faster (Z4–Z5). Warm-ups count as easy. No
+  distribution is clearly better for recreational runners; pyramidal is what most marathoners at
+  every level do, and suits them at least as well as polarized [S10–S13].
+- **Polarized near a short race:** for the last 4–6 weeks before a 5k/10k, or for well-trained
+  runners, shift threshold time to VO2 work (less X–Y, more Z4) [S10, S11].
+- **Volume and consistency first.** Add easy volume before adding intensity; faster marathoners
+  mostly run more, and more of it easy [S12].
 - The X zone ("grey zone") is where easy runs drift when the athlete pushes. Easy days stay easy
   so quality days can be quality.
 - Strides (4–8 × 15–20 s fast but relaxed, full recovery) don't count as a hard day. Use them 1–2×
@@ -54,7 +64,10 @@ Typical 5-run week: long run + 1–2 quality sessions + 2–3 easy runs + 1–2 
 - Hard sessions at least 48 h apart. Classic pattern: Tue/Wed quality, Thu/Fri quality or easy,
   Sun long run, Mon rest.
 - The day after the long run is rest or very easy.
-- With 3–4 runs a week: one quality session, one long run, the rest easy.
+- With 3 runs a week: one quality session, one long run, one easy run. With 4–6: two quality
+  sessions (one can be inside the long run in the specific phase), the rest easy.
+- An option for experienced runners: sub-threshold ("Norwegian singles") weeks, see
+  `workouts.md`. Offer it, never default to it.
 - Base phase: quality = strides, hills, short tempo. A runner with an established base (≥ 8 weeks
   of consistent running) can do one controlled threshold session a week in base (cruise
   intervals at 95–100 %). VO2 work waits for build. Build: threshold + one VO2 or race-pace
@@ -64,18 +77,28 @@ Typical 5-run week: long run + 1–2 quality sessions + 2–3 easy runs + 1–2 
 
 ## 4. Load progression
 
-- Weekly volume (time is better than km on trails) rises at most ~10 % week to week. At low volume
-  (< 4 h) +30 min is fine even if it's more than 10 %.
-- 3:1 rhythm: three build weeks, then a deload at −25 to −35 % volume with one short quality
-  session kept. Older athletes or after a hard block use 2:1.
-- Long run grows by 10–15 min per build week. It stays ≤ ~35 % of weekly time with 5+ runs
+- **No single run more than 10 % longer than the longest run of the previous 30 days.** This
+  applies to every run, not just the long run (a midweek run can become the longest). Spikes of
+  10–30 % raised injury risk by ~60 % in a cohort of 5,200 runners; the week-to-week ratio did
+  not predict injury [S1]. After a break the reference is what was actually run since returning.
+  `check_week.py` enforces it.
+- **Weekly volume** (time is better than km on hilly ground): default +10–15 % per build week,
+  never more than +20 % in a week or +30 % over two weeks. Use +10 % for novices and anyone
+  injured in the last 12 months (`"cautious": true` in `check_week.py`). At low volume (< 4 h)
+  +30 min is fine. The famous 10 % rule itself is not supported as a limit; big jumps (> 20–30 %)
+  are the risk [S2–S5].
+- **Deloads every 3–4 weeks** at −25 to −35 % volume, one short quality session kept, and
+  earlier when fatigue, poor sleep, low HRV or niggles appear. 2:1 for older runners or after a
+  hard block. The rhythm is coaching practice, not evidence [S6].
+- Long run grows within the 10 % single-run rule. It stays ≤ ~35 % of weekly time with 5+ runs
   (up to ~45 % with 3–4 runs a week). Cap ~2 h for 10k/HM, ~3 h for marathon. When the cap
   and the share clash, keep the long run and accept the share, since the long run matters more
-  for HM/M.
+  for HM/M. Share and caps are practice-based; the 10 % rule wins when they disagree [S1, S6].
 - Quality progresses one variable at a time: reps → rep length → pace. Pace progresses only when
   the threshold itself moves.
-- CTL ramp: for CTL < 40, +2 to +4 per week is sustainable. Above +5 per week for more than two weeks is a red
-  flag.
+- **CTL ramp** is a soft fatigue signal only: more than +5 per week for 2+ weeks means look
+  closer. Don't use the acute:chronic workload ratio for injury decisions; it doesn't predict
+  injury better than load alone [S1, S7].
 
 ## 5. Periodization: blocks toward a race
 
@@ -110,10 +133,24 @@ re-anchors the target.
 
 ## 6. Taper and race week
 
-- Volume drops 30–50 % (more for the marathon), intensity stays: short sharp sessions at race pace.
+Cut volume progressively, keep intensity and keep frequency. A 41–60 % volume reduction over
+about two weeks with intensity maintained is the best-supported taper [S14, S15]; for the
+marathon, a strict three-week taper (consecutive lighter weeks right before the race) was worth
+~2–3 % in 158,000 recreational marathoners [S16].
+
+| Race | Taper | Volume vs. peak |
+|---|---|---|
+| 5k / 10k | 7–10 days | −30 to −50 % |
+| Half marathon | 10–14 days | −40 to −50 % |
+| Marathon | 14–21 days | week −3: −20 to −25 %, week −2: −35 to −45 %, race week: −50 to −60 % |
+
+- Keep 1–2 short sessions at race pace or faster per week, and at least ~80 % of the usual
+  number of runs. No catch-up long runs in the taper. Runners on 3–4 h a week cut toward the
+  lower end.
 - Race week: one short session 3–4 days before (e.g. 3 × 1 km at race pace), a shakeout the day
   before (20–30 min easy + 4–6 strides), nothing new.
-- Target TSB on race day +5 to +15 (A race), around 0 for B races.
+- Target TSB on race day +5 to +15 (A race), around 0 for B races. A practical heuristic, not
+  research.
 
 ## 7. Reading fitness data
 
@@ -121,8 +158,12 @@ re-anchors the target.
 - **ATL** (fatigue, 7-day load) and **TSB** = CTL − ATL. TSB −10 to −25 is normal in build weeks.
   Below −30, or a long run of very negative TSB, means back off.
 - **HR on easy runs** creeping up at the same pace, or failing to rise in intervals: fatigue.
-- **HRV** clearly below the athlete's baseline for 2+ days, poor sleep, heavy legs: swap that day's
-  quality for easy or rest. Move the session; don't stack it.
+- **HRV** (Garmin's overnight value): judge the 7-day mean of ln(HRV) against the runner's normal
+  band (baseline mean ± 0.5 SD over 4–8 weeks), not single nights. Below the band: no quality,
+  move the session, don't stack it. Still below 3 days later: −25 % volume for 3–4 days. A single
+  low night matters only together with another sign (resting HR up, poor sleep, illness,
+  soreness). Needs 3+ weeks of data. HRV-guided training gives a small benefit, mainly fewer
+  runners who don't respond, often with fewer hard sessions [S17–S20]. `readiness.py` applies it.
 - **Rep pacing**: reps getting faster than prescribed means the zones may be stale (check the
   threshold). Fading reps or HR running away means too hard, or a fatigued athlete.
 
@@ -176,12 +217,20 @@ holds, but at the corrected intensity.
 
 - Missed easy run: forget it. Missed quality: move it only if 48 h spacing stays intact, otherwise
   drop it. Never make up a missed long run by lengthening the next one.
-- Illness, "neck check": symptoms only above the neck (runny nose) → easy running OK if feeling OK.
-  Below the neck (fever, chest, aches) → no running until 24–48 h symptom-free.
-- Return after illness: as many days easy as days missed (max ~7), then one short quality session.
-  First week back ≈ 60–70 % of previous volume.
+- **Illness: triage by symptoms** (IOC consensus 2022 [S8]; the old "neck check" has no data
+  behind it):
+  - Mild, nose and throat only: easy running allowed if the runner feels OK.
+  - Chest symptoms (cough, breathlessness) or headache, or whole-body symptoms (fever, chills,
+    aches, unusual fatigue): no running until they're gone.
+  - Chest pain, palpitations, fainting or unusual breathlessness: see a doctor before running
+    again.
+- **First run back:** a 10–20 min test at 60–70 % of normal effort. Progress only if nothing
+  abnormal appears during it or in the next 24 h. Then as many easy days as days missed (max ~7)
+  before one short quality session, first week ≈ 60–70 % of previous volume (practice-based; most
+  illnesses cost a week or less [S9]).
 - Return after a break > 2 weeks: start at ~50–60 % of previous volume, easy only for week 1, add
-  strides in week 2, quality in week 3.
+  strides in week 2, quality in week 3 (practice-based). The 30-day longest-run rule applies to
+  what was run since returning.
 - Pain that changes the gait, sharp or worsening pain: rest and get it checked. Don't plan
   around it.
 
@@ -227,3 +276,37 @@ decision log; the profile's terrain doesn't change.
 **Reviewing hilly runs:** judge easy runs by HR (was it under the cap?), not pace. TP's rTSS
 already accounts for gradient (it uses normalized graded pace), so load numbers stay comparable.
 If a "slow" week was hilly, say so before concluding anything about fitness.
+
+## 10. Age, energy and health flags
+
+**Masters runners (40+, 50+).** Performance declines mainly through VO2max, and much of that
+comes from training less hard and less often; running economy doesn't decline with age [S41].
+- Keep intensity: 1–2 quality sessions a week. Reduce density, not intensity.
+- 50+: 48–72 h between hard, downhill or eccentric-heavy sessions; consider 9–10-day cycles and
+  2:1 build:deload; progress volume a little slower (practice-based; recovery data are thin
+  [S42]).
+- Strength twice a week all year, including heavy work and progressive plyometrics; in peak
+  keep one session.
+- Protein after hard sessions (~0.3–0.4 g/kg), and a reminder to drink, as thirst fades with age
+  [S36, S42].
+
+**Low energy availability (REDs).** Under-fuelling for the training load harms bone, hormones,
+immunity and performance, in men and in women [S43]. The coach doesn't diagnose; it screens and
+refers. Ask during onboarding, and again when performance stalls or fatigue persists:
+1. (Women not on hormonal contraception) Are periods regular? Three or more months missed? First
+   period after 15? (Hormonal contraception hides this signal.)
+2. (Men) Noticeably lower libido or fewer morning erections?
+3. Any bone stress injury? Two or more ever, or one in the pelvis, hip or femoral neck?
+4. Unintended weight loss, or trying to lose weight while training hard?
+5. Worry about food or weight, skipping meals around training, exercising to "make up" for food?
+6. Persistent fatigue, frequent illness, dizziness, gut trouble, low mood, or stalling despite
+   training?
+
+Refer to a sports-medicine doctor and a registered sports dietitian with any of: periods missed
+3+ months, any bone stress injury, signs of disordered eating, or two or more of the other
+flags [S43, S44]. Don't raise the load while waiting. Never set weight or body-composition targets.
+Losing periods is never a normal effect of training.
+
+**Menstrual cycle.** Evidence doesn't support planning training by cycle phase: effects on
+performance are trivial and inconsistent [S45]. Logging the cycle is optional; adjust only for the
+runner's own symptoms.

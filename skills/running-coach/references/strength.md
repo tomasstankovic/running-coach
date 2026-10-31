@@ -1,7 +1,21 @@
 # Strength training for runners
 
-Strength supports the running and never competes with it. Its purposes: injury resilience
-(calves, Achilles, hips), running economy, and keeping power with age.
+Strength supports the running and never competes with it. Its purposes: running economy,
+injury resilience (calves, Achilles, hips), and keeping power with age.
+
+What the evidence says (tags in `sources.md`):
+- **Economy and performance**: heavy strength work improves running economy (~2–8 %) and
+  time-trial performance; heavy plus plyometric combined works best, heavy alone next, plyometrics
+  alone less. Light circuits and isometrics don't improve economy (still fine for general
+  robustness). Expect it after ~6+ weeks of consistent work [S29–S31].
+- **Injury**: strength training cuts sports injuries a lot in mixed sports [S32], but the one large
+  runner trial (a self-directed home programme) found no effect [S33]. Say "likely helps", and
+  remember that avoiding load spikes matters more.
+- **Maintenance**: one session a week keeps the gains for months; stopping for ~8 weeks loses
+  them [S34]. So in peak go down to 1, not to 0, until the last 7–10 days before an A race.
+- **Interference**: a heavy session leaves fatigue that blunts the next quality run for hours to
+  days [S35]. Lift after the hard run on the same day (3–6 h later if possible), never the day
+  before a key session.
 
 ## Discuss it first
 

@@ -27,7 +27,7 @@ Spec:
 Rules (methodology.md §4-6): build weeks grow at most 10 %, every (rhythm+1)th week is a deload
 at ~70 %, B races and busy weeks count as lighter weeks, phases are planned backwards from each A
 race (base -> build -> specific -> taper), the long run grows <= 2 km a week within its share and
-cap. Volume is the plan's spine: the detail is planned week by week later.
+cap and never more than 10 % past the longest recent run. Volume is the plan's spine: the detail is planned week by week later.
 
 The plan keeps its spec, so `replan` re-runs the same rules from a later week with the new
 starting point and keeps the weeks before it (and their actuals) untouched.
@@ -169,7 +169,7 @@ def plan_segment(spec, start, a_race, level, long_km, warnings):
             key = f"C: {race['name']}"
         share = base_share if phase == "base" else late_share
         if role == "build":
-            long_km = min(cap, km * share, long_km + 2)
+            long_km = min(cap, km * share, long_km * 1.10)  # one run <= +10 % (Frandsen 2025)
             this_long = long_km
         else:
             this_long = min(cap, km * share, long_km * 0.8)

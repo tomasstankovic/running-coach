@@ -35,7 +35,9 @@ already answers, and ask the runner to confirm or correct it rather than asking 
      whether quality is prescribed by pace or by HR/effort.
    - What they steer by (pace, HR, feel, power) and their watch (does it show running power?).
 5. **Health**: current pains or niggles, injury history (what, when, recurring?), anything a doctor
-   said to watch.
+   said to watch, age, and the short energy-availability screen in `methodology.md` §10 (ask it
+   matter-of-factly; refer, don't diagnose). An injury in the last 12 months or a beginner means
+   `"cautious": true` in the load checks.
 6. **Strength**: whether they already do any strength work and whether they'd like it in the
    plan. Don't decide for them. If they're unsure, give the short why (fewer injuries, better
    economy, especially for calves, Achilles and hips) and the realistic cost (2 × 30 min a week).

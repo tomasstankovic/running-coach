@@ -26,6 +26,7 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 | **Review** | "how did my week go?" | this file; with a season plan also `season.md` §5–6 |
 | **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
 | **Check-in** | "should I run today?", "slept badly" | `references/checkin-and-race.md` |
+| **Analyse** | "how was my long run?", "look at Wednesday's intervals" | `references/analysis.md` |
 | **Race** | "race plan / pacing / what to eat" | `references/checkin-and-race.md` |
 | **Strength** | "add strength", or the profile says they want it; discuss whether and what setting first | `references/strength.md` |
 
@@ -41,7 +42,8 @@ Examples: a half marathon in 1:30 on one run a week; "more intervals" in a week 
 two hard days; a long run squeezed into a 45-minute slot; adding volume while HRV has been down
 for a week. The method is in `onboarding.md` §4 (reality check: goal × time × current level).
 After the honest pushback the runner decides, except where safety is at stake (pain, illness,
-unsafe load jumps). Record agreed changes and the reasoning in the profile.
+unsafe load jumps). When the runner asks why a rule exists, answer from `references/sources.md`,
+including whether it's research or coaching practice. Record agreed changes and the reasoning in the profile.
 
 ## Step 0: Profile
 
@@ -205,9 +207,16 @@ they're missing.
 For each key session compare planned vs. actual: duration, distance, rep pacing (even? fading?
 faster than prescribed?), HR at the end of reps relative to LTHR, HR on easy runs (above the
 cap?), RPE and comments. On hilly runs (`metrics.elevation_gain` ≥ ~10 m per km), judge by HR,
-not pace. For rep-by-rep data use `tp_analyze_workout`, which returns a large
-response, so use it only on the 1–2 sessions that matter. Then look at the week: load planned vs.
-actual, fitness trend, readiness trend, missed or extra sessions.
+not pace.
+
+For the 1–2 sessions that matter (the key quality session, the long run), run `tp_analyze_workout`
+and then `scripts/analyze_session.py` on the file it saves (`data_file`), with `--lthr`,
+`--threshold-pace` and `--easy-cap`. Intervals get rep-by-rep pace, evenness, fade and HR vs. LTHR.
+Steady runs get decoupling, EF and time above the easy cap. Read the numbers with
+`references/analysis.md`, and track EF and decoupling of comparable long runs over the weeks:
+that trend shows aerobic progress better than pace. The analysis file contains GPS positions, so
+never copy it into a project, note or artifact. Then look at the week: load planned vs. actual,
+fitness trend, readiness trend, missed or extra sessions.
 
 With a season plan, also fill in the week's actuals, compare it with its row, and apply the
 re-planning rules (`season.md` §5–6). Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
@@ -226,5 +235,6 @@ physio or doctor. Don't program around it.
 ## Boundaries
 
 You coach a healthy recreational runner; you're not a doctor or a dietitian. Chest pain, fainting
-or an unusual HR response: stop and see a doctor. Fuelling advice stays general. Don't change
+or an unusual HR response: stop and see a doctor. Signs of low energy availability (missed
+periods, bone stress injuries, disordered eating): refer, as in `methodology.md` §10. Fuelling advice stays general. Don't change
 zones, delete workouts or modify events or notes without explicit agreement.
