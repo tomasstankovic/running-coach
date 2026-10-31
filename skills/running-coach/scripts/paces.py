@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+"""Pace / zone calculator for running plans that live in TrainingPeaks.
+
+TrainingPeaks expresses run intensity as a percentage of threshold *speed*
+(faster = higher %). So with a 4:10/km threshold, 4:00/km is 104 %, not 96 %.
+This script does that conversion so it is never done by hand.
+
+Usage:
+  paces.py zones --threshold-pace 4:10 --lthr 174
+  paces.py zones --tp-settings settings.json     # output of tp_get_athlete_settings
+  paces.py convert --threshold-pace 4:10 4:25 4:00-4:05 95 102-104
+  paces.py race --distance 21.0975 --time 1:34:23  # estimate threshold from a race
+  paces.py predict --distance 10 --time 48:30      # equivalent times for other distances
+  paces.py splits --distance 21.0975 --goal 1:35:00 --every 5 --negative 1
+"""
+import argparse
+import json
+import re
+import sys
+
+# Zone boundaries as a fraction of threshold speed / LTHR. These match the
+# 7-zone (Z1, Z2, X, Z3, Y, Z4, Z5) set TrainingPeaks generates with its Friel
+# calculators. Used only when real zones from TrainingPeaks are not available.
+DEFAULT_SPEED_ZONES = [
+    ("Z1", 0.5995, 0.7599),
+    ("Z2", 0.7599, 0.8711),
+    ("X", 0.8711, 0.9294),
+    ("Z3", 0.9294, 1.0000),
+    ("Y", 1.0000, 1.0204),
+    ("Z4", 1.0204, 1.1521),
+    ("Z5", 1.1521, 1.40),
+]
+DEFAULT_HR_ZONES = [
+    ("Z1", 0.718, 0.810),
+    ("Z2", 0.810, 0.902),
+    ("X", 0.902, 0.948),
+    ("Z3", 0.948, 1.000),
+    ("Y", 1.000, 1.017),
+    ("Z4", 1.017, 1.052),
+    ("Z5", 1.052, 1.10),
+]
+
+# Approximate share of a race's average speed held at threshold, used by the
+# `race` command (threshold ≈ the pace you can hold for ~50–60 min).
+RACE_TO_THRESHOLD = {5.0: 0.93, 10.0: 0.975, 21.0975: 1.02, 42.195: 1.075}
+
+
+def parse_pace(text):
+    """'4:10' -> 250 seconds per km."""
+    m = re.fullmatch(r"\s*(\d+):(\d{1,2})\s*", text)
+    if not m:
+        raise ValueError(f"not a pace: {text!r} (expected m:ss)")
+    return int(m.group(1)) * 60 + int(m.group(2))
+
+
+def parse_time(text):
+    parts = [int(p) for p in text.split(":")]
+    secs = 0
+    for p in parts:
+        secs = secs * 60 + p
+    return secs
+
+
+def fmt_pace(sec_per_km):
+    if sec_per_km <= 0 or sec_per_km > 3600:
+        return "--"
+    sec = round(sec_per_km)
+    return f"{sec // 60}:{sec % 60:02d}"
+
+
+def speed_to_pace(speed_ms):
+    return 1000.0 / speed_ms if speed_ms > 0 else float("inf")
+
+
+def pct_from_pace(threshold_sec, pace_sec):
+    return threshold_sec / pace_sec * 100.0
+
+
+def pace_from_pct(threshold_sec, pct):
+    return threshold_sec / (pct / 100.0)
+
+
+def zones_from_tp(path):
+    with open(path) as f:
+        data = json.load(f)
+    settings = data.get("settings", data)
+    speed = settings["speedZones"][0]
+    hr = settings["heartRateZones"][0]
+    thr_speed = speed["threshold"]
+    speed_zones = [
+        (z["label"].replace("Zone ", "Z").replace("ZX", "X").replace("ZY", "Y"),
+         z["minimum"] / thr_speed, min(z["maximum"] / thr_speed, 1.4))
+        for z in speed["zones"]
+    ]
+    lthr = hr["threshold"]
+    hr_zones = [
+        (z["label"].replace("Zone ", "Z").replace("ZX", "X").replace("ZY", "Y"),
+         z["minimum"] / lthr, min(z["maximum"], 230) / lthr)
+        for z in hr["zones"]
+    ]
+    return speed_to_pace(thr_speed), lthr, speed_zones, hr_zones, hr.get("maximumHeartRate")
+
+
+def cmd_zones(args):
+    if args.tp_settings:
+        thr_pace, lthr, speed_zones, hr_zones, max_hr = zones_from_tp(args.tp_settings)
+        source = "TrainingPeaks settings"
+    else:
+        if not args.threshold_pace or not args.lthr:
+            sys.exit("zones needs --tp-settings or both --threshold-pace and --lthr")
+        thr_pace, lthr = parse_pace(args.threshold_pace), args.lthr
+        speed_zones, hr_zones, max_hr = DEFAULT_SPEED_ZONES, DEFAULT_HR_ZONES, None
+        source = "default 7-zone ratios"
+
+    print(f"Threshold pace {fmt_pace(thr_pace)}/km, LTHR {lthr}"
+          + (f", max HR {max_hr}" if max_hr else "") + f"  ({source})")
+    print()
+    print(f"{'Zone':<5} {'pace /km':<15} {'% thr speed':<13} {'HR':<10}")
+    hr_by_label = {label: (lo, hi) for label, lo, hi in hr_zones}
+    for label, lo, hi in speed_zones:
+        slow, fast = pace_from_pct(thr_pace, lo * 100), pace_from_pct(thr_pace, hi * 100)
+        pace_txt = f"{fmt_pace(slow)}–{fmt_pace(fast)}" if hi < 1.39 else f"< {fmt_pace(slow)}"
+        pct_txt = f"{lo * 100:.0f}–{hi * 100:.0f} %" if hi < 1.39 else f"> {lo * 100:.0f} %"
+        hr_lo, hr_hi = hr_by_label.get(label, (None, None))
+        hr_txt = f"{round(hr_lo * lthr)}–{round(hr_hi * lthr)}" if hr_lo else "-"
+        if hr_hi and hr_hi * lthr > 220:
+            hr_txt = f"> {round(hr_lo * lthr)}"
+        print(f"{label:<5} {pace_txt:<15} {pct_txt:<13} {hr_txt:<10}")
+
+
+def cmd_convert(args):
+    thr = parse_pace(args.threshold_pace)
+    for item in args.values:
+        parts = item.split("-")
+        out = []
+        for p in parts:
+            if ":" in p:
+                out.append(f"{fmt_pace(parse_pace(p))}/km = {pct_from_pace(thr, parse_pace(p)):.1f} %")
+            else:
+                out.append(f"{float(p):.1f} % = {fmt_pace(pace_from_pct(thr, float(p)))}/km")
+        print(f"{item:<12} ->  " + "  |  ".join(out))
+    print(f"(threshold {fmt_pace(thr)}/km; TrainingPeaks % is of threshold speed, faster = higher)")
+
+
+def cmd_race(args):
+    secs = parse_time(args.time)
+    pace = secs / args.distance
+    nearest = min(RACE_TO_THRESHOLD, key=lambda d: abs(d - args.distance))
+    factor = RACE_TO_THRESHOLD[nearest]
+    thr = pace / factor  # factor is threshold speed / race speed
+    print(f"Race pace {fmt_pace(pace)}/km over {args.distance} km")
+    print(f"Estimated threshold pace ≈ {fmt_pace(thr)}/km "
+          f"(factor {factor} for ~{nearest} km; hilly/trail races understate fitness)")
+
+
+def fmt_time(secs):
+    secs = round(secs)
+    h, rem = divmod(secs, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+
+
+def cmd_predict(args):
+    # Riegel: T2 = T1 * (D2 / D1) ^ 1.06. Optimistic for longer distances unless the runner
+    # has the volume for them (marathon especially).
+    secs = parse_time(args.time)
+    print(f"From {args.distance} km in {fmt_time(secs)} ({fmt_pace(secs / args.distance)}/km):")
+    for name, dist in [("5 km", 5.0), ("10 km", 10.0), ("Half marathon", 21.0975), ("Marathon", 42.195)]:
+        t = secs * (dist / args.distance) ** 1.06
+        note = "  (assumes marathon-specific training)" if dist > 30 else ""
+        print(f"  {name:<14} {fmt_time(t):>8}  {fmt_pace(t / dist)}/km{note}")
+
+
+def cmd_splits(args):
+    goal = parse_time(args.goal)
+    avg = goal / args.distance
+    # negative split: first half slower by `negative` % of avg pace, second half faster by the same
+    delta = avg * args.negative / 100
+    print(f"Goal {fmt_time(goal)} over {args.distance} km, average {fmt_pace(avg)}/km"
+          + (f", negative split ±{args.negative} %" if args.negative else ", even pace"))
+    print(f"{'km':>7} {'pace':>7} {'split':>9} {'elapsed':>9}")
+    marks, d = [], args.every
+    while d < args.distance - 1e-6:
+        marks.append(d)
+        d += args.every
+    marks.append(args.distance)
+    elapsed, prev = 0.0, 0.0
+    half = args.distance / 2
+    for m in marks:
+        seg = 0.0
+        a = prev
+        while a < m - 1e-9:  # integrate pace over the segment, switching at halfway
+            b = min(m, half) if a < half else m
+            pace = avg + delta if a < half else avg - delta
+            seg += (b - a) * pace
+            a = b
+        elapsed += seg
+        print(f"{m:>7.2f} {fmt_pace(seg / (m - prev)):>7} {fmt_time(seg):>9} {fmt_time(elapsed):>9}")
+        prev = m
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    z = sub.add_parser("zones", help="print pace + HR zones")
+    z.add_argument("--threshold-pace")
+    z.add_argument("--lthr", type=int)
+    z.add_argument("--tp-settings", help="JSON file with tp_get_athlete_settings output")
+    z.set_defaults(func=cmd_zones)
+
+    c = sub.add_parser("convert", help="pace <-> % of threshold speed")
+    c.add_argument("--threshold-pace", required=True)
+    c.add_argument("values", nargs="+", help="paces like 4:25 or 4:00-4:05, or percents like 95 or 102-104")
+    c.set_defaults(func=cmd_convert)
+
+    r = sub.add_parser("race", help="estimate threshold pace from a race result")
+    r.add_argument("--distance", type=float, required=True, help="km")
+    r.add_argument("--time", required=True, help="h:mm:ss or mm:ss")
+    r.set_defaults(func=cmd_race)
+
+    p = sub.add_parser("predict", help="equivalent race times (Riegel)")
+    p.add_argument("--distance", type=float, required=True, help="km")
+    p.add_argument("--time", required=True, help="h:mm:ss or mm:ss")
+    p.set_defaults(func=cmd_predict)
+
+    s = sub.add_parser("splits", help="race pacing table")
+    s.add_argument("--distance", type=float, required=True, help="km")
+    s.add_argument("--goal", required=True, help="goal time h:mm:ss")
+    s.add_argument("--every", type=float, default=1.0, help="split every N km (default 1)")
+    s.add_argument("--negative", type=float, default=0.0, help="negative split in %% of pace (e.g. 1)")
+    s.set_defaults(func=cmd_splits)
+
+    args = ap.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
