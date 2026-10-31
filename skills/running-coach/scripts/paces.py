@@ -14,6 +14,8 @@ Usage:
   paces.py predict --distance 10 --time 48:30 --weekly-km 45 [--race2-distance 21.1 --race2-time 1:47:00]
                    [--training-pace 5:45]          # + marathon models that use training volume
   paces.py splits --distance 21.0975 --goal 1:35:00 --every 5 --negative 1
+  paces.py power --rftp 420 300 95-100              # running power zones, watts <-> % of rFTP
+  paces.py power --effort-watts 401 --effort-minutes 94   # estimate rFTP from a hard effort
 """
 import argparse
 import math
@@ -42,6 +44,20 @@ DEFAULT_HR_ZONES = [
     ("Z4", 1.017, 1.052),
     ("Z5", 1.052, 1.10),
 ]
+
+# Running power zones as % of running FTP (the 5-zone model Stryd publishes; TrainingPeaks'
+# own run power zones are Coggan-style and also work from rFTP). Watts differ between devices
+# (Garmin wrist power reads higher than Stryd), so never mix sources.
+POWER_ZONES = [
+    ("Easy", 0.65, 0.80, "easy, long and recovery runs"),
+    ("Moderate", 0.80, 0.90, "steady, marathon-ish"),
+    ("Threshold", 0.90, 1.00, "tempo, cruise intervals, sub-threshold"),
+    ("Interval", 1.00, 1.15, "VO2max intervals"),
+    ("Repetition", 1.15, 1.30, "short fast reps, strides"),
+]
+# rFTP ~ power holdable for about an hour; shorter efforts sit above it, longer below
+# (practice-based factors, like RACE_TO_THRESHOLD for pace).
+EFFORT_TO_RFTP = [(25, 0.95), (35, 0.97), (65, 1.00), (110, 1.04), (240, 1.12)]
 
 # Approximate share of a race's average speed held at threshold, used by the
 # `race` command (threshold ≈ the pace you can hold for ~50–60 min).
@@ -154,6 +170,29 @@ def cmd_race(args):
     print(f"Race pace {fmt_pace(pace)}/km over {args.distance} km")
     print(f"Estimated threshold pace ≈ {fmt_pace(thr)}/km "
           f"(factor {factor} for ~{nearest} km; hilly/trail races understate fitness)")
+
+
+def cmd_power(args):
+    if args.effort_watts and args.effort_minutes:
+        factor = next((f for limit, f in EFFORT_TO_RFTP if args.effort_minutes <= limit), 1.12)
+        est = args.effort_watts * factor
+        print(f"Effort {args.effort_watts:.0f} W for {args.effort_minutes:.0f} min -> rFTP ≈ {est:.0f} W "
+              f"(factor {factor}; an estimate, the same device only)")
+        if not args.rftp:
+            args.rftp = est
+    if not args.rftp:
+        sys.exit("power needs --rftp, or --effort-watts with --effort-minutes")
+    print(f"\nRunning power zones, rFTP {args.rftp:.0f} W")
+    print(f"{'Zone':<11} {'watts':<12} {'% rFTP':<10} use")
+    for name, lo, hi, use in POWER_ZONES:
+        print(f"{name:<11} {round(lo * args.rftp)}–{round(hi * args.rftp):<7} {lo * 100:.0f}–{hi * 100:.0f} %   {use}")
+    for item in args.values or []:
+        parts = item.split("-")
+        out = []
+        for p in parts:
+            v = float(p)
+            out.append(f"{v:.0f} % = {v / 100 * args.rftp:.0f} W" if v <= 200 else f"{v:.0f} W = {v / args.rftp * 100:.1f} %")
+        print(f"{item:<12} ->  " + "  |  ".join(out))
 
 
 def fmt_time(secs):
@@ -269,6 +308,13 @@ def main():
     p.add_argument("--race2-time")
     p.add_argument("--training-pace", help="mean pace of all runs over weeks -9 to -1, m:ss (Tanda)")
     p.set_defaults(func=cmd_predict)
+
+    w = sub.add_parser("power", help="running power zones and watts <-> % of rFTP")
+    w.add_argument("--rftp", type=float, help="running FTP in watts")
+    w.add_argument("--effort-watts", type=float, help="average power of a hard effort (race or test)")
+    w.add_argument("--effort-minutes", type=float)
+    w.add_argument("values", nargs="*", help="watts (e.g. 300) or percents (e.g. 95-100)")
+    w.set_defaults(func=cmd_power)
 
     s = sub.add_parser("splits", help="race pacing table")
     s.add_argument("--distance", type=float, required=True, help="km")

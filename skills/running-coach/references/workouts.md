@@ -57,6 +57,30 @@ In it, distance reps are written as their expected duration at the target pace (
 4:12 ≈ 252 s). For a time-based runner that's what goes to TP. Either way, name the step with
 the distance or time and the pace ("1 km @ 4:10–4:15"), so the watch screen says what to do.
 
+### Prescribing by running power
+
+For runners with power (Stryd, newer Garmin, Coros) who trust it, especially on hills where pace
+misleads: `paces.py power --rftp <W>` gives the zones and converts watts ↔ % of rFTP. In the
+spec, use `"metric": "power"` (TrainingPeaks `percentOfFtp`), and give each step a `pace` estimate
+if the workout is written in km.
+
+| Session | % of rFTP |
+|---|---|
+| Recovery | 60–70 % |
+| Easy / long run | 65–80 % |
+| Steady, marathon pace | 80–90 % |
+| Threshold / cruise intervals | 95–100 % |
+| Sub-threshold | 88–95 % |
+| VO2 intervals | 105–115 % |
+| Strides, short reps | 115–130 % |
+
+- rFTP: take it from TrainingPeaks (its run power zones are built on it), or estimate it with
+  `paces.py power --effort-watts <W> --effort-minutes <min>` from a recent race or hard effort.
+  Watts from different devices aren't comparable (wrist power on Garmin reads higher than Stryd).
+- Keep HR as the check: power targets with an HR cap on easy runs.
+- Power lags reality less than HR and isn't fooled by hills, but wind, treadmill calibration and
+  firmware changes shift it. Retest rFTP with the threshold (every 8–12 weeks).
+
 ---
 
 ## Easy / aerobic

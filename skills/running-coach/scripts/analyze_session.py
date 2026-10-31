@@ -2,7 +2,7 @@
 """Turn one completed run into numbers a coach can judge: reps or steady-state drift.
 
 Usage:
-  analyze_session.py analysis.json [--lthr 174] [--threshold-pace 4:10] [--easy-cap 145]
+  analyze_session.py analysis.json [--lthr 174] [--threshold-pace 4:10] [--easy-cap 145] [--rftp 420]
 
 analysis.json is TrainingPeaks' tp_analyze_workout output: either the tool's response saved to a
 file, or the file it writes itself (its "data_file", e.g. /tmp/tp-mcp/analysis/workout_<id>.json,
@@ -70,7 +70,9 @@ def analyze_intervals(laps, args):
     thr = parse_pace(args.threshold_pace) if args.threshold_pace else None
     reps = [l for l in laps if l.get("Intensity") == "Active"]
     print(f"Interval session: {len(reps)} reps")
-    print(f"{'rep':>3} {'dist':>6} {'time':>6} {'pace':>6} {'NGP':>6} {'avgHR':>6} {'maxHR':>6} {'%thr':>5}")
+    power = args.rftp and all(r.get("AveragePower") for r in reps)
+    print(f"{'rep':>3} {'dist':>6} {'time':>6} {'pace':>6} {'NGP':>6} {'avgHR':>6} {'maxHR':>6} {'%thr':>5}"
+          + (f" {'W':>5} {'%rFTP':>6}" if power else ""))
     paces = []
     for i, r in enumerate(reps, 1):
         pace = r.get("AveragePace") or (r["TotalTimerTime"] / r["TotalDistance"])
@@ -78,7 +80,8 @@ def analyze_intervals(laps, args):
         pct = f"{thr / pace * 100:.0f}" if thr else "--"
         print(f"{i:>3} {r['TotalDistance']:>5.2f}k {fmt_time(r['TotalTimerTime']):>6} {fmt_pace(pace):>6} "
               f"{fmt_pace(r.get('NormalizedGradedPace')):>6} {r.get('AverageHeartRate', 0):>6} "
-              f"{r.get('MaximumHeartRate', 0):>6} {pct:>5}")
+              f"{r.get('MaximumHeartRate', 0):>6} {pct:>5}"
+              + (f" {r['AveragePower']:>5.0f} {r['AveragePower'] / args.rftp * 100:>5.0f}%" if power else ""))
     if len(paces) < 2:
         return
     mean = statistics.mean(paces)
@@ -142,6 +145,13 @@ def analyze_steady(total, laps, series, args):
         print(f"efficiency factor {ef:.2f} (NGP m/min per beat; compare with the runner's own similar runs, "
               f"higher = fitter)")
     tp_dec = total.get("Pa:Hr")
+    if total.get("Pw:Hr") is not None:
+        notes_pw = f"TrainingPeaks Pw:Hr (power-based) {total['Pw:Hr']:.1f} %"
+        if gain / max(dist, 1) >= 10:
+            notes_pw += " (on hills power is the fairer measure of effort than graded pace)"
+        print(notes_pw)
+    if args.rftp and total.get("NP"):
+        print(f"normalized power {total['NP']:.0f} W = {total['NP'] / args.rftp * 100:.0f} % of rFTP")
     own = series_halves(series) if series else None
     if dur / 60 < MIN_STEADY_MIN:
         print(f"NOTE {dur / 60:.0f} min is short for decoupling; read it loosely")
@@ -167,6 +177,7 @@ def main():
     ap.add_argument("--lthr", type=int)
     ap.add_argument("--threshold-pace")
     ap.add_argument("--easy-cap", type=int, help="easy-run HR cap, e.g. 145")
+    ap.add_argument("--rftp", type=float, help="running FTP in watts (adds power columns)")
     args = ap.parse_args()
     try:
         total, laps, series = load(args.analysis)

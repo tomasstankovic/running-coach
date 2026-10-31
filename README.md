@@ -7,8 +7,14 @@
 
 <p align="center">
   <b>Running Coach for Claude</b>: a running coach that knows your history, tells you the truth, and puts the plan on your watch.<br>
-  Weekly plans · race blocks · reviews · morning check-ins · strength · race day<br>
+  Season plans · weekly plans · HRV check-ins · session analysis · strength · race day<br>
   TrainingPeaks · Strava · or just a conversation
+</p>
+
+<p align="center">
+  <a href="https://github.com/tomasstankovic/running-coach/actions/workflows/check.yml"><img src="https://github.com/tomasstankovic/running-coach/actions/workflows/check.yml/badge.svg" alt="checks"></a>
+  <a href="https://github.com/tomasstankovic/running-coach/releases/latest"><img src="https://img.shields.io/github/v/release/tomasstankovic/running-coach" alt="latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
 </p>
 
 ---
@@ -55,6 +61,12 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   file for Google/Apple/Outlook calendar.
 
 It replies in your language (tested in English and Slovak).
+
+<p align="center"><img src="docs/img/plan-page.jpg" width="720" alt="Season plan page: phases, planned and actual weekly volume, races"></p>
+
+More in **[examples](docs/examples.md)**: a week stopped by the load check, an interval session
+read rep by rep, a morning check-in, a marathon prediction. What changed when:
+**[changelog](CHANGELOG.md)**.
 
 ## Install
 
@@ -146,8 +158,9 @@ skills/running-coach/
 
 ## Releasing a new version
 
-Run `python3 tests/check_skill.py` (CI runs it on every push: description length and YAML,
-referenced files, source tags, version). Bump `version` in `.claude-plugin/plugin.json` (semver)
+Run `python3 tests/check_skill.py` and `python3 -m unittest discover -s tests` (CI runs both on
+every push: description length and YAML, referenced files, source tags, version, and behaviour
+tests of every script on fictional data). Add an entry to `CHANGELOG.md`. Bump `version` in `.claude-plugin/plugin.json` (semver)
 with every change you want users to receive; installed copies update only when the version
 changes. Then push to `main`.
 

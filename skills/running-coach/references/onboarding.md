@@ -229,7 +229,8 @@ updated: 2026-11-02 · source: TrainingPeaks
 - Units: km for everything (time in brackets); hilly runs: km stays, HR cap rules
 - Terrain: easy/long runs rolling, gravel + forest (median 16 m/km); quality on a flat road loop (3 m/km)
 - Quality: by pace on the flat loop; on hills by HR
-- Intensity guide: easy by HR cap ≤ 145; quality by pace, HR as a check; running power available (Garmin), not used yet
+- Intensity guide: easy by HR cap ≤ 145; quality by pace, HR as a check
+- Power: Garmin wrist power, rFTP ~380 W (TrainingPeaks); used on hilly runs and for long-run analysis
 - Goal race: flat road
 
 ## Health

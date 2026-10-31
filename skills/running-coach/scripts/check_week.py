@@ -249,14 +249,15 @@ def main(path):
             else:
                 report("OK", f"{role} week volume {change:+.0f} % vs last week")
         else:
-            small = total_min - base <= 30  # small absolute jumps are fine at low volume
+            # small absolute jumps (<= 30 min) are fine at low volume (< 4 h a week)
+            small = total_min - base <= 30 and base < 240
             # coming back from a lighter week: compare with the last normal week instead
             reference = max(p["min"] for p in recent)
             if last["min"] < 0.85 * reference:
                 base_ref = reference
                 change_ref = (total_min - base_ref) / max(base_ref, 1) * 100
                 note = f" (last week was lighter; {change_ref:+.0f} % vs the {base_ref:.0f}-min week before)"
-                change, small = change_ref, total_min - base_ref <= 30
+                change, small = change_ref, total_min - base_ref <= 30 and base_ref < 240
             else:
                 note = ""
             cautious = bool(data.get("cautious"))

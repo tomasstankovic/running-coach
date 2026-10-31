@@ -89,6 +89,7 @@ python scripts/paces.py zones --threshold-pace 4:10 --lthr 174   # or --tp-setti
 python scripts/paces.py convert --threshold-pace 4:10 5:50-6:15 4:25-4:30 102-104
 python scripts/paces.py race --distance 21.1 --time 1:34:20      # threshold from a race
 python scripts/paces.py predict --distance 10 --time 48:30       # equivalent race times
+python scripts/paces.py power --rftp 420 70-80 95-100            # running power zones (if used)
 ```
 
 - With TP, its zones are the source of truth. For `--tp-settings`, save **only** the
