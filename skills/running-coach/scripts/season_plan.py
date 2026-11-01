@@ -17,7 +17,8 @@ Spec:
   "start": "2026-11-09",                      # Monday of the first planned week
   "current": {"km": 40, "long_km": 14},       # typical recent week
   "runs_per_week": 5, "easy_pace": "6:00",    # converts km to time
-  "races": [{"name": "City HM", "date": "2027-03-14", "distance_km": 21.1, "priority": "B"},
+  "races": [{"name": "City HM", "date": "2027-03-14", "distance_km": 21.1, "priority": "B",
+             "goal": "1:35:00"},                # optional goal, course_pct, temp_c: used by forecast.py
             {"name": "Spring Marathon", "date": "2027-04-25", "distance_km": 42.2, "priority": "A"}],
   "peak_km": 65,                              # optional; default by goal distance
   "rhythm": 3,                                # build weeks before a deload: 3 (3:1) or 2 (2:1)

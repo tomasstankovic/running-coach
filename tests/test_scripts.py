@@ -364,6 +364,72 @@ class AnalyzeSession(TempDir):
         self.assertIn("efficiency factor", out)
 
 
+class Forecast(TempDir):
+    """forecast.py on a fictional runner: a 10k and a half this autumn, ~40 km a week."""
+
+    def inp(self, **extra):
+        base = {"today": "2026-11-01", "weekly_km": 40, "training_pace": "5:40",
+                "results": [{"date": "2026-10-11", "km": 10, "time": "45:00", "kind": "race", "name": "10k"},
+                            {"date": "2026-10-25", "km": 21.0975, "time": "1:40:00", "kind": "race", "name": "HM"}]}
+        base.update(extra)
+        return base
+
+    def plan(self, km):
+        weeks = [{"week_start": (date(2026, 11, 2) + timedelta(weeks=i)).isoformat(), "km": km} for i in range(26)]
+        races = [{"name": "Spring M", "date": "2027-04-25", "distance_km": 42.195, "priority": "A", "goal": "3:15:00"}]
+        return str(self.write("plan.json", {"spec": {"races": races}, "weeks": weeks}))
+
+    def rows(self, data):
+        return {r["id"]: r for r in json.loads(run("forecast.py", self.write("f.json", data), "--json").stdout)}
+
+    def test_current_form_follows_the_races(self):
+        rows = self.rows(self.inp())
+        ten, half = rows["2026-11-01_now_10"], rows["2026-11-01_now_21.0975"]
+        self.assertLess(abs(ten["mid"] - 2700), 60)        # close to the 45:00 just run
+        self.assertLess(abs(half["mid"] - 6000), 90)       # close to the 1:40 just run
+        self.assertLessEqual(half["low"], half["mid"])
+        self.assertLessEqual(half["mid"], half["high"])
+
+    def test_marathon_uses_volume_not_riegel(self):
+        out = run("forecast.py", self.write("f.json", self.inp())).stdout
+        self.assertIn("too fast without marathon volume", out)
+        mar = self.rows(self.inp())["2026-11-01_now_42.195"]
+        riegel = 6000 * (42.195 / 21.0975) ** 1.06
+        self.assertGreater(mar["mid"], riegel)
+
+    def test_old_results_are_ignored(self):
+        old = self.inp(results=[{"date": "2026-03-01", "km": 10, "time": "45:00", "kind": "race"}], weekly_km=None)
+        out = run("forecast.py", self.write("f.json", old)).stdout
+        self.assertIn("not enough data", out)
+
+    def test_plan_volume_moves_the_marathon_forecast(self):
+        low = self.rows(self.inp(plan=self.plan(40)))
+        high = self.rows(self.inp(plan=self.plan(65)))
+        key = "2026-11-01_2027-04-25_42.195"
+        self.assertLess(high[key]["mid"], low[key]["mid"])
+        self.assertEqual(high[key]["goal"], 3 * 3600 + 15 * 60)
+
+    def test_goal_verdict_and_heat(self):
+        races = [{"name": "Summer HM", "date": "2027-06-20", "distance_km": 21.0975, "goal": "1:30:00", "temp_c": 25}]
+        out = run("forecast.py", self.write("f.json", self.inp(races=races))).stdout
+        self.assertIn("out of reach", out)
+        self.assertIn("25 °C", out)
+        cool = self.rows(self.inp(races=[dict(races[0], temp_c=12)]))["2026-11-01_2027-06-20_21.0975"]
+        hot = self.rows(self.inp(races=races))["2026-11-01_2027-06-20_21.0975"]
+        self.assertGreater(hot["mid"], cool["mid"])
+
+    def test_threshold_disagreement_is_flagged(self):
+        out = run("forecast.py", self.write("f.json", self.inp(threshold_pace="4:05"))).stdout
+        self.assertIn("the threshold predicts", out)
+
+    def test_workout_efforts_are_a_floor_only(self):
+        data = self.inp(results=[{"date": "2026-10-20", "km": 5, "time": "21:00", "kind": "effort"}], weekly_km=None)
+        out = run("forecast.py", self.write("f.json", data)).stdout
+        self.assertIn("5 km", out)
+        self.assertIn("Marathon", out)
+        self.assertIn("not enough data", out)   # no marathon from a 5 km workout effort
+
+
 class PageDocs(TempDir):
     def test_rows_become_batch_writes(self):
         rows = [{"date": f"2026-10-{d:02d}", "hrv7": 50} for d in range(1, 61) if d <= 31] * 2

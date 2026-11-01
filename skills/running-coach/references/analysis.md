@@ -82,6 +82,43 @@ End every analysis with what changes next time, in the runner's language:
 
 ## Race predictions
 
+**`scripts/forecast.py`** answers "what could I run now?" over 5 km, 10 km, half and marathon, and
+"what can I expect at my race?" for every race in the season. It combines everything below and
+prints ranges, not single numbers.
+
+Gather the input (format in the script's docstring):
+- **results**: races of the last ~16 weeks (`kind: "race"`), and best efforts inside workouts
+  (`kind: "effort"`). With TrainingPeaks, `tp_get_peaks` (sport `Run`, `days` 112) for
+  `speed5K`, `speed10K`, `speedHalfMarathon`; `value` is speed in m/s, so time = km × 1000 /
+  value (skip entries far slower than easy pace: walks, GPS artefacts). A peak whose workout
+  was a race (the title, `tp_get_events`, or the runner says so) is a race; the rest are
+  efforts. Efforts only count as "at least this fast".
+- **threshold_pace** from the profile; **weekly_km**: mean of the last 8 weeks; **training_pace**:
+  total time / total km of all runs in those weeks (Tanda's input).
+- **history**: earlier best races with the weekly km of the 8 weeks before them (onboarding's
+  history summary). They set the optimistic end when the plan brings the volume back.
+- **plan**: the season plan file, so races and planned volume come from it; add `goal`,
+  `course_pct` (a slow course +1–3 %, a fast one −1 %) and `temp_c` to a race when known.
+
+Read it:
+- **Today's level is the slow end of a race forecast.** The fast end comes from the plan's
+  volume (marathon models) and the runner's own earlier results at a similar volume. Nothing
+  else is assumed: there is no reliable "+x % per block", so the forecast moves only with new
+  evidence (a race, a test, key sessions). Re-run it in every weekly review.
+- **Present a range and a likely time**, with what it rests on ("from your October half and
+  33 km a week"). A goal inside the range is realistic; up to ~3 % faster than the fast end is a
+  stretch; more is out of reach on current evidence: say so and offer options (more weeks, more
+  volume, a different goal) as in the onboarding reality check.
+- **Disagreement is information.** Races and threshold > 3 % apart: the threshold or the races
+  are off (hills, heat, a bad day): suggest a test. Marathon models far apart: little
+  marathon-specific evidence yet; the tune-up half and long runs with marathon-pace segments
+  narrow it.
+- **Plan page**: `forecast.py input.json --json` gives rows for the `predictions` collection
+  (`page_docs.py rows.json --collection predictions --id id`): the page shows each race's latest
+  forecast with its trend over the weeks and a current-form table.
+
+The pieces it is built from:
+
 `paces.py predict` gives Riegel equivalents, which fit well up to the half marathon. For the
 marathon, Riegel is often 10+ minutes too optimistic for recreational runners [S25]. With
 `--weekly-km` it adds the Vickers & Vertosick models (a race plus weekly volume; with two races

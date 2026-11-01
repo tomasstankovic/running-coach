@@ -66,8 +66,9 @@ race-week part of a block.
 
 Produce one compact race plan (in the runner's language):
 
-1. **Goal & realistic range**: from the current threshold and recent training (`paces.py race` in
-   reverse: is the goal pace sustainable? HM ≈ 98–100 % of threshold speed for well-trained, ~95 %
+1. **Goal & realistic range**: start from `forecast.py` (`analysis.md` "Race predictions"): its
+   race-day range already holds recent results, threshold, volume, course and heat. Then check it
+   against the current threshold and recent training (`paces.py race` in reverse: is the goal pace sustainable? HM ≈ 98–100 % of threshold speed for well-trained, ~95 %
    for less experienced runners; marathon ≈ 88–92 %; 10k ≈ 102–104 %). For the marathon also run
    `paces.py predict` with `--weekly-km` (and a second race or `--training-pace`): Riegel alone
    is often 10+ min too fast for recreational runners (`analysis.md`). Give an A goal and a safe

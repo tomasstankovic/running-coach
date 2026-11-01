@@ -21,7 +21,7 @@ tell the athlete to run `tp-mcp auth` again. The session cookie expires every fe
 | `tp_get_focus_event`, `tp_get_next_event`, `tp_get_events` | goal race and other races | |
 | `tp_get_atp` | the runner's Annual Training Plan: weekly TSS target, period, races | read-only through the MCP, max 90 days per call; ask whether to respect it (`season.md` §3) |
 | `tp_get_metrics` | HRV, sleep, resting HR, weight (if logged) | |
-| `tp_get_peaks`, `tp_get_workout_prs` | best efforts | threshold sanity check |
+| `tp_get_peaks`, `tp_get_workout_prs` | best efforts (`speed5K`, `speed10K`, `speedHalfMarathon`, `speedMarathon`; `value` in m/s) | threshold sanity check; results for `forecast.py` |
 
 Strength workouts don't show up in `tp_get_workouts`. Use `tp_get_strength_workouts` if strength
 training matters for the plan.

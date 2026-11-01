@@ -3,6 +3,21 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.9.0
+
+- **Race predictions** (`forecast.py`): current form over 5 km, 10 km, half and marathon, and a
+  race-day forecast for every race in the season. Recent races count most (by age and distance),
+  workout best efforts only as "at least this fast", threshold as a second view (a > 3 % gap is
+  flagged as a stale threshold or misleading races), and the marathon comes from the volume
+  models instead of Riegel. Race day: today's level is the slow end; the plan's volume and the
+  runner's own earlier results at similar volume set the fast end; course and heat adjust it. The
+  goal is judged as realistic, a stretch or out of reach. No generic "+x % per block".
+- **Plan page**: a predictions section with each race's forecast, its trend over the weeks against
+  the goal, and a current-form table (`predictions` collection).
+- Weekly review re-runs the forecast; onboarding and race plans start from it. A Predict mode in
+  the skill.
+- README: the Slovak section is gone.
+
 ## 0.8.1
 
 - **Fix: session analysis on real watch files.** Checked against nine real TrainingPeaks sessions:

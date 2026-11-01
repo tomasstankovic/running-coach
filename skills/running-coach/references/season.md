@@ -98,10 +98,14 @@ setup allows, and keep one visible view of it.
      (one per day: HRV 7-day mean, the normal band, verdict, resting HR, sleep).
    - **Aerobic fitness**: `analyze_session.py <data_file> --json --title "..."` for long and
      steady runs → rows for the `sessions` collection (EF, decoupling, km, date).
+   - **Predictions**: `forecast.py input.json --json` → rows for the `predictions` collection
+     (`--id id`): each race's forecast range over the weeks and the current form table
+     (`analysis.md` "Race predictions").
    - `scripts/page_docs.py rows.json --collection trends --id date --out-dir docs` turns any of
      these lists into document files plus the `ArtifactData` batch writes, like the plan export.
 
-The page shows the races, this week's sessions, the next race countdown, the volume chart
+The page shows the races, this week's sessions, the next race countdown, race predictions
+(each race's forecast and its trend, current form), the volume chart
 (planned bars by phase, actual line, today marker), readiness (HRV 7-day mean in the runner's
 band, coloured by verdict), aerobic fitness (EF of steady runs, coloured by decoupling), the week
 table and the change log. It is in the runner's
@@ -144,6 +148,8 @@ Review mode (`SKILL.md`) is the weekly checkpoint. With the plan it also:
    Then update those week documents on the page, mark the week's `days` done, and add the
    long run's `analyze_session.py --json` row to `sessions`.
 2. Compares the week with its row: volume ±15 %, the key session done, the long run.
+   Re-runs `forecast.py` and adds its rows to `predictions`; a race goal that left the range is
+   part of the review's decisions.
 3. Applies section 5 if something changed, then plans next week in detail (Week mode) from the
    next row.
 

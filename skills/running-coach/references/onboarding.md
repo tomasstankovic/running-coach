@@ -125,7 +125,7 @@ Summarize as a short assessment the runner can read:
 This is where a good coach earns trust: by being honest before the plan, not after the race.
 Put three things side by side: **the goal** (target time, date), **the time the runner will
 really give** (runs/week, hours, which days) and **where they are now** (recent results,
-`paces.py predict`, current vs. peak fitness from the history).
+`forecast.py` for current form and the goal race, current vs. peak fitness from the history).
 
 Typical requirements for recreational runners (a guide, not a law; talent, age and history move
 these up or down):

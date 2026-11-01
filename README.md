@@ -48,6 +48,10 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
 - **Reads your sessions like a coach.** Rep-by-rep evenness and fade, heart rate vs. threshold,
   aerobic decoupling and efficiency on long runs, and marathon predictions that account for your
   weekly volume.
+- **Knows what you could run.** Current form over 5 km, 10 km, half and marathon, and a forecast
+  for each of your races, from your recent races, threshold, weekly volume, your plan and your own
+  past results, adjusted for course and heat. Ranges, not wishful single numbers; the plan page
+  shows how each forecast moves week by week, and it tells you when a goal drifts out of reach.
 - **Computed, not guessed.** Paces, heart-rate zones, race predictions and splits come from
   scripts, so they're the same every week.
 - **Checked before you see it.** A load checker flags volume jumps above ~10 %, back-to-back hard
@@ -150,6 +154,7 @@ skills/running-coach/
     ├── check_week.py           load-progression checks (TP, Strava, or weekly totals)
     ├── readiness.py            HRV 7-day trend / resting HR / sleep vs. personal baseline
     ├── analyze_session.py      one session from TrainingPeaks → reps, drift, efficiency
+    ├── forecast.py             current form over 5k–marathon + race-day forecast per race
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
     ├── season_plan.py          rough season plan, re-planning, actuals, export to the plan page
     ├── page_docs.py            any list of rows → plan page database writes

@@ -1,6 +1,6 @@
 ---
 name: running-coach
-description: Running coach for any question about the user's own running training, even if the skill is not named. Use it for "should I run today?", HRV, sleep and readiness checks, "plan my week", race and season plans (5k to marathon), "how did my week go", analysing a run or intervals, illness or missed sessions, strength for runners, race pacing and fuelling, zones and threshold. Slovak triggers such as "mám dnes behať?", "ako som na tom s HRV", "naplánuj mi týždeň", "tréningový plán na polmaratón", "vyhodnoť týždeň", "som chorý". Reads TrainingPeaks (zones, CTL/TSB, HRV, workouts) or Strava, computes paces, load limits and HRV readiness with its own scripts, keeps a season plan, and writes to TrainingPeaks only after the runner confirms. Load it before answering from memory or calling TrainingPeaks tools directly.
+description: Running coach for any question about the user's own running training, even if the skill is not named. Use it for "should I run today?", HRV, sleep and readiness checks, "plan my week", race and season plans (5k to marathon), "how did my week go", analysing a run or intervals, illness or missed sessions, strength for runners, race predictions ("what could I run a 10k in?"), race pacing and fuelling, zones and threshold. Slovak triggers such as "mám dnes behať?", "ako som na tom s HRV", "naplánuj mi týždeň", "na aký čas mám na maratóne", "tréningový plán na polmaratón", "vyhodnoť týždeň", "som chorý". Reads TrainingPeaks (zones, CTL/TSB, HRV, workouts) or Strava, computes paces, load limits and HRV readiness with its own scripts, keeps a season plan, and writes to TrainingPeaks only after the runner confirms. Load it before answering from memory or calling TrainingPeaks tools directly.
 ---
 
 # Running coach
@@ -27,6 +27,7 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 | **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
 | **Check-in** | "should I run today?", "slept badly" | `references/checkin-and-race.md` |
 | **Analyse** | "how was my long run?", "look at Wednesday's intervals" | `references/analysis.md` |
+| **Predict** | "what could I run a 10k in now?", "is 3:20 realistic for my spring marathon?" | `references/analysis.md` "Race predictions" |
 | **Race** | "race plan / pacing / what to eat" | `references/checkin-and-race.md` |
 | **Strength** | "add strength", or the profile says they want it; discuss whether and what setting first | `references/strength.md` |
 
@@ -89,6 +90,7 @@ python scripts/paces.py zones --threshold-pace 4:10 --lthr 174   # or --tp-setti
 python scripts/paces.py convert --threshold-pace 4:10 5:50-6:15 4:25-4:30 102-104
 python scripts/paces.py race --distance 21.1 --time 1:34:20      # threshold from a race
 python scripts/paces.py predict --distance 10 --time 48:30       # equivalent race times
+python scripts/forecast.py input.json                             # current form + forecast per race
 python scripts/paces.py power --rftp 420 70-80 95-100            # running power zones (if used)
 ```
 
@@ -227,7 +229,9 @@ fitness trend, readiness trend, missed or extra sessions.
 long run, a race). Mention them, and plan the next weeks from the new reference.
 
 With a season plan, also fill in the week's actuals, compare it with its row, and apply the
-re-planning rules (`season.md` §5–6). Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
+re-planning rules (`season.md` §5–6). Re-run `scripts/forecast.py` with the week's new results
+(`analysis.md` "Race predictions") and update the predictions on the plan page; when a race goal
+falls outside the forecast range, say so with the numbers and offer the options. Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
 were above 150 bpm, so slow down, don't lengthen"). Add them to the profile's decision log and
 carry them into next week's descriptions.
 
