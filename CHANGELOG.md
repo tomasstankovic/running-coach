@@ -3,6 +3,17 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.9.1
+
+- **Choose your setup.** The first conversation explains where the coach keeps things in the
+  runner's setup (TrainingPeaks notes, a working folder, or files in a Claude Project), what that
+  setup gives and misses, and the better option; the choice goes into the profile's `Setup:`
+  line.
+- **Folder sessions save files themselves.** In Claude Code or Cowork the profile (without TP),
+  `plan.json` and `season-plan.md` go into `running-coach/` in the folder and are read at the
+  start of every chat, instead of being handed over for download.
+- README: a "Choose your setup" comparison with what each setup gives and misses.
+
 ## 0.9.0
 
 - **Race predictions** (`forecast.py`): current form over 5 km, 10 km, half and marathon, and a

@@ -49,7 +49,10 @@ including whether it's research or coaching practice. Record agreed changes and 
 ## Step 0: Profile
 
 Look for the runner's profile before anything else (`onboarding.md` §1: a TrainingPeaks note
-titled `Running coach profile`, or `athlete-profile.md` in the project). It holds goals,
+titled `Running coach profile`, `running-coach/athlete-profile.md` in a working folder, or
+`athlete-profile.md` in the Project). Where things are kept depends on the setup
+(`onboarding.md` "Where things are kept"); in a folder, write files yourself instead of offering
+downloads. It holds goals,
 availability, injuries, preferences and recent coaching decisions. If there's none, run
 Onboarding. Update the profile after reviews, threshold changes and goal changes.
 

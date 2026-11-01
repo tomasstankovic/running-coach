@@ -70,7 +70,9 @@ ask.
 ## 4. Where the plan lives
 
 The plan file (`plan.json` from the script) is the source of truth. Store it where the runner's
-setup allows, and keep one visible view of it.
+setup allows (`onboarding.md` "Where things are kept"): in a working folder as
+`running-coach/plan.json`, written directly; in chat as a file the runner adds to the Project.
+Keep one visible view of it.
 
 **Plan page with a fixed link (preferred when the `Artifact` and `ArtifactData` tools exist).**
 1. First time only: publish `assets/season-plan.html` with the `Artifact` tool, `icon`
@@ -112,7 +114,8 @@ table and the change log. It is in the runner's
 language when `lang` is `sk` or `en`; for other languages the labels stay English, while the
 week rows (key sessions, notes) are in the runner's language.
 
-**Without those tools** (e.g. claude.ai chat):
+**Without those tools** (e.g. claude.ai chat; in a working folder also save
+`running-coach/season-plan.md` next to `plan.json`):
 - TP: save `season_plan.py export plan.json --format markdown` as a TP note titled
   `Running coach plan` (same rules as the profile note: update its date so it stays in the
   90-day search window). Keep the full `plan.json` as a file in the Claude Project.

@@ -116,6 +116,23 @@ locally (Python standard library only), make no network calls, and work only on 
 Claude passes them. Your training data reaches Claude only through the connectors you choose to
 connect.
 
+## Choose your setup
+
+Where you talk to the coach decides what it can read, what it can write, and where it remembers
+you between chats. Claude itself starts every chat fresh; the coach keeps your profile and plan
+in one of these places.
+
+| Setup | Good | Missing | Where it remembers you |
+|---|---|---|---|
+| **TrainingPeaks + Claude desktop app, a session with a folder** (Code or Cowork) — *best results* | everything: HRV, sleep, CTL/TSB and workouts in; structured workouts out to your calendar and watch; the season page with a fixed link; weekly review and morning check-in on a schedule; files saved for you | desktop only (Mac/Windows); scheduled runs need the app open; trainingpeaks-mcp runs locally | profile as a TP note, plan on its page + in the folder |
+| **TrainingPeaks + a Claude Project in desktop chat** | full data in and out, structured workouts on your watch | no fixed-link page or schedules; the full plan file is yours to add to the Project; not on your phone (the TP connection is local) | profile and plan as TP notes |
+| **Strava** (web, desktop, mobile) | works everywhere, also on the phone; reads your runs and heart rate | read-only: sessions come as text + a calendar file; no HRV or sleep, so readiness relies on how you feel; no TSS/CTL | in a folder session: files there; in chat: files you add to the Project |
+| **No data** | works anywhere, no setup | it asks for what it can't read; analysis stays rough | as with Strava |
+
+**For the best results:** TrainingPeaks with the Claude desktop app, in its own session with a
+folder (e.g. `~/Documents/Running`). Keep a Claude Project in chat for quick questions on the go.
+In your first conversation the coach explains what your setup gives you and lets you choose.
+
 ## How to use it
 
 Just talk to it like a coach. There's no command to type: the skill loads by itself whenever you
@@ -150,8 +167,9 @@ today?").
 **Where it remembers you.** With TrainingPeaks, your profile (goals, availability, zones,
 injuries, decisions from past reviews) is a note in your TrainingPeaks calendar called
 `Running coach profile`; you can read and edit it. The season plan lives on its page with a fixed
-link (Claude desktop app, Code tab) or, in chat, in a second note called `Running coach plan`.
-Without TrainingPeaks, both are files in your Claude Project.
+link or, in chat, in a second note called `Running coach plan`. In a folder session without
+TrainingPeaks, both are files in `running-coach/` in your folder; in chat without TrainingPeaks,
+files you add to your Claude Project (see "Choose your setup").
 
 **Tip.** In a Claude Project, put this in the project instructions so the skill always loads first:
 

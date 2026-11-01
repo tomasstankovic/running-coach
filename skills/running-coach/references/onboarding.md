@@ -4,13 +4,40 @@ Run onboarding the first time you coach someone (no profile found), or when they
 over or set a new goal. Its purpose is that every later conversation starts from the same,
 written-down picture of the runner instead of re-asking or guessing.
 
+## Where things are kept (the runner's setup)
+
+What the coach writes down (profile, season plan, weekly sessions) lives where this
+conversation can reach it again next time. That depends on the setup:
+
+| | Profile | Season plan | Weekly sessions |
+|---|---|---|---|
+| **TrainingPeaks connected** | TP note `Running coach profile` | plan page (with the `Artifact` tools) or TP note `Running coach plan`; `plan.json` in the folder or the Project | TP calendar: structured, on the watch |
+| **A working folder** (Claude Code or Cowork, where you can write files) | `running-coach/athlete-profile.md` in the folder, unless TP | `running-coach/plan.json` + `season-plan.md`, and the plan page | TP, or text + `.ics` |
+| **Chat only, no TP** (Claude Project, Strava or manual) | `athlete-profile.md` for the runner to add to the Project | `season-plan.md` + `plan.json` to add to the Project | text + `.ics` |
+
+- With TrainingPeaks, the TP note stays the one profile even when a folder exists: every chat
+  and app can reach it. The folder keeps `plan.json` and the working files (week specs, exports).
+- In a folder, write the files yourself into `running-coach/` (create it) and read them at the
+  start of every conversation. Never hand the runner a file to download there.
+- Only in chat without TP does the runner carry files: say so plainly, and give the updated
+  file after every change so they can replace the old one in the Project.
+
+**In the first conversation**, explain it in 3–4 lines: where things will be kept in this setup,
+what the runner gets and what they miss, and the better option if there is one. Best results
+come from TrainingPeaks plus a Claude desktop session with a folder (data in and out, structured
+workouts on the watch, the plan page, scheduled weekly reviews). Chat with TP comes next; Strava
+works everywhere but only reads (no HRV, no writing workouts); manual is the floor. If more than
+one setup fits, let them choose. Record it in the profile's `Setup:` line and don't repeat the
+explanation later unless they ask.
+
 ## 1. Look for an existing profile first
 
 - **TrainingPeaks**: `tp_list_notes` for the last 90 days (90 is the tool's maximum range). The
   profile is the note titled `Running coach profile` (keep that exact title in every language, so
   it can be found). Open it with `tp_get_note`.
-- **No TP**: the profile is a file `athlete-profile.md`, usually in the claude.ai Project knowledge,
-  so it's already in the conversation's context. Otherwise ask the runner to paste it.
+- **A working folder**: `running-coach/athlete-profile.md` (read it with the file tools).
+- **No TP, chat**: the profile is a file `athlete-profile.md`, usually in the claude.ai Project
+  knowledge, so it's already in the conversation's context. Otherwise ask the runner to paste it.
 
 If a profile exists, don't onboard again. Read it, check it's still current (goal date passed?
 "updated" older than ~8 weeks?), and only ask about what changed.
@@ -190,12 +217,13 @@ scheduled weekly review.
 ## 6. Save the profile
 
 After the runner agrees, save it. **TP**: `tp_create_note` with title `Running coach profile`
-and today's date. **No TP**: produce `athlete-profile.md` for download and tell them to add it to
-their Claude Project's knowledge (or keep it and paste it in later).
+and today's date. **No TP, folder**: write `running-coach/athlete-profile.md`. **No TP, chat**:
+produce `athlete-profile.md` for download and tell them to add it to their Claude Project's
+knowledge (or keep it and paste it in later).
 
 Update the profile at the end of every review, after threshold changes, and when goals change:
 TP `tp_update_note` (also set `date` to today, so the note stays inside the 90-day search window).
-Without TP, give the updated file. Keep it under ~60 lines; the decision log keeps only the last
+Without TP, rewrite the file in the folder, or in chat give the updated file. Keep it under ~60 lines; the decision log keeps only the last
 ~8 entries.
 
 ## Profile template
@@ -203,6 +231,7 @@ Without TP, give the updated file. Keep it under ~60 lines; the decision log kee
 ```markdown
 # Running coach profile
 updated: 2026-11-02 · source: TrainingPeaks
+Setup: TrainingPeaks + folder (Claude desktop, Code) · profile: TP note · plan: page + running-coach/plan.json
 
 ## Goal
 - A race: City half marathon, 2027-03-28, road, target 1:38 (≈ 4:39/km)
