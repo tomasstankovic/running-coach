@@ -116,18 +116,50 @@ locally (Python standard library only), make no network calls, and work only on 
 Claude passes them. Your training data reaches Claude only through the connectors you choose to
 connect.
 
-## Try it
+## How to use it
 
-- "Plan my next week. I can run Tue, Wed, Fri, Sat and Sun."
-- "Build me a half marathon block for 12 April, goal 1:35."
-- "How did last week go?"
-- "I've had a cold since Tuesday. Adjust the rest of the week."
-- "Slept 5 hours, intervals are planned today. Should I go?"
-- "Add two strength sessions a week, I have a kettlebell at home."
-- "Race plan for Sunday's half: pacing and what to eat."
-- "I'm in the mountains until Sunday. Adjust the rest of the week."
-- "Plan my season up to the marathon in April; there's a half in March."
-- "Work is crazy for the next two weeks."
+Just talk to it like a coach. There's no command to type: the skill loads by itself whenever you
+ask about your running, in any language ("Mám dnes behať?" works as well as "Should I run
+today?").
+
+**Getting started**
+
+1. **Onboarding (once, ~15 min).** "Let's start. Go through my training history and ask what you
+   need." It studies the last 1–2 years, asks about your goals, days, units, terrain and health,
+   checks whether the goals fit your time and form, and saves your profile after you agree.
+2. **Season plan (once per season).** "Plan my season up to the marathon on 2 May; the half on
+   3 April is a B race." Races go to your calendar, the weeks to the plan, and you get the first
+   race predictions.
+3. **Then the weekly rhythm** below. Start a new chat for each topic: the coach reads your
+   profile at the start of every chat, so nothing has to be repeated.
+
+**What to ask**
+
+| When | Ask |
+|---|---|
+| morning, before a run | "Should I run today?" · "Slept 5 hours, intervals are planned. Should I go?" |
+| after a key session | "Look at today's intervals." · "How was my long run?" |
+| end of the week | "How did the week go? Plan the next one." |
+| any time | "Show me the season plan." |
+| predictions | "What could I run a half marathon in now?" · "Is 3:15 realistic for my marathon?" |
+| life happens | "I've had a fever since Tuesday." · "Work is crazy for two weeks." · "I'm in the mountains until Sunday." |
+| strength | "Add two strength sessions a week, I have a kettlebell at home." |
+| race week | "Race plan for Sunday's half: pacing and what to eat." |
+| zones and threshold | "Are my zones still right?" · "When should I retest my threshold?" |
+
+**Where it remembers you.** With TrainingPeaks, your profile (goals, availability, zones,
+injuries, decisions from past reviews) is a note in your TrainingPeaks calendar called
+`Running coach profile`; you can read and edit it. The season plan lives on its page with a fixed
+link (Claude desktop app, Code tab) or, in chat, in a second note called `Running coach plan`.
+Without TrainingPeaks, both are files in your Claude Project.
+
+**Tip.** In a Claude Project, put this in the project instructions so the skill always loads first:
+
+```
+For every question about my running (training, plans, races, predictions, HRV and recovery,
+illness, strength, TrainingPeaks data), load the running-coach skill first and follow it, even if
+I don't name it. Never write, change or delete anything in TrainingPeaks without my explicit yes.
+```
 
 ## What's inside
 
