@@ -1,7 +1,7 @@
 {
   "name": "running-coach",
   "displayName": "Running Coach",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Running coach for Claude: onboarding, weekly and season plans, HRV readiness check-ins, session analysis, reviews, strength and race-day plans, with research-backed load rules. Works with TrainingPeaks, Strava or manual input.",
   "icon": "./assets/logo.svg",
   "author": {

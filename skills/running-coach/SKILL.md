@@ -215,8 +215,9 @@ not pace.
 
 For the 1–2 sessions that matter (the key quality session, the long run), run `tp_analyze_workout`
 and then `scripts/analyze_session.py` on the file it saves (`data_file`), with `--lthr`,
-`--threshold-pace` and `--easy-cap`. Intervals get rep-by-rep pace, evenness, fade and HR vs. LTHR.
-Steady runs get decoupling, EF and time above the easy cap. Read the numbers with
+`--threshold-pace` and `--easy-cap`. Structured sessions get rep-by-rep pace, evenness, fade and
+HR vs. LTHR, per kind of rep; compare the reps with the planned paces yourself. Steady runs get
+decoupling, EF and time above the easy cap. Read the numbers with
 `references/analysis.md`, and track EF and decoupling of comparable long runs over the weeks:
 that trend shows aerobic progress better than pace. The analysis file contains GPS positions, so
 never copy it into a project, note or artifact. Then look at the week: load planned vs. actual,

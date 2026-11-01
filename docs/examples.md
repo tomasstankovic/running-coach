@@ -30,13 +30,16 @@ last month raised injury risk by ~60 % in a 5,200-runner study.
 `analyze_session.py` on 5 × 1 km from TrainingPeaks:
 
 ```
-rep   dist   time   pace    NGP  avgHR  maxHR  %thr
-  1  1.00k   4:06   4:06   4:06    163    170   102
-  ...
-  5  1.00k   4:02   4:02   4:02    167    174   103
+Structured session: 5 reps in 1 kind(s)
 
-mean pace 4:04 (102 % of threshold speed)
+Reps, kind 1: 5 x 1.00 km (~4:04)
+rep   dist    time   pace    NGP  avgHR  maxHR  %thr
+  1  1.00k    4:06   4:06   4:06    163    170   102
+  ...
+  5  1.00k    4:02   4:02   4:02    167    174   103
+mean graded pace 4:04 = 102 % of threshold speed
 OK pace variation 0.6 % (even)
+OK first to last rep -1.6 %
 OK HR at the end of reps vs LTHR 174: last rep max 174
 NOTE reps faster than threshold pace without HR above LTHR: the threshold may be stale (raise a retest)
 ```

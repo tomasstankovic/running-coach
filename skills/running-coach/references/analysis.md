@@ -19,6 +19,9 @@ same effort.
 
 - Only meaningful on runs of ~60 min or more, steady and below threshold. Intervals, fartleks
   and races don't count.
+- The script's own figure skips the first 10 minutes; TrainingPeaks' Pa:Hr uses the whole run.
+  They can differ by a few points (on the same runs: 2.9 vs 2.5, 2.2 vs −1.2, 5.0 vs 5.5); use
+  one of them consistently for the trend.
 - Hills: the script uses graded pace (NGP), but long descents and heat still distort it. On a
   hilly route compare only with the same route.
 - Use it as a **test of the long run**: when a runner's long runs stay under 5 % at their easy
@@ -41,12 +44,28 @@ the easy run wasn't easy. The fix is slower pace or walking the hills, not a sho
 
 ## Interval sessions
 
+**How the script finds the reps.** It reads the laps the watch recorded while running the
+structured workout:
+- laps inside one workout step are joined, so a 10-min rep that the 1-km auto-lap cut into three
+  laps is one rep;
+- Active steps run slower than 85 % of threshold speed (or 30 % slower than the hardest step when
+  no threshold is given), like a 10-min Z2 build-up, are listed as easy parts, not reps;
+- reps are grouped by kind (similar distance or time): in 2 km + 1 km + 2 × 400 m each kind is
+  judged on its own, and nested sets like 4 × (4 × 30 s) are one kind;
+- a few short accelerations (reps under a minute, 4 min in all at most) are strides: one line, no
+  evenness check, and the run is also read as a steady run.
+
+It does not know the planned paces (TrainingPeaks' "Structure" channel follows the planned
+timing, not the laps actually run). Compare each kind with the workout description yourself. A
+session run without a workout on the watch (manual laps, or none) is read as a steady run: say
+so, and judge the reps from the laps by hand if the runner did them.
+
 | Number | Reading |
 |---|---|
 | pace variation (CV) | < 2 % even, 2–4 % acceptable, > 4 % uneven (practice-based [S24]) |
 | first → last rep | > 3 % slower: faded (too fast a start, too short recoveries, or fatigue). > 2 % faster: the runner pushed the end; fine if planned, otherwise the reps were too easy |
 | % of threshold speed | is it the zone the session was meant for? Reps at 102–104 % are Z4, not threshold |
-| max HR at the end of reps vs LTHR | threshold reps end around LTHR − 3 to LTHR. Well above means the reps were above threshold |
+| max HR at the end of reps vs LTHR | threshold reps end around LTHR − 3 to LTHR. Well above means the reps were above threshold. Not for reps under a minute: HR lags behind them |
 | reps faster than threshold without HR above LTHR | the threshold may be stale: raise a retest (`methodology.md` "Settling the threshold") |
 | HR drop in recoveries | compare with the same session type in earlier weeks; a shrinking drop through the session means accumulating fatigue |
 

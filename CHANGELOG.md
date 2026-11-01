@@ -3,6 +3,16 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.8.1
+
+- **Fix: session analysis on real watch files.** Checked against nine real TrainingPeaks sessions:
+  `analyze_session.py` counted every lap as a rep. A 2 × 10 min tempo came out as 6 reps (the 1-km
+  auto-lap split each rep), 6 × 2 km as 12, a 10-min Z2 build-up counted as a rep, and mixed sessions
+  (2 km + 1 km + 2 × 400 m) got a "pushed the end" verdict across different kinds of rep. Now laps
+  inside one workout step are joined, easy Active steps are listed as easy parts, reps are judged per
+  kind, strides get one line, short reps skip HR checks, and short-rep pace comes from the lap's
+  average pace instead of the rounded distance. Seven new tests cover these cases.
+
 ## 0.8.0
 
 - **Morning brief**: `readiness.py --brief` (one line), `--json` and `--trend DAYS`; a

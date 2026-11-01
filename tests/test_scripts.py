@@ -241,6 +241,18 @@ class TpStructure(unittest.TestCase):
                                 "steps": [{"name": "easy", "minutes": 60, "pct": [75, 83]}]})
 
 
+def session(*steps):
+    """Laps the way a watch records a structured workout: (kind, step, km, seconds, avg HR, max HR)."""
+    laps, t = [], 0
+    for kind, step, km, secs, hr, hrmax in steps:
+        laps.append({"Intensity": kind, "WorkoutStepIndex": step, "TotalDistance": round(km, 2),
+                     "TotalTimerTime": secs, "AveragePace": secs / km, "NormalizedGradedPace": secs / km,
+                     "AverageHeartRate": hr, "MaximumHeartRate": hrmax, "MinimumHeartRate": hr - 25,
+                     "startOffsetSeconds": t, "stopOffsetSeconds": t + secs})
+        t += secs
+    return {"totals": {"Duration": t}, "lapData": laps, "data": []}
+
+
 class AnalyzeSession(TempDir):
     def laps(self):
         laps, t = [], 0
@@ -261,7 +273,7 @@ class AnalyzeSession(TempDir):
     def test_intervals_report_evenness_and_hr(self):
         out = run("analyze_session.py", self.write("a.json", self.laps()), "--lthr", 174,
                   "--threshold-pace", "4:10").stdout
-        self.assertIn("Interval session: 5 reps", out)
+        self.assertIn("Structured session: 5 reps in 1 kind", out)
         self.assertIn("pace variation", out)
         self.assertIn("LTHR 174", out)
 
@@ -269,6 +281,72 @@ class AnalyzeSession(TempDir):
         data = dict(self.laps(), startTimestamp="2026-10-28T11:15:14")
         row = json.loads(run("analyze_session.py", self.write("a.json", data), "--json", "--title", "5x1k").stdout)
         self.assertEqual((row["date"], row["kind"], row["reps"], row["title"]), ("2026-10-28", "intervals", 5, "5x1k"))
+
+    def test_auto_laps_inside_a_rep_are_joined(self):
+        # 2 x 10 min tempo; the watch's 1-km auto-lap splits each rep into three laps
+        steps = [("Warmup", 0, 2.5, 900, 128, 136)]
+        for _ in range(2):
+            steps += [("Active", 1, 1.0, 266, 152, 158), ("Active", 1, 1.0, 265, 160, 165),
+                      ("Active", 1, 0.26, 69, 163, 166), ("Rest", 2, 0.4, 180, 135, 160)]
+        steps += [("Cooldown", 4, 1.7, 600, 133, 139)]
+        out = run("analyze_session.py", self.write("t.json", session(*steps)), "--lthr", 174).stdout
+        self.assertIn("Structured session: 2 reps in 1 kind", out)
+        self.assertIn("2 x 2.26 km (~10:00)", out)
+        row = json.loads(run("analyze_session.py", self.write("t.json", session(*steps)), "--json").stdout)
+        self.assertEqual((row["kind"], row["reps"]), ("intervals", 2))
+
+    def test_easy_build_up_is_not_a_rep(self):
+        # 2 km in Z2 as an Active step, then 8 x 1 km
+        steps = [("Warmup", 0, 1.0, 370, 125, 132), ("Active", 1, 2.0, 700, 136, 141)]
+        for _ in range(8):
+            steps += [("Active", 2, 1.0, 254, 164, 172), ("Rest", 3, 0.1, 90, 140, 165)]
+        out = run("analyze_session.py", self.write("e.json", session(*steps)), "--threshold-pace", "4:10").stdout
+        self.assertIn("easy part: 2.0 km", out)
+        self.assertIn("8 reps in 1 kind", out)
+        out = run("analyze_session.py", self.write("e.json", session(*steps))).stdout  # no threshold given
+        self.assertIn("8 reps in 1 kind", out)
+
+    def test_mixed_reps_are_judged_by_kind(self):
+        # 2 km + 1 km + 2 x 400 m at different paces: no fade or "pushed" verdict across kinds
+        steps = [("Warmup", 0, 1.5, 500, 120, 130),
+                 ("Active", 2, 1.0, 290, 140, 146), ("Active", 2, 1.0, 290, 146, 150), ("Rest", 3, 0.2, 180, 120, 150),
+                 ("Active", 5, 1.0, 260, 154, 160), ("Rest", 6, 0.1, 120, 125, 158),
+                 ("Active", 8, 0.4, 96, 150, 160), ("Rest", 9, 0.1, 60, 140, 160),
+                 ("Active", 8, 0.4, 96, 152, 162), ("Rest", 9, 0.1, 60, 140, 160)]
+        out = run("analyze_session.py", self.write("m.json", session(*steps))).stdout
+        self.assertIn("4 reps in 3 kind", out)
+        self.assertNotIn("faster than the first", out)
+
+    def test_nested_sets_are_one_kind(self):
+        # 4 x (4 x 30 s / 45 s): each set has its own step indexes on the watch
+        steps = [("Warmup", 0, 1.0, 330, 125, 135)]
+        for block in range(4):
+            for _ in range(4):
+                steps += [("Active", 2 + 4 * block, 0.127, 30, 160, 168), ("Rest", 3 + 4 * block, 0.16, 45, 162, 168)]
+            steps += [("Rest", 5 + 4 * block, 0.35, 150, 140, 160)]
+        out = run("analyze_session.py", self.write("n.json", session(*steps))).stdout
+        self.assertIn("16 reps in 1 kind", out)
+        self.assertIn("16 x 0.13 km", out)
+        self.assertIn("pace (or power), not HR", out)
+        self.assertNotIn("Steady run", out)
+
+    def test_strides_after_an_easy_run(self):
+        steps = [("Warmup", 0, 6.0, 2100, 128, 140)]
+        for _ in range(6):
+            steps += [("Active", 1, 0.083, 20, 138, 145), ("Rest", 2, 0.19, 70, 135, 148)]
+        data = self.write("st.json", session(*steps))
+        out = run("analyze_session.py", data).stdout
+        self.assertIn("Strides: 6 x 0.08 km", out)
+        self.assertIn("Steady run", out)
+        self.assertEqual(json.loads(run("analyze_session.py", data, "--json").stdout)["kind"], "steady")
+
+    def test_short_rep_pace_uses_lap_average_pace(self):
+        # lap distances are rounded to 10 m; 30 s over 0.127 km is 3:56/km, not 30 s / 0.13 km = 3:51
+        steps = [("Warmup", 0, 1.0, 330, 125, 135)]
+        for _ in range(4):
+            steps += [("Active", 1, 0.127, 30, 160, 168), ("Rest", 2, 0.3, 90, 150, 165)]
+        out = run("analyze_session.py", self.write("p.json", session(*steps))).stdout
+        self.assertIn("3:56", out)
 
     def test_steady_run_decoupling_from_series(self):
         series = []
