@@ -178,27 +178,6 @@ changes. Then push to `main`.
 This is a coaching aid for healthy recreational runners, not medical advice. Pain that changes
 your stride, chest pain, dizziness or unusual heart-rate responses: stop and see a professional.
 
----
-
-## Po slovensky
-
-Skill pre Claude, ktorý ti plánuje beh týždeň po týždni. Naplánuje týždeň, pripraví blok k
-závodu, vyhodnotí uplynulý týždeň a upraví plán, keď ochorieš alebo vynecháš tréning. Na
-začiatku si ťa „vyspovedá“ (ciele, čas, história, posúdenie stavu) a uloží si tvoj profil.
-Pravidlá stoja na výskume (zdroje v `references/sources.md`). Vie ranný check-in podľa HRV a spánku, silové tréningy pre bežcov aj plán na závod. Tréningy
-píše v kilometroch alebo v minútach, ako chceš, a prispôsobí ich terénu (rovina, kopce, hory).
-Celú sezónu do hlavného závodu naplánuje nahrubo po týždňoch a ukáže na stránke so stálym
-odkazom. Keď ochorieš alebo máš náročné obdobie v práci, plán podľa jasných pravidiel prepočíta. Tempá a
-zóny počíta skriptom a každý týždeň pred zobrazením skontroluje (nárast objemu, tvrdé dni po
-sebe, dlhý beh, odľahčovací týždeň). S TrainingPeaks zapíše štruktúrované tréningy do kalendára
-(až po tvojom súhlase). So Stravou alebo bez dát dostaneš plán ako text a `.ics` súbor do
-kalendára.
-
-**Inštalácia v Claude chate a Cowork:** *Customize → Plugins → Add → Add marketplace → Add from
-a repository*, zadaj `tomasstankovic/running-coach` a pridaj plugin *Running Coach*. Bez pluginov:
-stiahni `running-coach.zip` z releases, zapni *Code execution* v *Settings → Capabilities* a zip
-nahraj v sekcii *Skills* (pri novej verzii znova).
-
 ## License
 
 MIT
