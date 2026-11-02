@@ -86,6 +86,11 @@ Citations were checked against PubMed, the journal or the full text in October 2
 | S43 | REDs: screening signs, referral | moderate (consensus) | Mountjoy M, et al. 2023 IOC consensus statement on Relative Energy Deficiency in Sport (REDs). *Br J Sports Med* 2023;57(17):1073–97. doi:10.1136/bjsports-2023-106994 |
 | S44 | Screening tools and their predictive value | moderate | Heikura IA, et al. *Br J Sports Med* 2025;59(1):24–35. doi:10.1136/bjsports-2024-108121 · Melin A, et al. The LEAF questionnaire. *Br J Sports Med* 2014;48(7):540–5. doi:10.1136/bjsports-2013-093240 |
 | S45 | No evidence for cycle-phase periodization | moderate | McNulty KL, et al. *Sports Med* 2020;50(10):1813–27. doi:10.1007/s40279-020-01319-3 · Colenso-Semple LM, et al. *Front Sports Act Living* 2023;5:1054542. doi:10.3389/fspor.2023.1054542 |
+| S46 | Daniels' VDOT and training paces | practice (published equations) | Daniels J, Gilbert J. *Oxygen Power: Performance Tables for Distance Runners*. 1979 · Daniels J. *Daniels' Running Formula*. 3rd ed. Human Kinetics, 2014 |
+| S47 | Heart-rate reserve (Karvonen) | practice | Karvonen MJ, Kentala E, Mustala O. The effects of training on heart rate; a longitudinal study. *Ann Med Exp Biol Fenn* 1957;35(3):307–15 |
+| S48 | 80/20 zones (1, 2, X, 3, Y, 4, 5) | practice | Fitzgerald M. *80/20 Running*. Penguin, 2014 · 80/20 Endurance zone calculators in TrainingPeaks: help.trainingpeaks.com/hc/en-us/articles/360017420092 |
+| S49 | Friel's LTHR-based zones | practice | Friel J. Joe Friel's quick guide to setting zones. TrainingPeaks: trainingpeaks.com/learn/articles/joe-friel-s-quick-guide-to-setting-zones/ · *The Triathlete's Training Bible* |
+| S50 | Aerobic threshold from heart-rate drift (< 5 % in ~60 min) | practice | Uphill Athlete. Heart rate drift test: uphillathlete.com/heart-rate-drift/ |
 
 ## Conventions without a single source
 

@@ -653,6 +653,48 @@ class Zones(TempDir):
         self.assertEqual(cur["lthr"], 168)
         self.assertTrue(any(d["id"] == "2026-11-02" for d in docs))   # a history entry for the page
 
+    def test_any_trainingpeaks_method_reads_the_same_way(self):
+        blocks = self.tp_blocks()
+        friel = [("Zone 1: Recovery", 0, 142), ("Zone 2: Aerobic", 143, 150), ("Zone 3: Tempo", 151, 158),
+                 ("Zone 4: SubThreshold", 159, 167), ("Zone 5A: SuperThreshold", 168, 171),
+                 ("Zone 5B: Aerobic Capacity", 172, 178), ("Zone 5C: Anaerobic Capacity", 179, 255)]
+        blocks["heartRateZones"][0]["zones"] = [self.band(*z) for z in friel][:6] + [self.band(*friel[6])]
+        blocks["heartRateZones"][0]["zones"].insert(0, self.band("Zone 0", 0, 100))   # 8 HR bands vs 7 pace bands
+        cur = json.loads(run("zones.py", "show", "--tp-settings", self.write("z.json", blocks), "--json").stdout)[0]
+        self.assertEqual(cur["method"], "80/20")                      # from the pace set
+        self.assertEqual(len(cur["hr_rows"]), 8)                      # HR in its own table
+        five_a = next(r for r in cur["hr_rows"] if r["name"].startswith("Zone 5A"))
+        self.assertEqual(five_a["use"], "threshold")                  # 168-171 at LTHR 168
+        self.assertIn("easy", next(r for r in cur["hr_rows"] if r["name"].startswith("Zone 2"))["use"])
+
+    def test_daniels_paces_match_his_tables(self):
+        out = run("zones.py", "show", "--method", "daniels", "--race", "10=41:21").stdout   # VDOT 50
+        self.assertIn("VDOT 50.0", out)
+        self.assertIn("4:15", next(l for l in out.splitlines() if l.startswith("T ")))      # T 6:51/mile
+        self.assertIn("4:31", next(l for l in out.splitlines() if l.startswith("M ")))      # M 3:10:49
+
+    def test_heart_rate_reserve_zones(self):
+        out = run("zones.py", "show", "--method", "hrr", "--max-hr", 186, "--rest-hr", 50).stdout
+        self.assertIn("132–145", next(l for l in out.splitlines() if l.strip().startswith("Z2")))
+
+    def test_aerobic_threshold_from_decoupling(self):
+        runs = [{"minutes": 75, "avg_hr": 138, "decoupling": 2.1, "gain_per_km": 6},
+                {"minutes": 90, "avg_hr": 142, "decoupling": 3.8, "gain_per_km": 8},
+                {"minutes": 70, "avg_hr": 149, "decoupling": 6.9, "gain_per_km": 5},
+                {"minutes": 60, "avg_hr": 151, "decoupling": 8.0, "gain_per_km": 25},     # hilly: ignored
+                {"minutes": 30, "avg_hr": 150, "decoupling": 1.0, "gain_per_km": 3}]      # short: ignored
+        out = json.loads(run("zones.py", "lt1", self.write("runs.json", runs), "--lthr", 168, "--json").stdout)
+        self.assertEqual(out["runs"], 3)
+        self.assertEqual(out["estimate"], 146)
+        self.assertEqual(out["suggested_cap"], 142)                   # proven, not the guess above it
+        self.assertEqual(out["default_cap"], 139)
+
+    def test_the_watch_detection_counts_as_evidence(self):
+        out = self.suggest(device=[{"date": "2026-10-30", "source": "Garmin", "threshold_pace": "4:15", "lthr": 170}])
+        self.assertLess(out["pace"][0], 260)
+        self.assertEqual(out["lthr"][0], 170)
+        self.assertIn("Garmin", out["pace"][1])
+
     def evidence(self, **extra):
         base = {"today": "2026-11-02", "current": {"threshold_pace": "4:25", "lthr": 166, "max_hr": 186, "rest_hr": 50,
                                                    "set_on": "2026-07-20"}}

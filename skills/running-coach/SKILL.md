@@ -97,12 +97,15 @@ python scripts/forecast.py input.json                             # current form
 python scripts/paces.py power --rftp 420 70-80 95-100            # running power zones (if used)
 python scripts/zones.py show --tp-settings zones.json --lang sk   # Tréningové zóny: pace, HR, power
 python scripts/zones.py suggest evidence.json --lang sk           # should the zones change?
+python scripts/zones.py lt1 runs.json --lthr 174                  # personal easy cap from decoupling
+python scripts/zones.py show --method daniels --race 10=43:05     # another method, to compare
 ```
 
 - **Training zones** ("Tréningové zóny" in Slovak) is the name the runner sees, in chat and on
   the page. When they ask about zones, show the `zones.py show` table under that heading: pace,
-  % of threshold, HR and what each zone is for, plus power when they use it. Keep them current:
-  `methodology.md` "Keeping the zones current".
+  % of threshold, HR and what each zone is for, plus power when they use it. The runner's own
+  zones (TP and their watch) are the default, whatever the method; other methods only to compare
+  (`methodology.md` "Zone methods"). Keep them current: "Keeping the zones current".
 
 - With TP, its zones are the source of truth. For `--tp-settings`, save **only** the
   `heartRateZones` and `speedZones` blocks from `tp_get_athlete_settings`. The rest of that

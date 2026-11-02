@@ -38,10 +38,12 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   long run, key session), with B and C races built in. It lives on a page with a fixed link that
   shows plan vs. actual and every change. Illness, a work deadline or a missed week re-plans the
   rest by clear rules, and the weekly review can run by itself every Sunday.
-- **Training zones that keep up with you.** Pace, heart-rate and power zones in one table, in
-  chat and on the plan page, with how your threshold moved. Checked every month and after races
-  or tests; a change is proposed with what it means for your paces, and written to TrainingPeaks
-  only after your yes.
+- **Training zones that keep up with you.** Your own zones (as in TrainingPeaks and on your
+  watch, whatever the method: 80/20, Friel, 5-zone) in one table of pace, heart rate and power,
+  in chat and on the plan page, with how your threshold moved. Other methods (% max HR, heart-rate
+  reserve, Daniels VDOT) to compare, and a personal easy-run cap from your own long runs' drift.
+  Checked every month and after races or tests; a change is proposed with what it means for your
+  paces, and written to TrainingPeaks only after your yes.
 - **A map of the key sessions.** How threshold, tempo, VO2 and long runs progress through the
   season, designed around you (injuries, terrain, what worked for you, winter), with target paces
   computed from your threshold and goals, and 6–10 milestones (the threshold check, the longest

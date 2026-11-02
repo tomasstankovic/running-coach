@@ -112,6 +112,12 @@ what this skill expects).
     when there is no run set).
   Then re-read `tp_get_athlete_settings` and check the new values are there before telling the
   runner it's done.
+- **The watch.** TP zones don't sync to Garmin (or Coros, Polar) by themselves, and this skill
+  can't write to the watch. After a change, tell the runner which values to set on it (in Garmin
+  Connect's heart-rate zone and threshold settings: LTHR, threshold pace, max and resting HR), so
+  its alerts and time-in-zone match. If the runner lets the watch detect thresholds
+  automatically, its new values are evidence for `zones.py suggest` (`device`), not a silent
+  change: compare them first.
 - **Missing set**: `tp_create_zones` creates one (e.g. run power, method from
   `tp_get_zone_methods`; the 5-zone Easy … Repetition method matches `paces.py power`). It answers
   `ZONES_EXIST` when there already is one. Offer it, don't do it unasked; watts from different

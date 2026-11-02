@@ -3,6 +3,23 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.14.0
+
+- **The runner's own zones are the default**, whatever the method (TrainingPeaks and the watch:
+  80/20, Friel, 5-zone, ...). `zones.py show` reads any TP method and gives each band its use
+  from where it sits relative to the threshold; a heart-rate set with another method than the
+  pace set gets its own table. The profile records it (`Zones: own set (TP = Garmin) ...`).
+- **Other methods to compare** (`--method`): 80/20 from thresholds, % max HR, heart-rate reserve
+  (Karvonen), Daniels VDOT paces (E/M/T/I/R from a race, Daniels-Gilbert equations). Friel is read
+  from TP or the watch rather than computed (his published percentages differ between versions).
+- **Personal aerobic threshold** (`zones.py lt1`): flat steady runs of 45+ min under 5 % decoupling
+  were at or below it; the highest proven HR becomes the easy cap instead of the population 83 % of
+  LTHR (with a drift test to confirm big changes).
+- **The watch**: its own threshold detection counts as evidence in `zones.py suggest`; after a
+  change the runner is told which values to set on the watch (this skill can't write to Garmin).
+- `methodology.md` "Zone methods"; sources S46–S50 (Daniels, Karvonen, 80/20, Friel, drift test).
+- Fix: the 7-zone X/Y model is 80/20 Endurance (Fitzgerald), not Friel's.
+
 ## 0.13.0
 
 - **Training zones** ("Tréningové zóny"): `zones.py show` puts pace, % of threshold, heart rate,

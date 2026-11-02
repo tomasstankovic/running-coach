@@ -40,6 +40,42 @@ Take that range from the runner's own recent easy runs when they exist, because 
 heat make pace-only targets misleading. Upper Z2 (80–87 %) is "steady", not easy; use it on
 purpose (progression runs, long-run finishes).
 
+### Zone methods: the runner's own set is the default
+
+There are many ways to cut zones; only two points in them are physiology: the aerobic threshold
+(LT1/VT1, the real top of easy running) and the lactate threshold (LT2, "threshold"). Every method
+estimates those two and splits the rest by convention [S46–S49]:
+
+| Method | Anchor | Zones | Note |
+|---|---|---|---|
+| 80/20 (Fitzgerald) | threshold pace, LTHR | 1, 2, X, 3, Y, 4, 5 | the table above; X and Y are the in-between zones 80/20 mostly avoids |
+| Friel | LTHR, threshold pace (30-min test) | 1–4, 5a, 5b, 5c | his published percentages differ slightly between versions |
+| % max HR / HR reserve (Karvonen) | max HR (and resting HR) | 5 | no threshold in it; a max HR from "220 − age" can be off by 10+ bpm |
+| Daniels (VDOT) | a race result | paces E, M, T, I, R | paces only, flat-road |
+| Seiler 3-zone | LT1 / LT2 | 3 | the research model behind "polarized" |
+| Power (Coggan, Stryd) | rFTP | 5–7 | watts differ between devices |
+
+- **Default: the runner's own zones**, the set in TrainingPeaks and on their watch (Garmin,
+  Coros, Polar), whatever its method. Don't switch methods on them: their watch alerts, TP's
+  time-in-zone and this plan should speak the same language. `zones.py show --tp-settings` reads
+  any TP method and gives every band its use from where it sits relative to the threshold.
+  Record it in the profile (`Zones: own set (TP = Garmin), 80/20, default`).
+- **Other methods** only to compare when the runner asks, or for a runner with no zones at all:
+  `zones.py show --method 8020 | hrmax | hrr | daniels`. For someone without a threshold, % max
+  HR or HR reserve is a start, replaced by threshold-based zones after a race or test.
+- **Workouts don't depend on the method**: targets are % of threshold speed and % of LTHR, so
+  the names change between methods, the paces don't. Name sessions with the runner's zone
+  names.
+- **The anchor matters more than the method.** A stale threshold spoils every method; keeping it
+  current ("Keeping the zones current") is worth more than choosing between methods.
+- **Personal aerobic threshold.** "Up to ~83 % of LTHR" for easy running is a population
+  figure. `zones.py lt1` reads the runner's flat steady runs of 45+ min: pace:HR decoupling under
+  5 % means the run was at or below the aerobic threshold, over 5 % above it [S21, S50]. The
+  highest HR proven under 5 % becomes their easy cap (`zones.py show --easy-cap ... --easy-source
+  ...`), with their agreement. Heat, hills and dehydration raise drift, so confirm a big change with
+  a drift test: 60 min on flat ground at a steady HR near the estimate, first vs. second half; under
+  5 % drift = at or below the threshold, 0–3 % = repeat ~5 bpm higher [S50].
+
 ## 2. Intensity distribution
 
 Bracketed tags like [S1] point to `sources.md`, with the strength of the evidence behind each rule.
@@ -230,14 +266,15 @@ Zones drift as fitness changes: stale zones make easy runs too fast and threshol
 - **every month**, in the first weekly review of the month, even when nothing seems to have
   changed;
 - **on new evidence**, in the review that follows it: a flat 5k–half race run all-out, a 30-min
-  test, two or more threshold sessions in 6 weeks clearly faster than the zones with HR under
-  LTHR (or slower with HR above it), a new maximum HR, a resting HR that has moved, a hard
-  power effort;
+  test, the watch's own threshold detection (Garmin and others detect LTHR and threshold pace),
+  two or more threshold sessions in 6 weeks clearly faster than the zones with HR under LTHR (or
+  slower with HR above it), a new maximum HR, a resting HR that has moved, a hard power effort;
 - after a break of 2+ weeks or an illness (zones are probably too fast for a while: prescribe by
   HR first).
 
 Gather the evidence of the last ~4 months into `evidence.json` (format in `scripts/zones.py`)
-and run `zones.py suggest`. It proposes; it never changes anything. A 30-min test sets threshold
+and run `zones.py suggest`. In the monthly check also run `zones.py lt1` on the last weeks' long
+and easy runs to see whether the easy cap still fits. It proposes; it never changes anything. A 30-min test sets threshold
 pace and LTHR; a flat race sets the pace, and a half's average HR is a floor for LTHR; sessions
 only hint ("probably faster": put a number on it with a race or a test). Changes under ~1.5 %
 are noise and are kept. Sources more than 3 % apart go to "When the threshold evidence disagrees"
@@ -245,7 +282,8 @@ above, not into an average.
 
 Show the proposal as old → new with what it means in practice ("Z2 5:04–5:49 → 4:53–5:36, threshold
 reps 4:25 → 4:16"), and why. On the runner's yes: write it to TrainingPeaks (`trainingpeaks.md`
-"Zones"), re-read the settings to confirm, run `season_plan.py retarget --threshold-pace ...`
+"Zones"), re-read the settings to confirm, ask the runner to set the same values on the watch
+(this skill can't write to Garmin), run `season_plan.py retarget --threshold-pace ...`
 so the key sessions follow, update the page's `zones` (current + a history entry), the
 profile's `Zones:` line (values, source, date) and the decision log. On a no, keep the zones and
 note why. With no new evidence and zones older than 12 weeks, raise a retest ("Settling the

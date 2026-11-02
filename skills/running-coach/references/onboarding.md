@@ -196,6 +196,10 @@ realistic version, set a pacing strategy for race day that doesn't blow up at km
 at the mid-block checkpoint. Write the agreed goal *and* the reasoning into the profile. Never
 increase load beyond safe progression to chase a number.
 
+**Zones.** Ask where their zones live (TP, the watch, both) and whether those are the ones they
+want; that set is the default from now on (`methodology.md` "Zone methods"). Show them with
+`zones.py show` under "Tréningové zóny" (in Slovak), and note when the threshold was last set.
+
 **Availability and preferred days.** Ask which days and how much time per day, and which day
 suits the long run. Then check the pattern, not just the count:
 - Days that force hard sessions back to back (e.g. only Sat + Sun free for quality): propose
@@ -247,7 +251,8 @@ Setup: TrainingPeaks + folder (Claude desktop, Code) · profile: TP note · plan
 
 ## Current state (2026-11-02)
 - Threshold pace 4:20/km (race-derived 2026-10-11), LTHR 170, max HR 189
-- Zones: TP 7-zone pace + HR, set 2026-10-12 from the 10k; next check: first review of December
+- Zones: own set (TP = Garmin), 80/20 pace + HR, default; set 2026-10-12 from the 10k; easy cap 145
+  (decoupling, 2026-10); next check: first review of December
 - Typical week: 5 runs, 42–48 km, 4.5 h; longest run 15 km / 90 min
 - CTL 31 (6 weeks ago 33); HRV baseline ~58, resting HR ~52
 - Assessment: solid base, little threshold work so far

@@ -1,18 +1,36 @@
 #!/usr/bin/env python3
-"""Training zones (Tréningové zóny): one table of pace, heart rate and power, and proposals to
-update them from new evidence (monthly, or after a race, a test or a run of sessions that say
-the zones are off).
+"""Training zones (Tréningové zóny): one table of pace, heart rate and power, other zone methods
+for comparison, a personal aerobic-threshold estimate, and proposals to update the zones from new
+evidence (monthly, or after a race, a test or a run of sessions that say the zones are off).
 
 Usage:
   zones.py show --tp-settings zones.json [--lang sk] [--json] [--date 2026-11-02]
   zones.py show --threshold-pace 4:20 --lthr 168 [--max-hr 186] [--rest-hr 50] [--rftp 300]
+                [--method 8020|hrmax|hrr|daniels] [--race 10=43:05] [--easy-cap 142 --easy-source ...]
                 [--source "30 min test"] [--lang sk] [--json]
   zones.py suggest evidence.json [--lang sk] [--json]
+  zones.py lt1 runs.json --lthr 168 [--lang sk] [--json]
 
-show: with TrainingPeaks, save only the `heartRateZones`, `speedZones` and `powerZones` blocks of
-tp_get_athlete_settings to zones.json (the rest is personal data). TP's own bands are used (the
-run set if there is one, else the general one); without TP the default 7-zone ratios. --json
-gives the documents for the plan page's `zones` collection: `current` and one history entry.
+The runner's own zones are the default: the set in TrainingPeaks (and on their watch: Garmin,
+Coros, Polar) whatever its method. `show --tp-settings` reads TP's bands as they are (the run
+set if there is one, else the general one): 80/20 (Z1/Z2/X/Z3/Y/Z4/Z5), Friel (Z1-Z5c), 5-zone
+or any other. Each band gets its use from where it sits relative to the threshold, so any
+method reads the same way. Save only the `heartRateZones`, `speedZones` and `powerZones` blocks of
+tp_get_athlete_settings (the rest is personal data).
+
+Other methods, for a runner without zones or to compare (`--method`):
+  8020     7 zones from threshold pace and LTHR (80/20 Endurance ratios, as TP computes them)
+  hrmax    5 zones at 50/60/70/80/90-100 % of max HR (needs --max-hr; no threshold involved)
+  hrr      the same % of heart-rate reserve, Karvonen (needs --max-hr and --rest-hr)
+  daniels  E/M/T/I/R paces from a race (--race km=time), Daniels-Gilbert VDOT equations
+Friel's zones aren't computed here (his published percentages differ between versions): read
+them from TP or the watch, which calculate them.
+
+lt1: steady runs (`analyze_session.py --json` rows, flat, 45+ min) where pace:HR decoupling stays
+under 5 % were at or below the aerobic threshold; runs over 5 % were above it. The HR between
+the two is a personal estimate of the aerobic threshold, the real top of easy running, instead
+of the population ~83 % of LTHR. Heat, hills and dehydration raise drift, so it's an estimate to
+confirm with a drift test (60 min flat at a steady HR, < 5 % drift).
 
 suggest: evidence.json
 {
@@ -22,6 +40,8 @@ suggest: evidence.json
   "tests": [{"date": "2026-10-20", "minutes": 30, "km": 7.05, "hr_last20": 171}],
   "races": [{"date": "2026-10-25", "km": 21.0975, "time": "1:31:40", "avg_hr": 171,
              "flat": true}],                      # hilly, trail or hot races don't set the pace
+  "device": [{"date": "2026-10-30", "source": "Garmin", "threshold_pace": "4:18", "lthr": 170}],
+                                                  # the watch's own threshold detection
   "sessions": [{"date": "2026-10-28", "kind": "intervals", "rep_pace": 252, "rep_max_hr": 162,
                 "target": "threshold"}],          # analyze_session.py --json rows of threshold work
   "max_hr_seen": [{"date": "2026-10-25", "hr": 189}],
@@ -30,15 +50,17 @@ suggest: evidence.json
 }
 Rules (methodology.md "When the threshold evidence disagrees" and "Keeping the zones current"):
 a 30-min test sets both threshold pace and LTHR; a flat 5k-HM race sets the pace (paces.py race
-factors) and a half's average HR is a floor for LTHR; threshold sessions only hint ("faster" or
-"slower", no number). Evidence older than 120 days is ignored. Sources more than 3 % apart are
-reported as a disagreement to discuss (or settle with a test), not averaged. A change under
-1.5 % (~4 s/km) is noise and is kept. With no new evidence and zones older than 12 weeks, it
-suggests talking about a retest. It never writes anything: the coach proposes, the runner
-decides, then TrainingPeaks is updated (trainingpeaks.md "Zones").
+factors) and a half's average HR is a floor for LTHR; the watch's detection counts, a bit less
+than a race or test; threshold sessions only hint ("faster" or "slower", no number). Evidence
+older than 120 days is ignored. Sources more than 3 % apart are reported as a disagreement to
+discuss (or settle with a test), not averaged. A change under 1.5 % (~4 s/km) is noise and is
+kept. With no new evidence and zones older than 12 weeks, it suggests talking about a retest. It
+never writes anything: the coach proposes, the runner decides, then TrainingPeaks is updated
+(trainingpeaks.md "Zones") and the runner sets the same values on the watch.
 """
 import argparse
 import json
+import math
 import sys
 from datetime import date
 
@@ -50,28 +72,65 @@ MAX_AGE = 120                # days of evidence that count
 NOISE = 1.5                  # % change below which the zones stay
 DISAGREE = 3.0               # % between sources that needs a conversation, not an average
 RETEST_DAYS = 84             # 12 weeks
-EASY_CAP = 0.83              # easy running up to ~83 % of LTHR (methodology.md §1)
+EASY_CAP = 0.83              # easy running up to ~83 % of LTHR (methodology.md §1), population default
+DEVICE_WEIGHT = 0.7          # the watch's threshold detection, a bit less than a race or test
+DRIFT_OK = 5.0               # % decoupling at or below the aerobic threshold
+LT1_MIN_MIN, LT1_MAX_GAIN = 45, 15   # steady runs that count: 45+ min, < 15 m climb per km
 NAMES = {"zone 1": "Z1", "zone 2": "Z2", "zone x": "X", "zone 3": "Z3", "zone y": "Y", "zone 4": "Z4", "zone 5": "Z5"}
 
-USE = {
-    "en": {"Z1": "recovery, warm-up and cool-down", "Z2": "easy and long runs (upper half: steady)",
-           "X": "marathon pace, steady: only on purpose", "Z3": "tempo, cruise intervals",
-           "Y": "threshold", "Z4": "VO2 intervals (5k-3k pace)", "Z5": "strides, short fast reps"},
-    "sk": {"Z1": "regenerácia, rozklus, výklus", "Z2": "ľahké a dlhé behy (horná polovica: svižnejšie)",
-           "X": "maratónske tempo, len zámerne", "Z3": "tempo, cruise intervaly",
-           "Y": "prah", "Z4": "VO2 úseky (tempo 5 km až 3 km)", "Z5": "rovinky, krátke rýchle úseky"},
+# What a band is for, by where its middle sits: % of threshold speed, % of LTHR, % of rFTP,
+# % of max HR (or of HR reserve). Upper edges of each use.
+EDGES = {"pace": [76, 87, 93, 100, 102, 115], "hr": [81, 90, 95, 100, 102, 105],
+         "power": [80, 90, 100, 115], "hrmax": [60, 70, 80, 90]}
+USES = {
+    "en": {"pace": ["recovery, warm-up and cool-down", "easy and long runs (upper half: steady)",
+                    "marathon pace, steady: only on purpose", "tempo, cruise intervals", "threshold",
+                    "VO2 intervals (5k-3k pace)", "strides, short fast reps"],
+           "power": ["easy and long runs", "steady, marathon pace", "tempo, threshold", "VO2 intervals",
+                     "short fast reps"],
+           "hrmax": ["recovery", "easy and long runs", "steady aerobic", "tempo, threshold", "VO2, races"]},
+    "sk": {"pace": ["regenerácia, rozklus, výklus", "ľahké a dlhé behy (horná polovica: svižnejšie)",
+                    "maratónske tempo, len zámerne", "tempo, cruise intervaly", "prah",
+                    "VO2 úseky (tempo 5 km až 3 km)", "rovinky, krátke rýchle úseky"],
+           "power": ["ľahké a dlhé behy", "svižnejšie, maratónske tempo", "tempo, prah", "VO2 úseky",
+                     "krátke rýchle úseky"],
+           "hrmax": ["regenerácia", "ľahké a dlhé behy", "svižnejší aeróbny beh", "tempo, prah", "VO2, preteky"]},
 }
-POWER_USE_SK = {"Easy": "ľahko, dlhé behy", "Moderate": "svižnejšie, maratónske tempo",
-                "Threshold": "tempo, prah", "Interval": "VO2 úseky", "Repetition": "krátke rýchle úseky"}
+USES["en"]["hr"], USES["sk"]["hr"] = USES["en"]["pace"], USES["sk"]["pace"]
+DANIELS = {  # % of VO2max (VDOT); M is the marathon race pace itself
+    "en": [("E", (59, 74), "easy and long runs"), ("M", None, "marathon pace"), ("T", (86, 88), "threshold, tempo"),
+           ("I", (95, 100), "intervals 3-5 min"), ("R", (105, 105), "repetitions 200-400 m")],
+    "sk": [("E", (59, 74), "ľahké a dlhé behy"), ("M", None, "maratónske tempo"), ("T", (86, 88), "prah, tempo"),
+           ("I", (95, 100), "úseky 3-5 min"), ("R", (105, 105), "krátke úseky 200-400 m")],
+}
 TX = {
     "en": {"title": "Training zones", "zone": "Zone", "pace": "Pace /km", "pct": "% thr", "hr": "HR",
-           "power": "Power", "use": "Use", "thr": "Threshold", "easy": "Easy running: HR up to {cap}",
-           "from": "from {src}, {d}", "power_title": "Running power (rFTP {w} W)"},
+           "power": "Power", "use": "Use", "thr": "Threshold", "easy": "Easy running: HR up to {cap} ({src})",
+           "from": "from {src}, {d}", "power_title": "Running power (rFTP {w} W)", "method": "method",
+           "hr_title": "Heart rate", "pct_lthr": "83 % of LTHR", "pct_hrmax": "% max", "pct_hrr": "% reserve"},
     "sk": {"title": "Tréningové zóny", "zone": "Zóna", "pace": "Tempo /km", "pct": "% prahu", "hr": "Tep",
-           "power": "Výkon", "use": "Na čo", "thr": "Prah", "easy": "Ľahký beh: tep do {cap}",
-           "from": "zdroj: {src}, {d}", "power_title": "Bežecký výkon (rFTP {w} W)"},
+           "power": "Výkon", "use": "Na čo", "thr": "Prah", "easy": "Ľahký beh: tep do {cap} ({src})",
+           "from": "zdroj: {src}, {d}", "power_title": "Bežecký výkon (rFTP {w} W)", "method": "metodika",
+           "hr_title": "Tep", "pct_lthr": "83 % LTHR", "pct_hrmax": "% max", "pct_hrr": "% rezervy"},
 }
-SOURCE = {"en": {"default": "default ratios"}, "sk": {"default": "predvolené pomery"}}
+SOURCE = {"en": {"default": "default ratios", "computed": "computed"}, "sk": {"default": "predvolené pomery", "computed": "vypočítané"}}
+METHOD = {"8020": "80/20", "friel": "Friel", "hrmax": "% max HR", "hrr": "HRR (Karvonen)", "daniels": "Daniels (VDOT)"}
+
+
+def use_for(kind, lo, hi, lang):
+    """Use of a band from where its middle sits (lo/hi in % of the anchor; None = open)."""
+    mid = lo * 1.03 if hi is None else (hi * 0.9 if not lo else (lo + hi) / 2)
+    edges = EDGES[kind]
+    return USES[lang][kind][next((i for i, e in enumerate(edges) if mid <= e), len(edges))]
+
+
+def method_of(labels):
+    low = " ".join(labels).lower()
+    if "zone x" in low or "zone y" in low:
+        return "80/20"
+    if "5a" in low or "5b" in low:
+        return "Friel"
+    return f"{len(labels)} zones"
 
 
 def pick(blocks, key):
@@ -80,46 +139,121 @@ def pick(blocks, key):
         (s for s in sets if s.get("workoutTypeId") in (0, None)), None) or (sets[0] if sets else None)
 
 
-def from_tp(blocks):
-    """Normalize TP's zone blocks (speed in m/s, HR in bpm, power in W)."""
+def from_tp(blocks, lang="en"):
+    """Normalize TP's zone blocks (speed in m/s, HR in bpm, power in W), whatever the method."""
     speed, hr, power = pick(blocks, "speedZones"), pick(blocks, "heartRateZones"), pick(blocks, "powerZones")
-    z = {"source": "TrainingPeaks", "rows": [], "power": []}
-    if speed:
-        z["threshold_s"] = 1000 / speed["threshold"]
+    z = {"source": "TrainingPeaks", "rows": [], "hr_rows": [], "power": [], "method": None}
+    if speed and speed.get("zones"):
+        t = speed["threshold"]
+        z["threshold_s"] = 1000 / t
+        z["method"] = method_of([b["label"] for b in speed["zones"]])
         for b in speed["zones"]:
             lo, hi = b["minimum"], b["maximum"]
+            plo, phi = round(lo / t * 100), (round(hi / t * 100) if hi < 50 else None)
             z["rows"].append({"name": NAMES.get(b["label"].lower(), b["label"]),
-                              "pace_slow": 1000 / lo if lo > 0.5 else None,
-                              "pace_fast": 1000 / hi if hi < 50 else None,
-                              "pct_lo": round(lo / speed["threshold"] * 100), "pct_hi": round(hi / speed["threshold"] * 100) if hi < 50 else None})
-    if hr:
+                              "pace_slow": 1000 / lo if lo > 0.5 else None, "pace_fast": 1000 / hi if hi < 50 else None,
+                              "pct_lo": plo, "pct_hi": phi, "use": use_for("pace", plo, phi, lang)})
+    if hr and hr.get("zones"):
         z.update(lthr=hr.get("threshold"), max_hr=hr.get("maximumHeartRate"), rest_hr=hr.get("restingHeartRate"))
         bands = hr["zones"]
-        if len(bands) == len(z["rows"]):
-            for row, b in zip(z["rows"], bands):
-                row.update(hr_lo=b["minimum"], hr_hi=b["maximum"] if b["maximum"] < 250 else None)
+        z["method"] = z["method"] or method_of([b["label"] for b in bands])
+        lthr = hr.get("threshold") or 0
+        rows = [{"name": NAMES.get(b["label"].lower(), b["label"]), "hr_lo": b["minimum"] or None,
+                 "hr_hi": b["maximum"] if b["maximum"] < 250 else None} for b in bands]
+        for r in rows:
+            if lthr:
+                r["use"] = use_for("hr", (r["hr_lo"] or 0) / lthr * 100, r["hr_hi"] and r["hr_hi"] / lthr * 100, lang)
+        if len(rows) == len(z["rows"]):
+            for row, r in zip(z["rows"], rows):
+                row.update(hr_lo=r["hr_lo"], hr_hi=r["hr_hi"])
         elif not z["rows"]:
-            z["rows"] = [{"name": NAMES.get(b["label"].lower(), b["label"]), "hr_lo": b["minimum"],
-                          "hr_hi": b["maximum"] if b["maximum"] < 250 else None} for b in bands]
-    if power:
+            z["rows"] = rows
+        else:
+            z["hr_rows"] = rows      # a different method for HR than for pace: its own table
+    if power and power.get("zones"):
         z["rftp"] = power.get("threshold")
-        z["power"] = [{"name": b["label"], "w_lo": b["minimum"], "w_hi": b["maximum"] if b["maximum"] < 1500 else None}
-                      for b in power["zones"]]
+        z["power"] = [{"name": b["label"], "w_lo": b["minimum"], "w_hi": b["maximum"] if b["maximum"] < 1500 else None,
+                       "use": use_for("power", b["minimum"] / z["rftp"] * 100,
+                                      b["maximum"] / z["rftp"] * 100 if b["maximum"] < 1500 else None, lang)}
+                      for b in power["zones"]] if z["rftp"] else []
     return z
 
 
-def from_thresholds(thr_s, lthr=None, max_hr=None, rest_hr=None, rftp=None, source=None):
-    z = {"source": source or "default", "threshold_s": thr_s, "lthr": lthr, "max_hr": max_hr,
-         "rest_hr": rest_hr, "rftp": rftp, "rows": [], "power": []}
-    for (name, lo, hi), (_, hlo, hhi) in zip(DEFAULT_SPEED_ZONES, DEFAULT_HR_ZONES):
-        top = name == "Z5"
-        row = {"name": name, "pace_slow": thr_s / lo, "pace_fast": None if top else thr_s / hi,
-               "pct_lo": round(lo * 100), "pct_hi": None if top else round(hi * 100)}
-        if lthr:
-            row.update(hr_lo=round(lthr * hlo), hr_hi=None if top else round(lthr * hhi))
-        z["rows"].append(row)
+# --- Daniels-Gilbert VDOT equations (Daniels' Running Formula) ---------------------------------
+
+def vo2_at(v):            # ml/kg/min at v metres per minute
+    return -4.60 + 0.182258 * v + 0.000104 * v * v
+
+
+def share_of_max(t):      # share of VO2max sustainable for t minutes
+    return 0.8 + 0.1894393 * math.exp(-0.012778 * t) + 0.2989558 * math.exp(-0.1932605 * t)
+
+
+def vdot(km, secs):
+    t = secs / 60
+    return vo2_at(km * 1000 / t) / share_of_max(t)
+
+
+def speed_at(vo2):        # m/min for a given VO2
+    a, b, c = 0.000104, 0.182258, -4.60 - vo2
+    return (-b + math.sqrt(b * b - 4 * a * c)) / (2 * a)
+
+
+def race_secs(v_dot, km):
+    lo, hi = 60.0, 600.0     # minutes
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if vdot(km, mid * 60) > v_dot:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2 * 60
+
+
+def daniels(km, secs, lang):
+    vd = vdot(km, secs)
+    rows = []
+    for name, pct, use in DANIELS[lang]:
+        if pct is None:
+            p = race_secs(vd, 42.195) / 42.195
+            rows.append({"name": name, "pace_fast": p, "pace_slow": p, "use": use})
+        else:
+            fast, slow = (1000 / speed_at(vd * x / 100) * 60 for x in (pct[1], pct[0]))
+            rows.append({"name": name, "pace_fast": fast, "pace_slow": slow, "use": use})
+    return vd, rows
+
+
+def from_thresholds(thr_s, lthr=None, max_hr=None, rest_hr=None, rftp=None, source=None, method="8020",
+                    race=None, lang="en"):
+    z = {"source": source or ("default" if method == "8020" else "computed"), "threshold_s": thr_s, "lthr": lthr, "max_hr": max_hr, "rest_hr": rest_hr,
+         "rftp": rftp, "rows": [], "hr_rows": [], "power": [], "method": METHOD.get(method, method)}
+    if method == "8020":
+        for (name, lo, hi), (_, hlo, hhi) in zip(DEFAULT_SPEED_ZONES, DEFAULT_HR_ZONES):
+            top = name == "Z5"
+            row = {"name": name, "pace_slow": thr_s / lo, "pace_fast": None if top else thr_s / hi,
+                   "pct_lo": round(lo * 100), "pct_hi": None if top else round(hi * 100),
+                   "use": use_for("pace", lo * 100, None if top else hi * 100, lang)}
+            if lthr:
+                row.update(hr_lo=round(lthr * hlo), hr_hi=None if top else round(lthr * hhi))
+            z["rows"].append(row)
+    elif method in ("hrmax", "hrr"):
+        if not max_hr or (method == "hrr" and not rest_hr):
+            sys.exit(f"--method {method} needs --max-hr" + (" and --rest-hr" if method == "hrr" else ""))
+        base = rest_hr if method == "hrr" else 0
+        span = max_hr - base
+        for i, (lo, hi) in enumerate(((50, 60), (60, 70), (70, 80), (80, 90), (90, 100)), 1):
+            z["hr_rows"].append({"name": f"Z{i}", "hr_lo": round(base + span * lo / 100), "hr_hi": round(base + span * hi / 100),
+                                 "pct_lo": lo, "pct_hi": hi, "use": USES[lang]["hrmax"][i - 1]})
+    elif method == "daniels":
+        if not race:
+            sys.exit("--method daniels needs --race km=time, e.g. 10=43:05")
+        km, t = race.split("=")
+        z["vdot"], z["rows"] = daniels(float(km), parse_time(t), lang)
+        z["threshold_s"] = next(r for r in z["rows"] if r["name"] == "T")["pace_fast"]
+        z["method"] = f"Daniels (VDOT {z['vdot']:.1f})"
     if rftp:
-        z["power"] = [{"name": n, "w_lo": round(lo * rftp), "w_hi": None if n == "Repetition" else round(hi * rftp)}
+        z["power"] = [{"name": n, "w_lo": round(lo * rftp), "w_hi": None if n == "Repetition" else round(hi * rftp),
+                       "use": use_for("power", lo * 100, None if n == "Repetition" else hi * 100, lang)}
                       for n, lo, hi, _ in POWER_ZONES]
     return z
 
@@ -134,49 +268,102 @@ def rng(lo, hi, fmt=lambda v: f"{v:.0f}"):
     return f"{fmt(lo)}–{fmt(hi)}"
 
 
-def table(z, lang, day):
-    tx, use = TX[lang], USE[lang]
-    lines = [f"{tx['title']}"]
+def pace_cell(r):
+    if r.get("pace_fast") and r.get("pace_slow"):
+        a, b = fmt_pace(r["pace_fast"]), fmt_pace(r["pace_slow"])
+        return a if a == b else f"{a}–{b}"
+    if r.get("pace_slow"):
+        return f"< {fmt_pace(r['pace_slow'])}"
+    if r.get("pace_fast"):
+        return f"> {fmt_pace(r['pace_fast'])}"
+    return "–"
+
+
+def easy_cap(z, args_cap=None, args_src=None, lang="en"):
+    if args_cap:
+        return args_cap, args_src or "lt1"
+    if z.get("lthr"):
+        return round(z["lthr"] * EASY_CAP), TX[lang]["pct_lthr"]
+    return None, None
+
+
+def table(z, lang, day, cap=None, cap_src=None):
+    tx = TX[lang]
+    lines = [tx["title"]]
     head = [f"{tx['thr']} {fmt_pace(z['threshold_s'])}/km" if z.get("threshold_s") else None,
             f"LTHR {z['lthr']:.0f}" if z.get("lthr") else None, f"max {z['max_hr']:.0f}" if z.get("max_hr") else None,
-            f"rFTP {z['rftp']:.0f} W" if z.get("rftp") else None]
+            f"rFTP {z['rftp']:.0f} W" if z.get("rftp") else None,
+            f"{tx['method']} {z['method']}" if z.get("method") else None]
     src = SOURCE[lang].get(z["source"], z["source"])
     lines.append(" · ".join(h for h in head if h) + f"  ({tx['from'].format(src=src, d=day)})")
-    lines.append("")
-    lines.append(f"{tx['zone']:<5} {tx['pace']:<13} {tx['pct']:<10} {tx['hr']:<10} {tx['use']}")
-    for r in z["rows"]:
-        pace = (f"{fmt_pace(r['pace_fast'])}–{fmt_pace(r['pace_slow'])}" if r.get("pace_fast") and r.get("pace_slow")
-                else f"< {fmt_pace(r['pace_fast'])}" if r.get("pace_fast") else f"> {fmt_pace(r['pace_slow'])}" if r.get("pace_slow") else "–")
-        if r["name"] == "Z5" and r.get("pace_slow"):
-            pace = f"< {fmt_pace(r['pace_slow'])}"
-        pct = rng(r.get("pct_lo"), r.get("pct_hi")) + " %" if r.get("pct_lo") is not None else "–"
-        lines.append(f"{r['name']:<5} {pace:<13} {pct:<10} {rng(r.get('hr_lo'), r.get('hr_hi')):<10} {use.get(r['name'], '')}")
-    if z.get("lthr"):
-        lines.append("\n" + tx["easy"].format(cap=round(z["lthr"] * EASY_CAP)))
+    if z["rows"]:
+        has_hr = any(r.get("hr_lo") or r.get("hr_hi") for r in z["rows"])
+        has_pct = any(r.get("pct_lo") is not None for r in z["rows"])
+        lines += ["", f"{tx['zone']:<6} {tx['pace']:<13} " + (f"{tx['pct']:<10} " if has_pct else "")
+                  + (f"{tx['hr']:<10} " if has_hr else "") + tx["use"]]
+        for r in z["rows"]:
+            pct = (rng(r.get("pct_lo"), r.get("pct_hi")) + " %") if r.get("pct_lo") is not None else "–"
+            pace = pace_cell(r) if r.get("pace_fast") or r.get("pace_slow") else "–"
+            lines.append(f"{r['name']:<6} {pace:<13} " + (f"{pct:<10} " if has_pct else "")
+                         + (f"{rng(r.get('hr_lo'), r.get('hr_hi')):<10} " if has_hr else "") + r.get("use", ""))
+    if z["hr_rows"]:
+        lines += ["", tx["hr_title"]]
+        for r in z["hr_rows"]:
+            pct = f"{r['pct_lo']}–{r['pct_hi']} %" if r.get("pct_lo") is not None else ""
+            lines.append(f"  {r['name']:<10} {rng(r.get('hr_lo'), r.get('hr_hi')):<10} {pct:<10} {r.get('use', '')}")
+    if cap:
+        lines.append("\n" + tx["easy"].format(cap=cap, src=cap_src))
     if z["power"]:
         lines.append("\n" + tx["power_title"].format(w=round(z["rftp"] or 0)))
         for p in z["power"]:
-            u = POWER_USE_SK.get(p["name"], "") if lang == "sk" else next((x[3] for x in POWER_ZONES if x[0] == p["name"]), "")
-            lines.append(f"  {p['name']:<11} {rng(p['w_lo'], p['w_hi']):<10} W  {u}")
+            lines.append(f"  {p['name']:<11} {rng(p['w_lo'], p['w_hi']):<10} W  {p.get('use', '')}")
     return "\n".join(lines)
 
 
-def page_docs(z, lang, day):
+def page_docs(z, lang, day, cap=None, cap_src=None):
     """Documents for the plan page's `zones` collection: `current`, and a history entry."""
-    use = USE[lang]
-    cur = {"id": "current", "date": day, "source": SOURCE[lang].get(z["source"], z["source"]),
+    keep = lambda r: {k: (fmt_pace(v) if k in ("pace_fast", "pace_slow") and v else v) for k, v in r.items()}
+    cur = {"id": "current", "date": day, "source": SOURCE[lang].get(z["source"], z["source"]), "method": z.get("method"),
            "threshold_pace": fmt_pace(z["threshold_s"]) if z.get("threshold_s") else None,
            "lthr": z.get("lthr"), "max_hr": z.get("max_hr"), "rest_hr": z.get("rest_hr"), "rftp": z.get("rftp"),
-           "easy_hr_cap": round(z["lthr"] * EASY_CAP) if z.get("lthr") else None,
-           "rows": [{"name": r["name"], "pace_fast": fmt_pace(r["pace_fast"]) if r.get("pace_fast") else None,
-                     "pace_slow": fmt_pace(r["pace_slow"]) if r.get("pace_slow") else None,
-                     "pct_lo": r.get("pct_lo"), "pct_hi": r.get("pct_hi"), "hr_lo": r.get("hr_lo"),
-                     "hr_hi": r.get("hr_hi"), "use": use.get(r["name"], "")} for r in z["rows"]],
-           "power": [dict(p, use=(POWER_USE_SK.get(p["name"], "") if lang == "sk" else
-                                   next((x[3] for x in POWER_ZONES if x[0] == p["name"]), ""))) for p in z["power"]]}
+           "easy_hr_cap": cap, "easy_source": cap_src,
+           "rows": [keep(r) for r in z["rows"]], "hr_rows": [keep(r) for r in z["hr_rows"]], "power": z["power"]}
     hist = {"id": day, "date": day, "source": cur["source"], "threshold_pace": cur["threshold_pace"],
             "lthr": z.get("lthr"), "max_hr": z.get("max_hr"), "rftp": z.get("rftp")}
     return [cur, hist]
+
+
+# --- aerobic threshold from decoupling ---------------------------------------------------------
+
+def lt1(rows, lthr=None):
+    """Personal aerobic-threshold HR from steady runs: under 5 % decoupling = at or below it."""
+    runs = [r for r in rows if r.get("kind", "steady") == "steady" and r.get("avg_hr") and r.get("decoupling") is not None
+            and (r.get("minutes") or 0) >= LT1_MIN_MIN and (r.get("gain_per_km") or 0) < LT1_MAX_GAIN
+            and (r.get("temp_c") or 0) <= 22]
+    below = [r["avg_hr"] for r in runs if r["decoupling"] <= DRIFT_OK]
+    above = [r["avg_hr"] for r in runs if r["decoupling"] > DRIFT_OK]
+    out = {"runs": len(runs), "below": sorted(below), "above": sorted(above), "estimate": None, "note": ""}
+    if len(runs) < 3:
+        out["note"] = "fewer than 3 flat steady runs of 45+ min: not enough to estimate"
+    elif below and above and max(below) < min(above):
+        out["estimate"] = round((max(below) + min(above)) / 2)
+        out["note"] = f"between {max(below):.0f} (still under 5 % drift) and {min(above):.0f} (over)"
+    elif below and above:
+        out["estimate"] = round(min(above))
+        out["note"] = (f"runs overlap ({max(below):.0f} under 5 % vs {min(above):.0f} over: heat, hills or fatigue): "
+                       "the lower value, confirm with a drift test")
+    elif below:
+        out["estimate"] = round(max(below))
+        out["note"] = f"at least {max(below):.0f}: no run over 5 % drift yet, the real value may be higher"
+    else:
+        out["note"] = f"every run drifted over 5 % (lowest at {min(above):.0f}): easy runs are probably above it"
+        out["estimate"] = None
+    # the easy-run cap: the highest HR proven to stay under 5 % drift, never the guess above it
+    out["suggested_cap"] = round(max(below)) if below and out["estimate"] else None
+    if out["estimate"] and lthr:
+        out["pct_lthr"] = round(out["estimate"] / lthr * 100)
+        out["default_cap"] = round(lthr * EASY_CAP)
+    return out
 
 
 # --- suggest -----------------------------------------------------------------------------------
@@ -212,6 +399,14 @@ def suggest(ev):
             if not out["lthr"] or r["avg_hr"] > out["lthr"][0]:
                 out["lthr"] = (r["avg_hr"], f"{r['km']:g} km race {r['date']}: a half is run just under LTHR, so "
                                             f"its average HR ({r['avg_hr']}) is a floor")
+    for d in ev.get("device", []):
+        if age(today, d["date"]) > MAX_AGE:
+            continue
+        src = f"{d.get('source', 'watch')} detection {d['date']}"
+        if d.get("threshold_pace"):
+            cands.append((parse_pace(d["threshold_pace"]), DEVICE_WEIGHT, src))
+        if d.get("lthr") and not out["lthr"] and abs(d["lthr"] - (cur.get("lthr") or d["lthr"])) >= 2:
+            out["lthr"] = (d["lthr"], src)
     if cands:
         vals = [c[0] for c in cands]
         spread = (max(vals) - min(vals)) / min(vals) * 100
@@ -279,7 +474,8 @@ def describe(out, ev, lang):
     lines += [f"note: {n}" for n in out["notes"]]
     if changes:
         lines.append("Nothing is written: show the runner, and update TrainingPeaks only after a yes "
-                     "(trainingpeaks.md 'Zones'), then `season_plan.py retarget` and the page.")
+                     "(trainingpeaks.md 'Zones'), then the same values on the watch, `season_plan.py retarget` "
+                     "and the page.")
     return "\n".join(lines)
 
 
@@ -293,6 +489,10 @@ def main():
     s.add_argument("--max-hr", type=int)
     s.add_argument("--rest-hr", type=int)
     s.add_argument("--rftp", type=int)
+    s.add_argument("--method", choices=["8020", "hrmax", "hrr", "daniels"], default="8020")
+    s.add_argument("--race", help="daniels: km=time, e.g. 10=43:05")
+    s.add_argument("--easy-cap", type=int, help="easy-run HR cap from `lt1` (default 83 %% of LTHR)")
+    s.add_argument("--easy-source", help="where the easy cap comes from, e.g. 'odhad z decouplingu'")
     s.add_argument("--source")
     s.add_argument("--date")
     s.add_argument("--lang", default="en")
@@ -301,20 +501,39 @@ def main():
     g.add_argument("evidence")
     g.add_argument("--lang", default="en")
     g.add_argument("--json", action="store_true")
+    l1 = sub.add_parser("lt1")
+    l1.add_argument("runs", help="analyze_session.py --json rows of steady runs (a JSON list)")
+    l1.add_argument("--lthr", type=int)
+    l1.add_argument("--json", action="store_true")
     args = ap.parse_args()
+    if args.cmd == "lt1":
+        with open(args.runs) as f:
+            out = lt1(json.load(f), args.lthr)
+        if args.json:
+            print(json.dumps(out, ensure_ascii=False))
+        else:
+            est = f"~{out['estimate']} bpm" + (f" ({out['pct_lthr']} % of LTHR)" if out.get("pct_lthr") else "") \
+                if out["estimate"] else "no estimate"
+            print(f"Aerobic threshold from {out['runs']} steady runs: {est}\n{out['note']}")
+            if out.get("suggested_cap"):
+                print(f"Easy-run cap: {out['suggested_cap']} (proven under 5 % drift)"
+                      + (f"; the default 83 % of LTHR would be {out['default_cap']}" if out.get("default_cap") else ""))
+        return
     lang = args.lang if args.lang in TX else "en"
     if args.cmd == "show":
         day = args.date or date.today().isoformat()
         if args.tp_settings:
             with open(args.tp_settings) as f:
-                z = from_tp(json.load(f))
+                z = from_tp(json.load(f), lang)
             if args.source:
                 z["source"] = args.source
-        elif args.threshold_pace:
-            z = from_thresholds(parse_pace(args.threshold_pace), args.lthr, args.max_hr, args.rest_hr, args.rftp, args.source)
+        elif args.threshold_pace or args.method != "8020":
+            z = from_thresholds(parse_pace(args.threshold_pace) if args.threshold_pace else None, args.lthr, args.max_hr,
+                                args.rest_hr, args.rftp, args.source, args.method, args.race, lang)
         else:
-            sys.exit("show needs --tp-settings or --threshold-pace")
-        print(json.dumps(page_docs(z, lang, day), ensure_ascii=False) if args.json else table(z, lang, day))
+            sys.exit("show needs --tp-settings, --threshold-pace or a --method")
+        cap, cap_src = easy_cap(z, args.easy_cap, args.easy_source, lang)
+        print(json.dumps(page_docs(z, lang, day, cap, cap_src), ensure_ascii=False) if args.json else table(z, lang, day, cap, cap_src))
         return
     with open(args.evidence) as f:
         ev = json.load(f)
