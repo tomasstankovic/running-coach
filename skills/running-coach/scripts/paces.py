@@ -24,8 +24,10 @@ import re
 import sys
 
 # Zone boundaries as a fraction of threshold speed / LTHR. These match the
-# 7-zone (Z1, Z2, X, Z3, Y, Z4, Z5) set TrainingPeaks generates with its Friel
-# calculators. Used only when real zones from TrainingPeaks are not available.
+# 7-zone (Z1, Z2, X, Z3, Y, Z4, Z5) set TrainingPeaks generates with its 80/20
+# Endurance calculators (Matt Fitzgerald's model; X and Y are the in-between zones
+# 80/20 training mostly avoids). Used only when real zones from TrainingPeaks are
+# not available.
 DEFAULT_SPEED_ZONES = [
     ("Z1", 0.5995, 0.7599),
     ("Z2", 0.7599, 0.8711),

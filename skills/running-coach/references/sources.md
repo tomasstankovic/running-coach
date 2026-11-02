@@ -89,7 +89,8 @@ Citations were checked against PubMed, the journal or the full text in October 2
 
 ## Conventions without a single source
 
-Friel's 7-zone model and percentages (TrainingPeaks), easy running at 70–80 % of threshold speed,
+The 7-zone Z1/Z2/X/Z3/Y/Z4/Z5 model (80/20 Endurance, Matt Fitzgerald; as TrainingPeaks
+calculates it) and its percentages, easy running at 70–80 % of threshold speed,
 session types (cruise intervals, tempo, VO2 reps), the race-to-threshold factors in `paces.py`,
 and the periodization phase lengths are standard coaching practice. They're reasonable defaults,
 not research findings. Say so if asked.
