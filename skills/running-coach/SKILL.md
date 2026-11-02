@@ -22,7 +22,7 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 | **Onboarding** | first conversation, no profile found, "let's start", new goal: studies 12–24 months of history, not just recent weeks | `references/onboarding.md` |
 | **Week** | "plan next week" | this file, `methodology.md`, `workouts.md` |
 | **Block** | "half marathon plan for April" | + `methodology.md` §5 (block length, goal realism, overview format) |
-| **Season** | "plan my season up to the marathon", "show me the plan", "I have a work deadline for two weeks" | `references/season.md` |
+| **Season** | "plan my season up to the marathon", "show me the plan", "I have a work deadline for two weeks", "show me the key sessions", "what are the big workouts" | `references/season.md` (§2b key-session roadmap) |
 | **Review** | "how did my week go?" | this file; with a season plan also `season.md` §5–6 |
 | **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
 | **Check-in** | "should I run today?", "slept badly" | `references/checkin-and-race.md` |
@@ -121,7 +121,9 @@ readiness, and how the runner feels. State it at the top of the plan with one se
 
 ## Step 4: Draft
 
-Build the week from `references/workouts.md`. The principles that matter most:
+Build the week from `references/workouts.md`. With a season roadmap, start from the week's key
+sessions (`season.md` §2b): they set the quality days and targets; deviate only with a reason you
+state. The principles that matter most:
 
 - Mostly easy. One long run, one or two quality sessions, everything else easy (strides are fine).
 - Never two hard days in a row. Keep the long run away from hard days when possible.
@@ -232,7 +234,9 @@ fitness trend, readiness trend, missed or extra sessions.
 long run, a race). Mention them, and plan the next weeks from the new reference.
 
 With a season plan, also fill in the week's actuals, compare it with its row, and apply the
-re-planning rules (`season.md` §5–6). Re-run `scripts/forecast.py` with the week's new results
+re-planning rules (`season.md` §5–6). With a roadmap, pass the key sessions' `analyze_session.py
+--json` rows to `season_plan.py actuals --sessions` for their verdicts (`season.md` §2b), and
+re-target when the threshold or a goal changed. Re-run `scripts/forecast.py` with the week's new results
 (`analysis.md` "Race predictions") and update the predictions on the plan page; when a race goal
 falls outside the forecast range, say so with the numbers and offer the options. Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
 were above 150 bpm, so slow down, don't lengthen"). Add them to the profile's decision log and

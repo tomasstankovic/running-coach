@@ -5,7 +5,12 @@ Usage:
   season_plan.py generate spec.json --out plan.json
   season_plan.py replan plan.json --from 2027-01-11 --current-km 32 [--long-km 14]
                  [--busy 2027-02-01:0.6:work deadline] [--note "flu, 5 days off"] --out plan.json
-  season_plan.py actuals plan.json --history workouts.json [--today 2027-01-10] --out plan.json
+  season_plan.py actuals plan.json --history workouts.json [--sessions rows.json] [--today 2027-01-10]
+                 --out plan.json                            # rows.json: analyze_session.py --json rows
+  season_plan.py roadmap plan.json --threshold-pace 4:10 [--goals "21.1=1:29:30,42.2=3:15:00"]
+                 [--days q1=tue,q2=fri,long=sun] [--lthr 174] --out plan.json
+                                                            # key sessions + milestones (key_sessions.py)
+  season_plan.py retarget plan.json --threshold-pace 4:05 [--goals ...] --out plan.json
   season_plan.py export plan.json --format markdown          # table for a TP note / profile file
   season_plan.py export plan.json --format batch --out-dir docs [--versions versions.json]
                                                             # plan page database: one JSON file per
@@ -35,8 +40,13 @@ starting point and keeps the weeks before it (and their actuals) untouched.
 """
 import argparse
 import json
+import os
 import sys
 from datetime import date, timedelta
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import key_sessions  # noqa: E402
+from paces import parse_time  # noqa: E402
 
 # (max distance km, specific weeks, build weeks, taper factors incl. race week, recovery factors)
 GOALS = [
@@ -262,7 +272,49 @@ def cmd_replan(plan, args):
     spec["start"] = plan["spec"]["start"]
     changes = plan.get("changes", []) + [{"date": date.today().isoformat(),
                                           "text": args.note or f"re-planned from {frm.isoformat()}"}]
-    return {"spec": spec, "weeks": weeks, "changes": changes, "warnings": new["warnings"]}
+    result = {"spec": spec, "weeks": weeks, "changes": changes, "warnings": new["warnings"]}
+    rm = plan.get("roadmap")
+    if rm:  # new weeks get key sessions again; the kept weeks keep theirs (and their actuals)
+        old = {w["week_start"]: w.get("key_sessions", []) for w in kept}
+        key_sessions.build_roadmap(result, parse_pace(rm["threshold_pace"]), goals_of(rm.get("goals"), spec),
+                                   rm.get("days"), rm.get("lthr"), rm.get("runs_per_week"))
+        for w in result["weeks"]:
+            if w["week_start"] in old:
+                w["key_sessions"] = old[w["week_start"]]
+    return result
+
+
+def goals_of(text, spec):
+    """{km: seconds} from "21.1=1:29:30,42.2=3:15:00" (or a stored dict), else the races' goals."""
+    if isinstance(text, dict):
+        return {float(k): v for k, v in text.items()}
+    if text:
+        return {float(k): parse_time(v) for k, v in (p.split("=") for p in text.split(","))}
+    return {float(r["distance_km"]): parse_time(r["goal"]) for r in spec.get("races", []) if r.get("goal")}
+
+
+def cmd_roadmap(plan, args):
+    days = dict(p.split("=") for p in args.days.split(",")) if args.days else None
+    notes = key_sessions.build_roadmap(plan, parse_pace(args.threshold_pace), goals_of(args.goals, plan["spec"]),
+                                       days, args.lthr, args.runs)
+    plan.setdefault("warnings", [])
+    plan["warnings"] = [w for w in plan["warnings"] if "threshold supports" not in w] + notes
+    return plan
+
+
+def cmd_retarget(plan, args):
+    if not plan.get("roadmap"):
+        raise ValueError("no roadmap in the plan yet: run `roadmap` first")
+    today = args.today or date.today().isoformat()
+    old = plan["roadmap"]["threshold_pace"]
+    goals = goals_of(args.goals or plan["roadmap"].get("goals"), plan["spec"])
+    moved, notes = key_sessions.retarget(plan, parse_pace(args.threshold_pace), goals, today)
+    text = f"re-targeted: threshold {old} -> {args.threshold_pace}" + "".join(
+        f"; {k} {a} -> {b}" for k, (a, b) in moved.items())
+    plan.setdefault("changes", []).append({"date": today, "text": text})
+    plan["warnings"] = notes
+    print(text, file=sys.stderr)
+    return plan
 
 
 def cmd_actuals(plan, args):
@@ -285,15 +337,20 @@ def cmd_actuals(plan, args):
         if w["week_start"] in totals:
             w["actual_km"] = round(totals[w["week_start"]][0], 1)
             w["actual_minutes"] = int(round(totals[w["week_start"]][1]))
+    if args.sessions:
+        with open(args.sessions) as f:
+            rows = json.load(f)
+        for c in key_sessions.fill_actuals(plan, rows, today.isoformat()):
+            plan.setdefault("changes", []).append(c)
+            print(f"CHANGE {c['text']}", file=sys.stderr)
     return plan
 
 
 def export_batch(plan, out_dir, versions):
     """Write one JSON file per page document and return ArtifactData batch writes (<= 50 each)."""
-    import os
     meta = {k: plan["spec"].get(k) for k in ("title", "lang", "start", "runs_per_week", "peak_km")}
     meta.update(races=plan["spec"].get("races", []), unit=plan["spec"].get("unit", "km"),
-                updated=date.today().isoformat())
+                updated=date.today().isoformat(), threshold_pace=(plan.get("roadmap") or {}).get("threshold_pace"))
     docs = [("plan", "meta", meta)] + [("weeks", w["week_start"], w) for w in plan["weeks"]]
     docs += [("changes", f"{c['date']}-{i:02d}", c) for i, c in enumerate(plan.get("changes", []))]
     writes = []
@@ -318,6 +375,13 @@ def export(plan, fmt):
         actual = f"{w['actual_km']:g} km" if w.get("actual_km") is not None else ""
         lines.append(f"| {w['n']} | {w['week_start']} | {w['phase_label']} | {w['role']} | {w['km']} | "
                      f"{w['minutes']} | {w['long_km']} | {w['key']} | {actual} |")
+    if any(w.get("key_sessions") for w in plan["weeks"]):
+        nxt, ms = key_sessions.upcoming(plan, date.today().isoformat())
+        fmt = lambda s: (f"- {s['date']} {'★ ' if s['milestone'] else ''}{s['title']}"
+                         + (f" ({s['target']['pace']}/km)" if s["target"].get("pace") else "")
+                         + (f" -> {s['actual']['summary']} [{s['actual']['verdict']}]" if s.get("actual") else ""))
+        lines += ["", "## Key sessions (next)"] + [fmt(s) for s in nxt]
+        lines += ["", "## Milestones"] + [fmt(s) for s in ms]
     if plan.get("changes"):
         lines += ["", "## Changes"] + [f"- {c['date']}: {c['text']}" for c in plan["changes"][-8:]]
     return "\n".join(lines)
@@ -341,7 +405,22 @@ def main():
     a.add_argument("plan")
     a.add_argument("--history", required=True)
     a.add_argument("--today")
+    a.add_argument("--sessions", help="analyze_session.py --json rows of the key sessions")
     a.add_argument("--out")
+    k = sub.add_parser("roadmap")
+    k.add_argument("plan")
+    k.add_argument("--threshold-pace", required=True)
+    k.add_argument("--goals", help='"21.1=1:29:30,42.2=3:15:00"; default: the races\' goals in the plan')
+    k.add_argument("--days", help="q1=tue,q2=fri,long=sun (the runner's weekly template)")
+    k.add_argument("--lthr", type=int, help="adds HR caps")
+    k.add_argument("--runs", type=int, help="runs per week (default: the plan's); < 5 = no second quality session")
+    k.add_argument("--out")
+    t = sub.add_parser("retarget")
+    t.add_argument("plan")
+    t.add_argument("--threshold-pace", required=True)
+    t.add_argument("--goals")
+    t.add_argument("--today")
+    t.add_argument("--out")
     e = sub.add_parser("export")
     e.add_argument("plan")
     e.add_argument("--format", choices=["markdown", "batch"], default="markdown")
@@ -368,7 +447,8 @@ def main():
             if args.cmd == "export":
                 print(export(plan, args.format))
                 return
-            result = cmd_replan(plan, args) if args.cmd == "replan" else cmd_actuals(plan, args)
+            result = {"replan": cmd_replan, "actuals": cmd_actuals, "roadmap": cmd_roadmap,
+                      "retarget": cmd_retarget}[args.cmd](plan, args)
     except (ValueError, KeyError) as e:
         sys.exit(f"error: {e}")
 
@@ -383,6 +463,12 @@ def main():
           f"peak {max(w['km'] for w in weeks)} km", file=sys.stderr)
     for w in result.get("warnings", []):
         print(f"WARN {w}", file=sys.stderr)
+    if args.cmd == "roadmap":
+        nxt, ms = key_sessions.upcoming(result, date.today().isoformat())
+        print(f"{sum(len(w.get('key_sessions', [])) for w in weeks)} key sessions, {len(ms)} milestones:", file=sys.stderr)
+        for s in ms:
+            print(f"  {s['date']} {s['title']}" + (f" ({s['target']['pace']}/km)" if s['target'].get('pace') else ""),
+                  file=sys.stderr)
 
 
 if __name__ == "__main__":

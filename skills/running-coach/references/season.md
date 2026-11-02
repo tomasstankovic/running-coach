@@ -53,6 +53,52 @@ runner as part of the reality check, with numbers.
 Present the plan as the block overview table (`methodology.md` §5) or, when the page exists,
 link to it. Agree it with the runner before saving.
 
+### 2b. Key-session roadmap
+
+Volume alone doesn't show where the preparation is going. Right after `generate`, give every week
+its key sessions:
+
+```bash
+python scripts/season_plan.py roadmap plan.json --threshold-pace 4:12 --lthr 172 \
+    --days q1=tue,q2=fri,long=sun --out plan.json
+```
+
+- `--days`: the quality days and the long-run day from the profile's weekly template. Goals come
+  from the races' `goal` in the plan (or `--goals "21.1=1:29:30,42.2=3:15:00"`).
+- Every week gets 1–3 key sessions from the ladders in `workouts.md` "Progressions": the first
+  quality session (threshold in base, half-marathon pace in build, race pace in the specific
+  phase), a second one with 5+ runs a week (hills/fartlek, then VO2; none in a marathon's specific
+  phase), and the long run. A ladder moves one step per build week: more reps, then longer reps,
+  only then faster. Deload, busy and race weeks don't move it.
+- Targets are stored as % of threshold speed and shown as paces from `paces.py`. Race-pace
+  sessions use the goal pace, but at most 3 % faster than the threshold supports; the script
+  warns when the goal is beyond that, and the runner hears it with the numbers.
+- **Milestones** (★, 6–10 a season): the threshold check at the end of base, the longest run, the
+  B races, the A race; for a marathon the long runs with 14–16 km at marathon pace and a continuous
+  18–23 km at marathon pace 2–4 weeks before the race (never in the week after a race; the long
+  run a week before it stays easy); for shorter goals a dress rehearsal two weeks out.
+- It's an estimate. Say so when you show it, and show the milestones and the next 4–6 sessions
+  rather than the whole list.
+
+**Week mode** starts from the week's key sessions: they set the quality days and their targets.
+Deviate when readiness, illness, terrain or the last session says so, and say why.
+
+**Weekly review**: run `analyze_session.py --json` for the week's key sessions and pass the rows to
+`season_plan.py actuals ... --sessions rows.json`. Each past key session gets `actual` (what was
+run, the pace, the HR) and a verdict: `on`, `over` (faster than target with HR under the cap),
+`under` (> 1 % slower, HR over the cap, or a long run > 10 % short) or `missed`. After `under` or
+`missed` the rest of that ladder moves back one step (the next session repeats it); the change is
+logged. `over` changes nothing by itself: if the threshold looks stale, retest it. A session not
+uploaded yet (less than 2 days old) is left open.
+
+**New threshold or goal**: `season_plan.py retarget plan.json --threshold-pace 4:05` recomputes
+every future target and logs which paces moved (e.g. "threshold 4:12–4:17 -> 4:08–4:13"). Tell
+the runner how much the paces moved. `replan` keeps the roadmap: new weeks get key sessions
+again, past weeks keep theirs and their results.
+
+Nothing from the roadmap goes to TrainingPeaks on its own: only the current week, planned in
+detail and confirmed, goes to the calendar (`SKILL.md` Step 7).
+
 ## 3. TrainingPeaks ATP
 
 `tp_get_atp` reads the runner's Annual Training Plan in TP (weekly TSS targets, periods, races,
@@ -104,6 +150,10 @@ Keep one visible view of it.
      and the trend from 5 days on.
    - **Aerobic fitness**: `analyze_session.py <data_file> --json --title "..."` for long and
      steady runs → rows for the `sessions` collection (EF, decoupling, km, date).
+   - **Key sessions**: the week documents carry `key_sessions` from the roadmap, so the batch
+     export puts them on the page. The page shows the next sessions with the milestones by
+     default (also "milestones" and "all"), grouped by phase, with target pace, HR cap, the
+     result and its verdict, and an "adjusted" mark that leads to the change log.
    - **Predictions**: `forecast.py input.json --json` → rows for the `predictions` collection
      (`--id id`): each race's forecast range over the weeks and the current form table
      (`analysis.md` "Race predictions").
@@ -154,7 +204,8 @@ Review mode (`SKILL.md`) is the weekly checkpoint. With the plan it also:
 1. Fills in the actuals: `season_plan.py actuals plan.json --history <last weeks' tp_get_workouts>`.
    Then update those week documents on the page, mark the week's `days` done, and add the
    long run's `analyze_session.py --json` row to `sessions`.
-2. Compares the week with its row: volume ±15 %, the key session done, the long run.
+2. Compares the week with its row: volume ±15 %, the key sessions (`actuals --sessions`, §2b), the
+   long run. Milestone results are also results for `forecast.py` (`kind: "effort"`).
    Re-runs `forecast.py` and adds its rows to `predictions`; a race goal that left the range is
    part of the review's decisions.
 3. Applies section 5 if something changed, then plans next week in detail (Week mode) from the

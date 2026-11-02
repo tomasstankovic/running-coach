@@ -3,6 +3,24 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.11.0
+
+- **Key-session roadmap** (`season_plan.py roadmap`, `key_sessions.py`): every week of the season
+  gets its key sessions from progression ladders by phase and goal distance (more reps, then
+  longer reps, then faster), placed on the runner's quality and long-run days, with targets as
+  % of threshold speed and paces from `paces.py`. Race-pace targets use the goal pace, at most
+  3 % faster than the threshold supports. 6–10 milestones: threshold check, longest run, B races,
+  marathon-pace long runs and a continuous 18–23 km at marathon pace 2–4 weeks before a
+  marathon, a dress rehearsal for shorter goals, the A race.
+- **Results against the map**: `actuals --sessions` matches `analyze_session.py --json` rows to the
+  key sessions and judges them (on target, better, under, missed). After under or missed, the
+  rest of that ladder moves back a step, logged. `retarget` recomputes future paces after a new
+  threshold or goal and logs what moved. `replan` keeps the roadmap.
+- **Plan page**: a key sessions section (next + milestones, milestones only, all), by phase, with
+  target pace, HR cap, result and verdict, and an "adjusted" mark that leads to the change log.
+- `workouts.md` "Progressions", `season.md` §2b, Week mode starts from the week's key sessions.
+  Proposed in a coaching session on real data.
+
 ## 0.10.0
 
 - **"If the plan happens"**: `forecast.py` adds a race-day projection next to the forecast from

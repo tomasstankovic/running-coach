@@ -92,6 +92,26 @@ footer { font-size: .8rem; color: var(--muted); }
 .days .v { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: .9rem; }
 .days .tag { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-left: 6px; }
 .weeksum { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .85rem; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--line); }
+.ks-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: inherit; font-size: .82rem; padding: 5px 12px; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
+.ks { list-style: none; margin: 0; padding: 0; }
+.ks .ph { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; padding: 12px 0 4px; display: flex; align-items: center; gap: 6px; }
+.ks .ph:first-child { padding-top: 0; }
+.ks .it { display: grid; grid-template-columns: 74px 18px 1fr; gap: 4px 10px; padding: 9px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.ks .it:last-child { border-bottom: 0; }
+.ks .it.past .tt { color: var(--muted); }
+.ks .it.ms .tt { font-weight: 600; }
+.ks .d { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ks .mk { color: var(--taper); text-align: center; }
+.ks .mk .sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.ks .tg, .ks .ac { grid-column: 3; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ks .ac { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.vd { font-weight: 600; white-space: nowrap; }
+.vd.on { color: var(--good); } .vd.over { color: var(--build); } .vd.under { color: var(--warn); } .vd.missed { color: var(--muted); }
+.adj { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--warn); margin-left: 8px; text-decoration: none; border-bottom: 1px dotted currentColor; }
 .ready { display: grid; gap: 10px; }
 .rhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 1.5rem; font-weight: 600; line-height: 1; }
@@ -131,6 +151,11 @@ table.form td, table.form th { padding: 6px 8px; }
       <section id="weekSection" hidden>
         <h2 id="hWeek">This week</h2>
         <div class="panel"><ul class="days" id="days"></ul><div class="weeksum" id="weekSum"></div></div>
+      </section>
+
+      <section id="keySection" hidden>
+        <div class="ks-head"><h2 id="hKey">Key sessions</h2><div class="seg" id="ksSeg" role="group"></div></div>
+        <div class="panel"><ul class="ks" id="ksList"></ul><div class="cap" id="ksCap"></div></div>
       </section>
 
       <section id="predSection" hidden>
@@ -176,7 +201,7 @@ table.form td, table.form th { padding: 6px 8px; }
         </table></div>
       </section>
 
-      <section id="logSection" hidden>
+      <section id="logSection" hidden tabindex="-1">
         <h2 id="hLog">Changes</h2>
         <ul class="log" id="log"></ul>
       </section>
@@ -213,6 +238,10 @@ const T = {
     barLabel: "HRV 7-day mean against your normal band",
     readyCap: "Band = your normal range (mean ± 0.5 SD of the 4–8 weeks before). Below it your body hasn't recovered yet; one low night alone doesn't count.",
     readyTrend: "HRV 7-day mean over the last weeks, grey band = your normal range, dot colour = that day's verdict",
+    key: "Key sessions", ksViews: { next: "Next", ms: "Milestones", all: "All" },
+    ksCap: thr => `An estimate: it changes with how the sessions go, and every change is in the log below.${thr ? ` Paces from threshold ${thr}/km.` : ""}`,
+    vd: { on: "✓ on target", over: "↑ better", under: "↓ under target", missed: "– missed" },
+    adjusted: "adjusted", hrTo: h => `HR up to ${h}`, milestone: "milestone",
     pred: "Race predictions", form: "Current form", likely: "likely", range: "range",
     formCols: ["Distance", "Likely", "Range", "Pace"], half: "Half marathon", marathon: "Marathon",
     goal: g => `goal ${g}`, inRange: "inside the range", stretch: p => `${p} % faster than the fast end: a stretch`,
@@ -246,6 +275,10 @@ const T = {
     barLabel: "HRV 7-dňový priemer voči tvojmu bežnému pásmu",
     readyCap: "Pásmo = tvoj bežný rozsah (priemer ± 0,5 SD za 4–8 týždňov predtým). Pod ním telo ešte nie je zregenerované; jedna slabšia noc sama nerozhoduje.",
     readyTrend: "HRV 7-dňový priemer za posledné týždne, sivý pás = tvoj bežný rozsah, farba bodu = verdikt v ten deň",
+    key: "Kľúčové tréningy", ksViews: { next: "Najbližšie", ms: "Míľniky", all: "Všetky" },
+    ksCap: thr => `Odhad: mení sa podľa toho, ako tréningy vychádzajú, a každá zmena je v logu nižšie.${thr ? ` Tempá z prahu ${thr}/km.` : ""}`,
+    vd: { on: "✓ v cieli", over: "↑ lepšie", under: "↓ pod cieľom", missed: "– vynechané" },
+    adjusted: "upravené", hrTo: h => `tep do ${h}`, milestone: "míľnik",
     pred: "Predikcie", form: "Aktuálna forma", likely: "najpravdepodobnejšie", range: "rozpätie",
     formCols: ["Trať", "Odhad", "Rozpätie", "Tempo"], half: "Polmaratón", marathon: "Maratón",
     goal: g => `cieľ ${g}`, inRange: "v rozpätí", stretch: p => `o ${p} % rýchlejší než rýchly koniec: náročný cieľ`,
@@ -314,6 +347,7 @@ function render() {
 
   drawChart(weeks, today, t);
   renderWeek(cur, t);
+  renderKeySessions(weeks, t);
   renderTrends(t);
   renderPredictions(t);
 
@@ -472,6 +506,56 @@ function renderTrends(t) {
     const l = se[se.length - 1];
     $("efCap").textContent = t.efCap(se.length, l.decoupling != null ? l.decoupling.toFixed(1) : null);
   }
+}
+
+let ksView = (() => { try { return localStorage.getItem("ksView") || "next"; } catch (e) { return "next"; } })();
+function renderKeySessions(weeks, t) {
+  // The roadmap: next sessions and the milestones by default, grouped by phase; done ones show
+  // what was run and the verdict, adjusted ones link to the change log.
+  const all = weeks.flatMap(w => (w.key_sessions || []).map(s => ({ ...s, phase: w.phase }))).sort((a, b) => a.date < b.date ? -1 : 1);
+  $("keySection").hidden = !all.length;
+  if (!all.length) return;
+  $("hKey").textContent = t.key;
+  const todayIso = localISO(), next = all.filter(s => s.date >= todayIso).slice(0, 6);
+  const recent = s => s.date < todayIso && s.date >= addDays(todayIso, -7);   // last week's results stay in view
+  const pick = { next: all.filter(s => s.milestone || next.includes(s) || recent(s)), ms: all.filter(s => s.milestone), all }[ksView] || all;
+  const seg = $("ksSeg"); seg.replaceChildren(...Object.entries(t.ksViews).map(([k, label]) => {
+    const b = el("button", { type: "button", "aria-pressed": String(k === ksView) }, label);
+    b.onclick = () => { ksView = k; try { localStorage.setItem("ksView", k); } catch (e) {} renderKeySessions(weeks, t); };
+    return b;
+  }));
+  const list = $("ksList"); list.replaceChildren();
+  let phase = null;
+  pick.forEach(s => {
+    if (s.phase !== phase) {
+      phase = s.phase;
+      const h = el("li", { class: "ph" }), sw = el("i", { class: "sw" }); sw.style.background = phaseColor(phase);
+      h.append(sw, t.phase[phase] || phase); list.append(h);
+    }
+    const li = el("li", { class: ["it", s.milestone && "ms", s.date < todayIso && "past"].filter(Boolean).join(" ") });
+    const mk = el("span", { class: "mk" });
+    if (s.milestone) { mk.textContent = "★"; mk.setAttribute("title", t.milestone); mk.setAttribute("aria-label", t.milestone); }
+    else { const d = el("i", { class: "sw" }); d.style.background = phaseColor(s.phase); mk.append(d); }
+    const tt = el("span", { class: "tt" }, s.title);
+    if (s.status === "adjusted") {
+      const a = el("a", { class: "adj", href: "#logSection", title: s.note || "" }, t.adjusted);
+      a.onclick = e => { e.preventDefault(); $("logSection").scrollIntoView({ behavior: "smooth" }); $("logSection").focus({ preventScroll: true }); };
+      tt.append(a);
+    }
+    li.append(el("span", { class: "d" }, fmtDate(s.date, { weekday: "short", day: "numeric", month: "numeric" })), mk, tt);
+    const tg = s.target || {}, parts = [];
+    if (tg.pace) parts.push(`${tg.pace}/km`);
+    if (tg.hr_max) parts.push(t.hrTo(tg.hr_max));
+    if (parts.length) li.append(el("span", { class: "tg" }, parts.join(" · ")));
+    if (s.actual) {
+      const ac = el("span", { class: "ac" }), v = s.actual.verdict;
+      ac.append(el("span", { class: `vd ${v}` }, t.vd[v] || v));
+      if (s.actual.summary) ac.append(el("span", {}, s.actual.summary));
+      li.append(ac);
+    }
+    list.append(li);
+  });
+  $("ksCap").textContent = t.ksCap(state.meta && state.meta.threshold_pace);
 }
 
 function renderReadiness(tr, t, col) {

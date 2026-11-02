@@ -38,6 +38,10 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   long run, key session), with B and C races built in. It lives on a page with a fixed link that
   shows plan vs. actual and every change. Illness, a work deadline or a missed week re-plans the
   rest by clear rules, and the weekly review can run by itself every Sunday.
+- **A map of the key sessions.** How threshold, tempo, VO2 and long runs progress through the
+  season, with target paces from your threshold and goals, and 6–10 milestones (the threshold
+  check, the longest run, marathon-pace long runs, tune-up races). Each review compares what you
+  ran with the target (on target, better, under, missed) and moves the next steps accordingly.
 - **Your units, your ground.** Kilometres or minutes, as you prefer. It reads how hilly your runs
   are, asks where you can run fast, and steers by pace on the flat and by heart rate on hills.
   "This week I'm in the mountains" reshapes the rest of the week.
@@ -159,7 +163,7 @@ today?").
 | morning, before a run | "Should I run today?" · "Slept 5 hours, intervals are planned. Should I go?" |
 | after a key session | "Look at today's intervals." · "How was my long run?" |
 | end of the week | "How did the week go? Plan the next one." |
-| any time | "Show me the season plan." |
+| any time | "Show me the season plan." · "Which key sessions are coming up?" |
 | predictions | "What could I run a half marathon in now?" · "Is 3:15 realistic for my marathon?" |
 | life happens | "I've had a fever since Tuesday." · "Work is crazy for two weeks." · "I'm in the mountains until Sunday." |
 | strength | "Add two strength sessions a week, I have a kettlebell at home." |
@@ -209,6 +213,7 @@ skills/running-coach/
     ├── forecast.py             current form over 5k–marathon + race-day forecast per race
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
     ├── season_plan.py          rough season plan, re-planning, actuals, export to the plan page
+    ├── key_sessions.py         key-session roadmap: progressions, milestones, targets, verdicts
     ├── page_docs.py            any list of rows → plan page database writes
     ├── terrain.py              elevation gain per km → flat / rolling / hilly / mountain
     ├── tp_structure.py         session → TrainingPeaks structure in km or time

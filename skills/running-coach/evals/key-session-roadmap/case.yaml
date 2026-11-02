@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: key-session-roadmap
+expected_outcome: |
+  The coach runs season_plan.py roadmap on the plan (threshold 4:25, LTHR 168, quality Tue/Fri, long Sun) and shows the key sessions by phase with a progression (reps, then length, then pace), paces computed from the threshold and the 3:25 goal (threshold reps ~4:25-4:30/km, marathon pace ~4:50-4:53/km), milestones including a continuous ~18-23 km at marathon pace 2-4 weeks before the marathon, says clearly it is an estimate that changes with how training goes, and writes nothing to TrainingPeaks. Slovak.
+context:
+  scaffold_script: place-files.sh

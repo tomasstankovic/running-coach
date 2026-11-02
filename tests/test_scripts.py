@@ -464,6 +464,95 @@ class Forecast(TempDir):
         self.assertIn("-> 42 on race day", out)   # 210 TSS a week x 1.4 / 7 days, not 30
 
 
+class KeySessions(TempDir):
+    """season_plan.py roadmap / actuals --sessions / retarget on a fictional marathon season."""
+    SPEC = {"title": "Test", "lang": "en", "start": "2026-11-09", "current": {"km": 40, "long_km": 15},
+            "runs_per_week": 5, "easy_pace": "6:00", "peak_km": 65,
+            "races": [{"name": "Half", "date": "2027-03-21", "distance_km": 21.1, "priority": "B", "goal": "1:38:00"},
+                      {"name": "Marathon", "date": "2027-04-25", "distance_km": 42.2, "priority": "A", "goal": "3:25:00"}]}
+
+    def plan(self, *extra, spec=None):
+        path = self.write("plan.json", season_plan.generate(dict(spec or self.SPEC)))
+        proc = run("season_plan.py", "roadmap", path, "--threshold-pace", "4:25", "--lthr", 168, *extra, "--out", path)
+        return path, json.loads(path.read_text()), proc.stderr
+
+    @staticmethod
+    def sessions(plan):
+        return [s for w in plan["weeks"] for s in w.get("key_sessions", [])]
+
+    def test_threshold_ladder_adds_reps_then_length(self):
+        _, plan, _ = self.plan()
+        q1 = [s["title"] for w in plan["weeks"] if w["phase"] == "base" and w["role"] == "build"
+              for s in w["key_sessions"] if s["slot"] == "q1"]
+        self.assertEqual(q1[:5], ["5x 1 km at threshold", "6x 1 km at threshold", "7x 1 km at threshold",
+                                  "3x 2 km at threshold", "4x 2 km at threshold"])
+        first = next(s for s in self.sessions(plan) if s["title"] == "5x 1 km at threshold")
+        self.assertEqual(first["target"]["pace"], "4:25–4:30")
+        self.assertEqual(first["date"], "2026-11-10")              # Tuesday by default
+
+    def test_marathon_milestones(self):
+        _, plan, _ = self.plan()
+        ms = [s for s in self.sessions(plan) if s["milestone"]]
+        self.assertTrue(6 <= len(ms) <= 10, len(ms))
+        cont = next(s for s in ms if s["type"] == "mp")
+        days_out = (date(2027, 4, 25) - date.fromisoformat(cont["date"])).days
+        self.assertTrue(14 <= days_out <= 28, cont["date"])
+        self.assertTrue(18 <= cont["target"]["mp_km"] <= 23)
+        self.assertEqual(cont["target"]["pace"], "4:50–4:53")      # the 3:25 goal pace
+        week_before = (date.fromisoformat(cont["date"]) - timedelta(days=7)).isoformat()
+        self.assertNotIn(week_before[:10], [s["date"] for s in self.sessions(plan) if s["type"] in ("mp", "mp_long")])
+        self.assertTrue(any(s["type"] == "test" for s in ms))
+        self.assertTrue(any(s["type"] == "race" and "Half" in s["title"] for s in ms))
+
+    def test_goal_beyond_the_threshold_is_capped_and_reported(self):
+        spec = json.loads(json.dumps(self.SPEC))
+        spec["races"][1]["goal"] = "3:05:00"
+        _, plan, err = self.plan(spec=spec)
+        self.assertIn("faster than the threshold supports", err)
+        mp = next(s for s in self.sessions(plan) if s["type"] == "mp_long")
+        self.assertEqual(mp["target"]["pace"], "4:35–4:38")         # ~4:37 = 4:25 x 1.075 / 1.03, not the 4:23 goal pace
+
+    def test_fewer_runs_drop_the_second_quality_session(self):
+        _, plan, _ = self.plan("--runs", 4)
+        self.assertFalse([s for s in self.sessions(plan) if s["slot"] == "q2"])
+
+    def test_results_judge_and_hold_back_the_ladder(self):
+        path, _, _ = self.plan()
+        rows = [{"date": "2026-11-10", "km": 11, "minutes": 58, "kind": "intervals", "reps": 5, "rep_km": 1.0,
+                 "rep_pace": 267, "rep_max_hr": 166},
+                {"date": "2026-11-17", "km": 11, "minutes": 60, "kind": "intervals", "reps": 6, "rep_km": 1.0,
+                 "rep_pace": 280, "rep_max_hr": 175}]
+        hist = self.write("hist.json", {"workouts": []})
+        run("season_plan.py", "actuals", path, "--history", hist, "--sessions", self.write("rows.json", rows),
+            "--today", "2026-11-23", "--out", path)
+        plan = json.loads(path.read_text())
+        by_date = {s["date"]: s for s in self.sessions(plan) if s["slot"] == "q1"}
+        self.assertEqual(by_date["2026-11-10"]["actual"]["verdict"], "on")
+        self.assertEqual(by_date["2026-11-17"]["actual"]["verdict"], "under")    # slow and over the HR cap
+        self.assertEqual(by_date["2026-11-24"]["title"], "6x 1 km at threshold")  # repeated, not 7x
+        self.assertEqual(by_date["2026-11-24"]["status"], "adjusted")
+        hills = next(s for s in self.sessions(plan) if s["date"] == "2026-11-20")
+        self.assertEqual(hills["status"], "missed")
+        self.assertTrue(any("held back" in c["text"] for c in plan["changes"]))
+
+    def test_retarget_moves_future_paces_and_logs_it(self):
+        path, _, _ = self.plan()
+        proc = run("season_plan.py", "retarget", path, "--threshold-pace", "4:20", "--today", "2026-11-12", "--out", path)
+        plan = json.loads(path.read_text())
+        by_date = {s["date"]: s for s in self.sessions(plan)}
+        self.assertEqual(by_date["2026-11-10"]["target"]["pace"], "4:25–4:30")   # past: unchanged
+        self.assertEqual(by_date["2026-11-17"]["target"]["pace"], "4:20–4:25")
+        self.assertIn("threshold 4:25 -> 4:20", proc.stderr)
+        self.assertIn("re-targeted", plan["changes"][-1]["text"])
+
+    def test_replan_keeps_the_roadmap(self):
+        path, _, _ = self.plan()
+        run("season_plan.py", "replan", path, "--from", "2027-01-04", "--current-km", 45, "--out", path)
+        plan = json.loads(path.read_text())
+        self.assertTrue(all(w.get("key_sessions") for w in plan["weeks"] if w["role"] != "recovery"))
+        self.assertIn("roadmap", plan)
+
+
 class PageDocs(TempDir):
     def test_rows_become_batch_writes(self):
         rows = [{"date": f"2026-10-{d:02d}", "hrv7": 50} for d in range(1, 61) if d <= 31] * 2
