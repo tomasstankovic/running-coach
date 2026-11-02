@@ -3,6 +3,24 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.13.0
+
+- **Training zones** ("Tréningové zóny"): `zones.py show` puts pace, % of threshold, heart rate,
+  power and what each zone is for in one table, from TrainingPeaks' own bands (the run set when
+  there is one) or from thresholds. The plan page has a training zones panel with the current
+  table, power, the easy-run HR cap and how the threshold moved over the season (`zones`
+  collection).
+- **Keeping them current**: checked in the first review of every month and after new evidence (a
+  flat race, a 30-min test, threshold sessions clearly faster or slower than the zones, a new max
+  HR, resting HR, power efforts). `zones.py suggest` proposes old -> new with what it means for
+  the paces; it never averages sources more than 3 % apart, ignores changes under 1.5 % and hilly
+  or hot races, and asks for a retest after 12 weeks without evidence.
+- **Writing to TrainingPeaks** after the runner's yes: threshold pace, LTHR / max / resting HR,
+  rFTP (`tp_update_speed_zones`, `tp_update_hr_zones`, `tp_update_ftp`), re-read to confirm, then
+  the key sessions re-target and the page updates. Creating a missing run power set is offered,
+  never done unasked. The scheduled weekly review includes the monthly check.
+- Eval `zones-after-race`.
+
 ## 0.12.0
 
 - **The coach designs the key sessions; the script computes and checks.** Tested blind on three

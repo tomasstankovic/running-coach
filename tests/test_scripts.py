@@ -613,6 +613,84 @@ class KeySessions(TempDir):
         self.assertIn("roadmap", plan)
 
 
+class Zones(TempDir):
+    """zones.py: one table of training zones, and proposals from new evidence (fictional runner)."""
+
+    @staticmethod
+    def band(label, lo, hi):
+        return {"label": label, "minimum": lo, "maximum": hi}
+
+    def tp_blocks(self):
+        thr = 1000 / 260                                     # 4:20/km
+        ratios = [("Zone 1", .5995, .7599), ("Zone 2", .7599, .8711), ("Zone X", .8711, .9294), ("Zone 3", .9294, 1.0),
+                  ("Zone Y", 1.0, 1.0204), ("Zone 4", 1.0204, 1.1521), ("Zone 5", 1.1521, 1000 / thr)]
+        hr = [("Zone 1", 121, 136), ("Zone 2", 136, 152), ("Zone X", 152, 159), ("Zone 3", 159, 168),
+              ("Zone Y", 168, 171), ("Zone 4", 171, 177), ("Zone 5", 177, 255)]
+        return {"speedZones": [{"threshold": 4.0, "workoutTypeId": 0, "zones": []},
+                               {"threshold": thr, "workoutTypeId": 3,
+                                "zones": [self.band(l, a * thr, b * thr) for l, a, b in ratios]}],
+                "heartRateZones": [{"threshold": 168, "maximumHeartRate": 186, "restingHeartRate": 50, "workoutTypeId": 0,
+                                    "zones": [self.band(*z) for z in hr]}],
+                "powerZones": [{"threshold": 300, "workoutTypeId": 0,
+                                "zones": [self.band("1", 0, 165), self.band("2", 166, 225), self.band("3", 226, 2000)]}]}
+
+    def test_table_from_thresholds(self):
+        out = run("zones.py", "show", "--threshold-pace", "4:20", "--lthr", 168, "--lang", "sk").stdout
+        self.assertTrue(out.startswith("Tréningové zóny"))
+        z3 = next(l for l in out.splitlines() if l.startswith("Z3"))
+        self.assertIn("4:20–4:40", z3)
+        self.assertIn("159–168", z3)
+        self.assertIn("Ľahký beh: tep do 139", out)
+
+    def test_table_from_trainingpeaks_prefers_the_run_set(self):
+        path = self.write("zones.json", self.tp_blocks())
+        docs = json.loads(run("zones.py", "show", "--tp-settings", path, "--json", "--date", "2026-11-02").stdout)
+        cur = next(d for d in docs if d["id"] == "current")
+        self.assertEqual(cur["threshold_pace"], "4:20")      # the run set, not the general 4:10
+        self.assertEqual(len(cur["rows"]), 7)
+        self.assertEqual(cur["rows"][-1]["hr_hi"], None)     # TP's 255 means "and above"
+        self.assertEqual(cur["power"][-1]["w_hi"], None)
+        self.assertEqual(cur["lthr"], 168)
+        self.assertTrue(any(d["id"] == "2026-11-02" for d in docs))   # a history entry for the page
+
+    def evidence(self, **extra):
+        base = {"today": "2026-11-02", "current": {"threshold_pace": "4:25", "lthr": 166, "max_hr": 186, "rest_hr": 50,
+                                                   "set_on": "2026-07-20"}}
+        base.update(extra)
+        return self.write("ev.json", base)
+
+    def suggest(self, **extra):
+        return json.loads(run("zones.py", "suggest", self.evidence(**extra), "--json").stdout)
+
+    def test_flat_half_proposes_threshold_lthr_and_max_hr(self):
+        out = self.suggest(races=[{"date": "2026-10-25", "km": 21.0975, "time": "1:31:40", "avg_hr": 171, "flat": True}],
+                           max_hr_seen=[{"date": "2026-10-25", "hr": 190}])
+        self.assertLess(out["pace"][0], 265)                  # faster than 4:25
+        self.assertEqual(out["lthr"][0], 171)
+        self.assertEqual(out["max_hr"][0], 190)
+
+    def test_small_changes_and_bad_races_change_nothing(self):
+        out = self.suggest(races=[{"date": "2026-10-25", "km": 10, "time": "43:05", "flat": True},   # = 4:25 threshold
+                                  {"date": "2026-10-11", "km": 21.0975, "time": "1:30:00", "flat": False}])
+        self.assertIsNone(out["pace"])
+        self.assertTrue(any("confirmed" in n for n in out["notes"]))
+        self.assertTrue(any("hilly or hot" in n for n in out["notes"]))
+
+    def test_disagreeing_sources_are_not_averaged(self):
+        out = self.suggest(tests=[{"date": "2026-10-20", "minutes": 30, "km": 6.6, "hr_last20": 168}],
+                           races=[{"date": "2026-10-25", "km": 21.0975, "time": "1:31:40", "flat": True}])
+        self.assertIsNone(out["pace"])
+        self.assertTrue(any("disagree" in n for n in out["notes"]))
+
+    def test_sessions_hint_and_old_zones_ask_for_a_retest(self):
+        hint = self.suggest(sessions=[{"date": "2026-10-14", "rep_pace": 255, "rep_max_hr": 162},
+                                      {"date": "2026-10-28", "rep_pace": 254, "rep_max_hr": 163}])
+        self.assertIsNone(hint["pace"])                       # a hint, not a number
+        self.assertTrue(any("probably faster" in n for n in hint["notes"]))
+        old = self.suggest()
+        self.assertTrue(any("retest" in n for n in old["notes"]))
+
+
 class PageDocs(TempDir):
     def test_rows_become_batch_writes(self):
         rows = [{"date": f"2026-10-{d:02d}", "hrv7": 50} for d in range(1, 61) if d <= 31] * 2

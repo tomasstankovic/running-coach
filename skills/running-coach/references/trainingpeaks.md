@@ -35,7 +35,8 @@ training matters for the plan.
 | `tp_update_workout` | change a planned workout (moving a day, editing the description) |
 | `tp_delete_workout` | remove a *planned* workout. Ask first; never delete completed ones. |
 | `tp_create_event` | add a race, with `priority` A, B or C (defaults to C) |
-| `tp_update_speed_zones`, `tp_update_hr_zones` | update threshold. Ask first. Test-based zone methods return `TEST_BASED_METHOD` and must be changed in the TP web UI. |
+| `tp_update_speed_zones`, `tp_update_hr_zones`, `tp_update_ftp` | update threshold pace, LTHR / max / resting HR, rFTP (see "Zones"). Ask first. Test-based zone methods return `TEST_BASED_METHOD` and must be changed in the TP web UI. |
+| `tp_create_zones`, `tp_get_zone_methods` | create a missing per-sport zone set (e.g. run power); list TP's methods. Ask first. |
 
 ### tp_create_workout for a run
 
@@ -92,4 +93,28 @@ workout that already has actual data (`duration_actual` set).
 | `tp_create_strength_workout` | create a strength session (see `strength.md`) |
 
 `tp_get_athlete_settings` also returns personal data (email, phone, calendar keys). Save only the
-`heartRateZones` and `speedZones` blocks when writing zones to a file.
+`heartRateZones`, `speedZones` and `powerZones` blocks when writing zones to a file.
+
+### Zones
+
+TP keeps zone *sets* per sport (`workoutTypeId` 3 = run, 0 = general). Each set has a threshold
+and a calculation method; TP computes the bands from them. So we write thresholds, not band
+edges, and the bands follow the runner's method (7-zone Z1/Z2/X/Z3/Y/Z4/Z5 for pace and HR is
+what this skill expects).
+
+- **Read**: `tp_get_athlete_settings` → save the three zone blocks → `zones.py show
+  --tp-settings`. It uses the run set when there is one, else the general one.
+- **Write, after the runner's yes** (`methodology.md` "Keeping the zones current"):
+  - pace: `tp_update_speed_zones` with `run_threshold_pace` "4:16/km";
+  - heart rate: `tp_update_hr_zones` with `threshold_hr`, and `max_hr` / `resting_hr` when they
+    changed; `workout_type` "run" when the runner has a run set, else "general";
+  - power: `tp_update_ftp` with `ftp` and `workout_type` "run" (TP falls back to the default set
+    when there is no run set).
+  Then re-read `tp_get_athlete_settings` and check the new values are there before telling the
+  runner it's done.
+- **Missing set**: `tp_create_zones` creates one (e.g. run power, method from
+  `tp_get_zone_methods`; the 5-zone Easy … Repetition method matches `paces.py power`). It answers
+  `ZONES_EXIST` when there already is one. Offer it, don't do it unasked; watts from different
+  devices aren't comparable, so ask which device the power comes from.
+- Structured workouts are stored as % of threshold, so planned sessions follow the new zones.
+  Check one future workout after the first change.

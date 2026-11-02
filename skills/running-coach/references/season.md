@@ -175,6 +175,10 @@ Keep one visible view of it.
      export puts them on the page. The page shows the next sessions with the milestones by
      default (also "milestones" and "all"), grouped by phase, with target pace, HR cap, the
      result and its verdict, and an "adjusted" mark that leads to the change log.
+   - **Training zones**: `zones.py show ... --lang sk --json` → the `current` document and a history
+     entry for the `zones` collection (`page_docs.py ... --collection zones --id id`). The page
+     shows the table (pace, % of threshold, HR, use), power if set, and how the threshold moved.
+     Write it after every zone change, and once at the start.
    - **Predictions**: `forecast.py input.json --json` → rows for the `predictions` collection
      (`--id id`): each race's forecast range over the weeks and the current form table
      (`analysis.md` "Race predictions").
@@ -229,6 +233,9 @@ Review mode (`SKILL.md`) is the weekly checkpoint. With the plan it also:
    long run. Milestone results are also results for `forecast.py` (`kind: "effort"`).
    Re-runs `forecast.py` and adds its rows to `predictions`; a race goal that left the range is
    part of the review's decisions.
+   Training zones: in the first review of each month, and whenever the week brought a race, a
+   test or sessions that say the zones are off, run `zones.py suggest` (`methodology.md`
+   "Keeping the zones current"); a proposed change waits for the runner's yes.
 3. Applies section 5 if something changed, then plans next week in detail (Week mode) from the
    next row.
 
@@ -240,7 +247,9 @@ self-contained. Use this template, filled in, in the runner's language:
 > (trainingpeaks MCP). Profile: TP note "Running coach profile". Season plan: <page URL> (plus
 > plan.json in <location>). Review the week that ends today: planned vs. actual, key sessions,
 > readiness. Update the plan's actuals and the page. If the re-planning rules apply, propose the
-> change; don't apply it without the runner's yes. Draft next week's sessions in detail.
+> change; don't apply it without the runner's yes. In the first review of the month (or after a
+> race or test) check the training zones with zones.py suggest and propose any change; don't
+> change zones in TrainingPeaks without the runner's yes. Draft next week's sessions in detail.
 > Do NOT write anything to the TrainingPeaks calendar: end with the draft and ask for confirmation.
 
 Tell the runner that the task only runs while the app is open (otherwise at the next launch), and

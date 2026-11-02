@@ -38,6 +38,10 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   long run, key session), with B and C races built in. It lives on a page with a fixed link that
   shows plan vs. actual and every change. Illness, a work deadline or a missed week re-plans the
   rest by clear rules, and the weekly review can run by itself every Sunday.
+- **Training zones that keep up with you.** Pace, heart-rate and power zones in one table, in
+  chat and on the plan page, with how your threshold moved. Checked every month and after races
+  or tests; a change is proposed with what it means for your paces, and written to TrainingPeaks
+  only after your yes.
 - **A map of the key sessions.** How threshold, tempo, VO2 and long runs progress through the
   season, designed around you (injuries, terrain, what worked for you, winter), with target paces
   computed from your threshold and goals, and 6–10 milestones (the threshold check, the longest
@@ -170,7 +174,7 @@ today?").
 | life happens | "I've had a fever since Tuesday." · "Work is crazy for two weeks." · "I'm in the mountains until Sunday." |
 | strength | "Add two strength sessions a week, I have a kettlebell at home." |
 | race week | "Race plan for Sunday's half: pacing and what to eat." |
-| zones and threshold | "Are my zones still right?" · "When should I retest my threshold?" |
+| training zones | "Show me my training zones." · "I ran a half on Sunday: should my zones change?" · "When should I retest my threshold?" |
 
 **Where it remembers you.** With TrainingPeaks, your profile (goals, availability, zones,
 injuries, decisions from past reviews) is a note in your TrainingPeaks calendar called
@@ -213,6 +217,7 @@ skills/running-coach/
     ├── readiness.py            HRV 7-day trend / resting HR / sleep vs. personal baseline
     ├── analyze_session.py      one session from TrainingPeaks → reps, drift, efficiency
     ├── forecast.py             current form over 5k–marathon + race-day forecast per race
+    ├── zones.py                training zones (pace, HR, power) and proposals to update them
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
     ├── season_plan.py          rough season plan, re-planning, actuals, export to the plan page
     ├── key_sessions.py         key-session roadmap: progressions, milestones, targets, verdicts

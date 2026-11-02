@@ -10,6 +10,7 @@
   --accent: #FF6B4A; --accent-soft: #FFE3DB;
   --base: #8FB3D9; --build: #3F7CBF; --specific: #1E2A44; --taper: #F2A541; --race: #FF6B4A; --recovery: #A9B4C4;
   --good: #2E8B57; --warn: #C27C0E;
+  --z1: #FCE5DE; --z2: #F8C5B5; --z3: #F3A48C; --z4: #EC8263; --z5: #E0613D; --z6: #C04726; --z7: #8F3216;
   --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --body: "Public Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
 }
@@ -17,12 +18,14 @@
   --bg: #11161F; --surface: #19202C; --fg: #EEF1F6; --muted: #9AA6BA; --line: #2A3342;
   --accent: #FF7D5E; --accent-soft: #3A2620;
   --base: #5F86B0; --build: #6FA3DD; --specific: #C9D6EA; --taper: #F2B35E; --race: #FF7D5E; --recovery: #6B778A;
-  --good: #5CC08A; --warn: #E6A43C; color-scheme: dark } }
+  --good: #5CC08A; --warn: #E6A43C; color-scheme: dark;
+  --z1: #3B2119; --z2: #5A2B1E; --z3: #7C3524; --z4: #A0432C; --z5: #C55437; --z6: #E56E4C; --z7: #F59A7D } }
 :root[data-theme="dark"] {
   --bg: #11161F; --surface: #19202C; --fg: #EEF1F6; --muted: #9AA6BA; --line: #2A3342;
   --accent: #FF7D5E; --accent-soft: #3A2620;
   --base: #5F86B0; --build: #6FA3DD; --specific: #C9D6EA; --taper: #F2B35E; --race: #FF7D5E; --recovery: #6B778A;
-  --good: #5CC08A; --warn: #E6A43C; color-scheme: dark }
+  --good: #5CC08A; --warn: #E6A43C; color-scheme: dark;
+  --z1: #3B2119; --z2: #5A2B1E; --z3: #7C3524; --z4: #A0432C; --z5: #C55437; --z6: #E56E4C; --z7: #F59A7D }
 
 body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; }
 .wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 56px;
@@ -112,6 +115,15 @@ footer { font-size: .8rem; color: var(--muted); }
 .vd { font-weight: 600; white-space: nowrap; }
 .vd.on { color: var(--good); } .vd.over { color: var(--build); } .vd.under { color: var(--warn); } .vd.missed { color: var(--muted); }
 .adj { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--warn); margin-left: 8px; text-decoration: none; border-bottom: 1px dotted currentColor; }
+.zt { min-width: 0; width: 100%; font-size: .9rem; }
+.zt td, .zt th { padding: 7px 8px; }
+.zt td.zn { white-space: nowrap; font-family: var(--display); font-weight: 600; font-size: 1rem; }
+.zt .zsw { display: inline-block; width: 10px; height: 18px; border-radius: 3px; vertical-align: -4px; margin-right: 8px; }
+.zt td.u { color: var(--muted); font-size: .85rem; }
+.zhead { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.zhead b { font-family: var(--display); font-size: 1.35rem; font-weight: 600; }
+.zhist { list-style: none; margin: 0; padding: 0; font-size: .85rem; color: var(--muted); display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .zt .u, .zt .pc { display: none; } }
 .ready { display: grid; gap: 10px; }
 .rhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 1.5rem; font-weight: 600; line-height: 1; }
@@ -156,6 +168,19 @@ table.form td, table.form th { padding: 6px 8px; }
       <section id="keySection" hidden>
         <div class="ks-head"><h2 id="hKey">Key sessions</h2><div class="seg" id="ksSeg" role="group"></div></div>
         <div class="panel"><ul class="ks" id="ksList"></ul><div class="cap" id="ksCap"></div></div>
+      </section>
+
+      <section id="zoneSection" hidden>
+        <h2 id="hZones">Training zones</h2>
+        <div class="panel" style="display:grid;gap:10px">
+          <div class="zhead" id="zHead"></div>
+          <div style="overflow-x:auto"><table class="zt"><thead><tr id="zCols"></tr></thead><tbody id="zBody"></tbody></table></div>
+          <div class="cap" id="zEasy"></div>
+          <div id="zPower" hidden><div class="eyebrow" id="zPowerT"></div>
+            <table class="zt" style="max-width:560px"><tbody id="zPowerBody"></tbody></table></div>
+          <div id="zHistBox" hidden><div class="eyebrow" id="zHistT"></div><ul class="zhist" id="zHist"></ul></div>
+          <div class="cap" id="zCap"></div>
+        </div>
       </section>
 
       <section id="predSection" hidden>
@@ -242,6 +267,9 @@ const T = {
     ksCap: thr => `An estimate: it changes with how the sessions go, and every change is in the log below.${thr ? ` Paces from threshold ${thr}/km.` : ""}`,
     vd: { on: "✓ on target", over: "↑ better", under: "↓ under target", missed: "– missed" },
     adjusted: "adjusted", hrTo: h => `HR up to ${h}`, milestone: "milestone",
+    zones: "Training zones", zCols: ["Zone", "Pace /km", "% threshold", "HR", "Use"], thr: "Threshold",
+    zFrom: (s, d) => `${s}, ${d}`, zEasy: c => `Easy running: HR up to ${c}.`, zPower: w => `Running power · rFTP ${w} W`,
+    zHist: "Threshold over time", zCap: "Checked every month and after races or tests; changes only with your yes, then in TrainingPeaks too.",
     pred: "Race predictions", form: "Current form", likely: "likely", range: "range",
     formCols: ["Distance", "Likely", "Range", "Pace"], half: "Half marathon", marathon: "Marathon",
     goal: g => `goal ${g}`, inRange: "inside the range", stretch: p => `${p} % faster than the fast end: a stretch`,
@@ -279,6 +307,9 @@ const T = {
     ksCap: thr => `Odhad: mení sa podľa toho, ako tréningy vychádzajú, a každá zmena je v logu nižšie.${thr ? ` Tempá z prahu ${thr}/km.` : ""}`,
     vd: { on: "✓ v cieli", over: "↑ lepšie", under: "↓ pod cieľom", missed: "– vynechané" },
     adjusted: "upravené", hrTo: h => `tep do ${h}`, milestone: "míľnik",
+    zones: "Tréningové zóny", zCols: ["Zóna", "Tempo /km", "% prahu", "Tep", "Na čo"], thr: "Prah",
+    zFrom: (s, d) => `${s}, ${d}`, zEasy: c => `Ľahký beh: tep do ${c}.`, zPower: w => `Bežecký výkon · rFTP ${w} W`,
+    zHist: "Vývoj prahu", zCap: "Kontrolujú sa raz za mesiac a po pretekoch či teste; menia sa len s tvojím súhlasom a potom aj v TrainingPeaks.",
     pred: "Predikcie", form: "Aktuálna forma", likely: "najpravdepodobnejšie", range: "rozpätie",
     formCols: ["Trať", "Odhad", "Rozpätie", "Tempo"], half: "Polmaratón", marathon: "Maratón",
     goal: g => `cieľ ${g}`, inRange: "v rozpätí", stretch: p => `o ${p} % rýchlejší než rýchly koniec: náročný cieľ`,
@@ -289,7 +320,7 @@ const T = {
     trendCap: "Odhad času v priebehu týždňov (vyššie = rýchlejšie), pás = rozpätie, čiarkovane = cieľ" },
 };
 const PHASES = ["base", "build", "specific", "taper", "race", "recovery"];
-const state = { meta: null, weeks: null, changes: [], trends: [], sessions: [], predictions: [] };
+const state = { meta: null, weeks: null, changes: [], trends: [], sessions: [], predictions: [], zones: [] };
 const $ = id => document.getElementById(id);
 const el = (tag, attrs = {}, text) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
 const svgEl = (tag, attrs = {}, text) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
@@ -348,6 +379,7 @@ function render() {
   drawChart(weeks, today, t);
   renderWeek(cur, t);
   renderKeySessions(weeks, t);
+  renderZones(t);
   renderTrends(t);
   renderPredictions(t);
 
@@ -508,6 +540,51 @@ function renderTrends(t) {
   }
 }
 
+function renderZones(t) {
+  // Training zones: the current table (pace, % of threshold, HR, use), power if set, and how the
+  // threshold moved over the season. Colour steps run light to dark with intensity.
+  const cur = state.zones.find(z => z.id === "current");
+  $("zoneSection").hidden = !cur;
+  if (!cur) return;
+  $("hZones").textContent = t.zones;
+  const head = $("zHead"); head.replaceChildren();
+  const fact = (label, v) => { if (v == null) return; const s = el("span"); s.append(`${label} `, el("b", {}, String(v))); head.append(s); };
+  fact(t.thr, cur.threshold_pace && `${cur.threshold_pace}/km`); fact("LTHR", cur.lthr); fact("max", cur.max_hr);
+  fact("rFTP", cur.rftp && `${cur.rftp} W`);
+  head.append(el("span", { class: "muted" }, t.zFrom(cur.source || "", fmtDate(cur.date, { day: "numeric", month: "numeric", year: "numeric" }))));
+  $("zCols").replaceChildren(...t.zCols.map((c, i) => el("th", i === 2 ? { class: "pc" } : i === 4 ? { class: "u" } : {}, c)));
+  const rows = cur.rows || [], n = rows.length;
+  const r2 = (a, b, suf = "") => a == null && b == null ? "–" : b == null ? `> ${a}${suf}` : a == null ? `< ${b}${suf}` : `${a}–${b}${suf}`;
+  $("zBody").replaceChildren(...rows.map((r, i) => {
+    const tr = el("tr"), name = el("td", { class: "zn" }), sw = el("i", { class: "zsw" });
+    sw.style.background = `var(--z${Math.min(7, Math.round(i * 6 / Math.max(1, n - 1)) + 1)})`;
+    name.append(sw, r.name);
+    const pace = r.pace_fast && r.pace_slow ? `${r.pace_fast}–${r.pace_slow}` : r.pace_slow ? `< ${r.pace_slow}` : r.pace_fast ? `> ${r.pace_fast}` : "–";
+    tr.append(name, el("td", { class: "n" }, pace), el("td", { class: "n pc" }, r.pct_lo != null ? r2(r.pct_lo, r.pct_hi, " %") : "–"),
+      el("td", { class: "n" }, r2(r.hr_lo, r.hr_hi)), el("td", { class: "u" }, r.use || ""));
+    return tr;
+  }));
+  $("zEasy").textContent = cur.easy_hr_cap ? t.zEasy(cur.easy_hr_cap) : "";
+  const pw = cur.power || [];
+  $("zPower").hidden = !pw.length;
+  if (pw.length) {
+    $("zPowerT").textContent = t.zPower(cur.rftp);
+    $("zPowerBody").replaceChildren(...pw.map((p, i) => {
+      const tr = el("tr"), name = el("td", { class: "zn" }), sw = el("i", { class: "zsw" });
+      sw.style.background = `var(--z${Math.min(7, Math.round(i * 6 / Math.max(1, pw.length - 1)) + 1)})`;
+      name.append(sw, p.name);
+      tr.append(name, el("td", { class: "n" }, r2(p.w_lo, p.w_hi, " W")), el("td", { class: "u" }, p.use || ""));
+      return tr;
+    }));
+  }
+  const hist = state.zones.filter(z => z.id !== "current").sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 8);
+  $("zHistBox").hidden = hist.length < 2;
+  $("zHistT").textContent = t.zHist;
+  $("zHist").replaceChildren(...hist.map(h => el("li", {}, [fmtDate(h.date, { day: "numeric", month: "numeric", year: "numeric" }),
+    h.threshold_pace && `${h.threshold_pace}/km`, h.lthr && `LTHR ${h.lthr}`, h.rftp && `${h.rftp} W`, h.source].filter(Boolean).join(" · "))));
+  $("zCap").textContent = t.zCap;
+}
+
 let ksView = (() => { try { return localStorage.getItem("ksView") || "next"; } catch (e) { return "next"; } })();
 function renderKeySessions(weeks, t) {
   // The roadmap: next sessions and the milestones by default, grouped by phase; done ones show
@@ -663,6 +740,7 @@ async function start() {
   db.collection("trends").onSnapshot(s => { state.trends = s.docs.map(d => d.data()); render(); }, () => {});
   db.collection("sessions").onSnapshot(s => { state.sessions = s.docs.map(d => d.data()); render(); }, () => {});
   db.collection("predictions").onSnapshot(s => { state.predictions = s.docs.map(d => d.data()); render(); }, () => {});
+  db.collection("zones").onSnapshot(s => { state.zones = s.docs.map(d => d.data()); render(); }, () => {});
 }
 start();
 </script>

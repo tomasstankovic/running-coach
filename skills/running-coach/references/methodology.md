@@ -223,6 +223,34 @@ If an earlier coaching decision was based on mislabelled zones (e.g. "threshold"
 really Z4), say so, re-anchor to the true zone, and then progress from there. "Add a rep" still
 holds, but at the corrected intensity.
 
+### Keeping the zones current
+
+Zones drift as fitness changes: stale zones make easy runs too fast and threshold reps too easy
+(or the other way after a break). Check them:
+- **every month**, in the first weekly review of the month, even when nothing seems to have
+  changed;
+- **on new evidence**, in the review that follows it: a flat 5k–half race run all-out, a 30-min
+  test, two or more threshold sessions in 6 weeks clearly faster than the zones with HR under
+  LTHR (or slower with HR above it), a new maximum HR, a resting HR that has moved, a hard
+  power effort;
+- after a break of 2+ weeks or an illness (zones are probably too fast for a while: prescribe by
+  HR first).
+
+Gather the evidence of the last ~4 months into `evidence.json` (format in `scripts/zones.py`)
+and run `zones.py suggest`. It proposes; it never changes anything. A 30-min test sets threshold
+pace and LTHR; a flat race sets the pace, and a half's average HR is a floor for LTHR; sessions
+only hint ("probably faster": put a number on it with a race or a test). Changes under ~1.5 %
+are noise and are kept. Sources more than 3 % apart go to "When the threshold evidence disagrees"
+above, not into an average.
+
+Show the proposal as old → new with what it means in practice ("Z2 5:04–5:49 → 4:53–5:36, threshold
+reps 4:25 → 4:16"), and why. On the runner's yes: write it to TrainingPeaks (`trainingpeaks.md`
+"Zones"), re-read the settings to confirm, run `season_plan.py retarget --threshold-pace ...`
+so the key sessions follow, update the page's `zones` (current + a history entry), the
+profile's `Zones:` line (values, source, date) and the decision log. On a no, keep the zones and
+note why. With no new evidence and zones older than 12 weeks, raise a retest ("Settling the
+threshold"); don't schedule it unannounced.
+
 ## 8. Missed sessions, illness, return after a break
 
 - Missed easy run: forget it. Missed quality: move it only if 48 h spacing stays intact, otherwise

@@ -247,6 +247,7 @@ Setup: TrainingPeaks + folder (Claude desktop, Code) · profile: TP note · plan
 
 ## Current state (2026-11-02)
 - Threshold pace 4:20/km (race-derived 2026-10-11), LTHR 170, max HR 189
+- Zones: TP 7-zone pace + HR, set 2026-10-12 from the 10k; next check: first review of December
 - Typical week: 5 runs, 42–48 km, 4.5 h; longest run 15 km / 90 min
 - CTL 31 (6 weeks ago 33); HRV baseline ~58, resting HR ~52
 - Assessment: solid base, little threshold work so far

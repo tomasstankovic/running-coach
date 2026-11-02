@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: zones-after-race
+expected_outcome: |
+  The coach runs zones.py suggest with the race as evidence, proposes a faster threshold pace (about 4:15-4:17/km instead of 4:25), LTHR at least 171 and max HR 190, shows what that means for the zones (old -> new, e.g. easy and threshold paces) under the heading "Tréningové zóny", and asks before changing anything in TrainingPeaks. Nothing is written. Slovak.
+context:
+  scaffold_script: place-files.sh

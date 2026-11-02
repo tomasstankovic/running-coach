@@ -1,6 +1,6 @@
 ---
 name: running-coach
-description: Running coach for any question about the user's own running training, even if the skill is not named. Use it for "should I run today?", HRV, sleep and readiness checks, "plan my week", race and season plans (5k to marathon), "how did my week go", analysing a run or intervals, illness or missed sessions, strength for runners, race predictions ("what could I run a 10k in?"), race pacing and fuelling, zones and threshold. Slovak triggers such as "mám dnes behať?", "ako som na tom s HRV", "naplánuj mi týždeň", "na aký čas mám na maratóne", "tréningový plán na polmaratón", "vyhodnoť týždeň", "som chorý". Reads TrainingPeaks (zones, CTL/TSB, HRV, workouts) or Strava, computes paces, load limits and HRV readiness with its own scripts, keeps a season plan, and writes to TrainingPeaks only after the runner confirms. Load it before answering from memory or calling TrainingPeaks tools directly.
+description: Running coach for any question about the user's own running training, even if the skill is not named. Use it for "should I run today?", HRV, sleep and readiness checks, "plan my week", race and season plans (5k to marathon), "how did my week go", analysing a run or intervals, illness or missed sessions, strength for runners, race predictions ("what could I run a 10k in?"), race pacing and fuelling, training zones (pace, HR, power) and threshold. Slovak triggers such as "mám dnes behať?", "ako som na tom s HRV", "naplánuj mi týždeň", "na aký čas mám na maratóne", "tréningový plán na polmaratón", "vyhodnoť týždeň", "tréningové zóny", "som chorý". Reads TrainingPeaks (zones, CTL/TSB, HRV, workouts) or Strava, computes paces, load limits and HRV readiness with its own scripts, keeps a season plan, and writes to TrainingPeaks only after the runner confirms. Load it before answering from memory or calling TrainingPeaks tools directly.
 ---
 
 # Running coach
@@ -95,7 +95,14 @@ python scripts/paces.py race --distance 21.1 --time 1:34:20      # threshold fro
 python scripts/paces.py predict --distance 10 --time 48:30       # equivalent race times
 python scripts/forecast.py input.json                             # current form + forecast per race
 python scripts/paces.py power --rftp 420 70-80 95-100            # running power zones (if used)
+python scripts/zones.py show --tp-settings zones.json --lang sk   # Tréningové zóny: pace, HR, power
+python scripts/zones.py suggest evidence.json --lang sk           # should the zones change?
 ```
+
+- **Training zones** ("Tréningové zóny" in Slovak) is the name the runner sees, in chat and on
+  the page. When they ask about zones, show the `zones.py show` table under that heading: pace,
+  % of threshold, HR and what each zone is for, plus power when they use it. Keep them current:
+  `methodology.md` "Keeping the zones current".
 
 - With TP, its zones are the source of truth. For `--tp-settings`, save **only** the
   `heartRateZones` and `speedZones` blocks from `tp_get_athlete_settings`. The rest of that
