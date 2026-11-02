@@ -516,24 +516,74 @@ class KeySessions(TempDir):
         _, plan, _ = self.plan("--runs", 4)
         self.assertFalse([s for s in self.sessions(plan) if s["slot"] == "q2"])
 
-    def test_results_judge_and_hold_back_the_ladder(self):
-        path, _, _ = self.plan()
+    def actuals(self, path, *extra):
         rows = [{"date": "2026-11-10", "km": 11, "minutes": 58, "kind": "intervals", "reps": 5, "rep_km": 1.0,
                  "rep_pace": 267, "rep_max_hr": 166},
                 {"date": "2026-11-17", "km": 11, "minutes": 60, "kind": "intervals", "reps": 6, "rep_km": 1.0,
                  "rep_pace": 280, "rep_max_hr": 175}]
         hist = self.write("hist.json", {"workouts": []})
-        run("season_plan.py", "actuals", path, "--history", hist, "--sessions", self.write("rows.json", rows),
-            "--today", "2026-11-23", "--out", path)
-        plan = json.loads(path.read_text())
+        proc = run("season_plan.py", "actuals", path, "--history", hist, "--sessions", self.write("rows.json", rows),
+                   "--today", "2026-11-23", *extra, "--out", path)
+        return json.loads(path.read_text()), proc.stderr
+
+    def test_results_are_judged_and_a_hold_back_only_proposed(self):
+        path, _, _ = self.plan()
+        plan, err = self.actuals(path)
         by_date = {s["date"]: s for s in self.sessions(plan) if s["slot"] == "q1"}
         self.assertEqual(by_date["2026-11-10"]["actual"]["verdict"], "on")
         self.assertEqual(by_date["2026-11-17"]["actual"]["verdict"], "under")    # slow and over the HR cap
-        self.assertEqual(by_date["2026-11-24"]["title"], "6x 1 km at threshold")  # repeated, not 7x
-        self.assertEqual(by_date["2026-11-24"]["status"], "adjusted")
         hills = next(s for s in self.sessions(plan) if s["date"] == "2026-11-20")
         self.assertEqual(hills["status"], "missed")
+        # the coach decides (heat, hills, travel...): nothing moves on its own
+        self.assertEqual(by_date["2026-11-24"]["title"], "7x 1 km at threshold")
+        self.assertIn("PROPOSE", err)
+        self.assertIn("repeat that step next time (6x 1 km at threshold)", err)
+
+    def test_hold_back_applies_when_the_coach_says_so(self):
+        path, _, _ = self.plan()
+        plan, _ = self.actuals(path, "--hold-back")
+        by_date = {s["date"]: s for s in self.sessions(plan) if s["slot"] == "q1"}
+        self.assertEqual(by_date["2026-11-24"]["title"], "6x 1 km at threshold")  # repeated, not 7x
+        self.assertEqual(by_date["2026-11-24"]["status"], "adjusted")
         self.assertTrue(any("held back" in c["text"] for c in plan["changes"]))
+
+    def test_default_draft_keeps_its_own_rules(self):
+        path, plan, _ = self.plan()
+        proc = run("season_plan.py", "check-roadmap", path)
+        self.assertEqual(proc.returncode, 0, proc.stdout)
+        # quality waits 3 days after the half (Sunday 21 March), big marathon-pace runs alternate
+        after = [s for s in self.sessions(plan) if s["type"] != "long" and "2027-03-22" <= s["date"] <= "2027-03-24"]
+        self.assertFalse(after)
+        big = [s["date"] for s in self.sessions(plan) if s["type"] in ("mp", "mp_long") and s["target"].get("mp_km", 0) >= 14]
+        self.assertTrue(all((date.fromisoformat(b) - date.fromisoformat(a)).days > 8 for a, b in zip(big, big[1:])), big)
+
+    def test_check_catches_the_coachs_mistakes(self):
+        path, plan, _ = self.plan()
+        week = next(w for w in plan["weeks"] if w["week_start"] == "2027-03-22")   # the week after the half
+        week["key_sessions"].insert(0, {"id": "2027-03-23-q1", "date": "2027-03-23", "slot": "q1", "type": "threshold",
+                                        "title": "4x 2 km", "target": {"pct": [97, 99], "pace": "4:00–4:05"},
+                                        "basis": [97, 99], "milestone": False, "status": "planned", "actual": None, "note": ""})
+        path.write_text(json.dumps(plan))
+        proc = run("season_plan.py", "check-roadmap", path)
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("2 day(s) after", proc.stdout)            # Tuesday after a Sunday half
+        self.assertIn("doesn't match", proc.stdout)             # hand-written pace
+        run("season_plan.py", "retarget", path, "--out", path)  # fills the pace from the basis
+        self.assertNotIn("doesn't match", run("season_plan.py", "check-roadmap", path).stdout)
+
+    def test_retarget_without_a_new_threshold_only_fills_targets(self):
+        path, plan, _ = self.plan()
+        week = plan["weeks"][1]
+        week["key_sessions"].append({"id": "x", "date": week["week_start"], "slot": "q2", "type": "tempo",
+                                     "title": "coach's own: 3x 10 min by HR on the hill", "target": {},
+                                     "basis": [92, 95], "milestone": False, "status": "planned", "actual": None,
+                                     "note": "no flat ground on Monday"})
+        path.write_text(json.dumps(plan))
+        run("season_plan.py", "retarget", path, "--today", "2026-11-01", "--out", path)
+        plan = json.loads(path.read_text())
+        mine = next(s for s in self.sessions(plan) if s["id"] == "x")
+        self.assertEqual(mine["target"]["pace"], "4:39–4:48")
+        self.assertFalse(plan.get("changes"))                   # nothing re-targeted, nothing logged
 
     def test_retarget_moves_future_paces_and_logs_it(self):
         path, _, _ = self.plan()
@@ -544,6 +594,16 @@ class KeySessions(TempDir):
         self.assertEqual(by_date["2026-11-17"]["target"]["pace"], "4:20–4:25")
         self.assertIn("threshold 4:25 -> 4:20", proc.stderr)
         self.assertIn("re-targeted", plan["changes"][-1]["text"])
+
+    def test_half_marathon_pace_doesnt_drop_into_the_specific_phase(self):
+        spec = {"title": "T", "lang": "en", "start": "2026-11-09", "current": {"km": 35, "long_km": 14},
+                "runs_per_week": 4, "easy_pace": "6:30", "peak_km": 50,
+                "races": [{"name": "Half", "date": "2027-03-14", "distance_km": 21.1, "priority": "A", "goal": "1:45:00"}]}
+        _, plan, _ = self.plan(spec=spec)
+        hm = [s["title"] for w in plan["weeks"] if w["role"] == "build" for s in w["key_sessions"]
+              if s["slot"] == "q1" and s["type"] == "hm_pace" and not s["milestone"]]
+        km = [int(t.split("x")[0]) * float(t.split("x ")[1].split(" km")[0]) if "x " in t else float(t.split(" km")[0]) for t in hm]
+        self.assertEqual(km, sorted(km), hm)                    # never less half-marathon-pace work than before
 
     def test_replan_keeps_the_roadmap(self):
         path, _, _ = self.plan()

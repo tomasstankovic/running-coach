@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
-"""Key-session roadmap for a season plan: the main sessions of every week, the milestones, their
-target paces, and how they compare with what was run. Used by `season_plan.py roadmap`,
-`retarget` and `actuals --sessions`; not run on its own.
+"""Key-session roadmap for a season plan: the calculator, the rule check and the memory behind
+the key sessions the coach designs. Used by `season_plan.py roadmap`, `retarget`,
+`check-roadmap` and `actuals --sessions`; not run on its own.
 
-Each week of the plan gets 1-3 key sessions (`key_sessions`) from progression ladders per phase
-(workouts.md "Progressions"): threshold 5x1 km -> 3x2 km -> 3x3 km -> 2x15 min -> 30 min
-continuous, hills/fartlek in base, VO2 and half-marathon pace in build, race pace in the specific
-phase, sharpening in the taper. A ladder moves one step per build week and stands still in deload
-and busy weeks; after a session under target or missed, the rest of that ladder moves back a
-step (progress only when the last step was on target).
+The coach (Claude) designs the key sessions for the runner. `roadmap` writes a default draft for
+a typical runner from progression ladders per phase (workouts.md "Progressions"): threshold
+5x1 km -> 3x2 km -> 3x3 km -> 2x15 min -> 30 min continuous, hills/fartlek in base, VO2 and
+half-marathon pace in build, race pace in the specific phase, sharpening in the taper; quality
+waits 2-3 days after a race or test; marathon-pace long runs alternate with easy ones. The draft
+knows nothing about injuries, terrain, what worked before or the weather: the coach edits it.
 
-Targets are % of threshold speed. Race-pace sessions use the goal pace of the matching race, but
-never more than 3 % faster than the threshold supports; the gap is reported. Paces are recomputed
-from the stored % whenever the threshold or a goal changes (`retarget`).
+Targets are % of threshold speed (`basis`: [lo, hi] or "race:<km>"). Race-pace sessions use the
+goal pace of the matching race, but never more than 3 % faster than the threshold supports; the
+gap is reported. `retarget` fills or recomputes every future target from `basis` (after the
+coach's edits, or after a new threshold or goal). `check-roadmap` checks the rules the coach's
+version must keep: paces, hard days, recovery after races, marathon-pace long runs, milestones.
 
 Milestones (6-10 a season): threshold check at the end of base, the longest run, the B races,
-for a marathon two long runs with 14-16 km at marathon pace and a continuous 18-23 km at
+for a marathon the long runs with 14-16 km at marathon pace and a continuous 18-23 km at
 marathon pace 2-4 weeks before (never in the week after a race), a dress rehearsal for shorter
 goals, and the A race.
 
-It's an estimate: the review fills in what happened and the next steps follow from it.
+After the review, `actuals --sessions` judges each session (on / over / under / missed) and
+proposes holding back the next step after under or missed; the coach decides with the context
+(heat, hills, illness, a missed day for travel isn't lost fitness).
 """
 from datetime import date, timedelta
 
@@ -31,6 +35,8 @@ GOAL_CAP = 1.03          # race-pace targets at most 3 % faster than the thresho
 MAX_MILESTONES = 10
 TOLERANCE = (0.01, 0.02)  # rep pace: > 1 % slower than the target = under, > 2 % faster = over
 HR_SLACK = 3             # bpm over the cap before a session counts as under target
+HARD = {"threshold", "tempo", "vo2", "hm_pace", "mp", "mp_long", "race_pace", "test", "race", "hills", "speed", "fartlek"}
+BIG_MP_KM = 14           # a long run with this much at marathon pace is a big session
 
 # Ladders: (en, sk, % of threshold speed or None). "{km}" is filled with the week's long run.
 LADDERS = {
@@ -60,17 +66,17 @@ LADDERS = {
         ("7x 1 km fast", "7× 1 km rýchlo", (104, 106))]),
     "hm": ("hm_pace", [
         ("3x 3 km at half-marathon pace", "3× 3 km v polmaratónskom tempe", "race:21.0975"),
-        ("3x 4 km at half-marathon pace", "3× 4 km v polmaratónskom tempe", "race:21.0975"),
         ("2x 5 km at half-marathon pace", "2× 5 km v polmaratónskom tempe", "race:21.0975"),
+        ("3x 4 km at half-marathon pace", "3× 4 km v polmaratónskom tempe", "race:21.0975"),
         ("2x 6 km at half-marathon pace", "2× 6 km v polmaratónskom tempe", "race:21.0975")]),
     "mp_mid": ("mp", [
         ("2x 5 km at marathon pace", "2× 5 km v maratónskom tempe", "race:42.195"),
         ("2x 6 km at marathon pace", "2× 6 km v maratónskom tempe", "race:42.195"),
         ("2x 7 km at marathon pace", "2× 7 km v maratónskom tempe", "race:42.195")]),
-    "hm_spec": ("hm_pace", [
-        ("2x 5 km at half-marathon pace", "2× 5 km v polmaratónskom tempe", "race:21.0975"),
-        ("3x 4 km at half-marathon pace", "3× 4 km v polmaratónskom tempe", "race:21.0975"),
-        ("3x 5 km at half-marathon pace", "3× 5 km v polmaratónskom tempe", "race:21.0975")]),
+    "hm_spec": ("hm_pace", [   # picks up where the build's 2x 6 km left off
+        ("2x 6 km at half-marathon pace", "2× 6 km v polmaratónskom tempe", "race:21.0975"),
+        ("3x 5 km at half-marathon pace", "3× 5 km v polmaratónskom tempe", "race:21.0975"),
+        ("10 km continuous at half-marathon pace", "10 km súvisle v polmaratónskom tempe", "race:21.0975")]),
     "10k_spec": ("tempo", [
         ("3x 2 km at 10k pace", "3× 2 km v tempe na 10 km", "race:10"),
         ("3x 3 km at 10k pace", "3× 3 km v tempe na 10 km", "race:10"),
@@ -78,11 +84,17 @@ LADDERS = {
     "5k_spec": ("vo2", [
         ("6x 800 m at 5k pace", "6× 800 m v tempe na 5 km", "race:5"),
         ("8x 800 m at 5k pace", "8× 800 m v tempe na 5 km", "race:5"),
-        ("5x 1 km at 5k pace", "5× 1 km v tempe na 5 km", "race:5")]),
+        ("6x 1 km at 5k pace", "6× 1 km v tempe na 5 km", "race:5")]),
     "800s": ("vo2", [
         ("6x 800 m", "6× 800 m", (108, 112)),
         ("7x 800 m", "7× 800 m", (108, 112)),
         ("8x 800 m", "8× 800 m", (108, 112))]),
+}
+
+REHEARSAL = {
+    "hm": ("2x 5 km at half-marathon pace", "2× 5 km v polmaratónskom tempe", "race:21.0975"),
+    "10k": ("3x 3 km at 10k pace", "3× 3 km v tempe na 10 km", "race:10"),
+    "5k": ("5x 1 km at 5k pace", "5× 1 km v tempe na 5 km", "race:5"),
 }
 
 TEXT = {
@@ -100,6 +112,7 @@ TEXT = {
            "hr": "HR", "hr_max": "HR max", "over_cap": "above the {cap} cap",
            "held": "held back a step after {date} ({verdict})",
            "held_log": "{title} {date}: {verdict}; the next sessions of this kind are held back a step (next: {next})",
+           "propose": "{title} {date}: {verdict}. Proposal: repeat that step next time ({next}) instead of moving on",
            "verdict": {"under": "under target", "missed": "missed"}},
     "sk": {"long": "Dlhý beh {km} km", "long_steady": "Dlhý beh {km} km, posledných 15 min svižnejšie",
            "long_mp_blocks": "Dlhý beh {km} km s 3× 4 km v maratónskom tempe",
@@ -115,6 +128,7 @@ TEXT = {
            "hr": "tep", "hr_max": "tep max", "over_cap": "nad limitom {cap}",
            "held": "o krok späť po {date} ({verdict})",
            "held_log": "{title} {date}: {verdict}; ďalšie tréningy tohto typu idú o krok späť (najbližší: {next})",
+           "propose": "{title} {date}: {verdict}. Návrh: nabudúce zopakovať tento krok ({next}) namiesto posunu",
            "verdict": {"under": "pod cieľom", "missed": "vynechané"}},
 }
 
@@ -205,6 +219,9 @@ def build_roadmap(plan, threshold_s, goals, days=None, lthr=None, runs=None):
     weeks = plan["weeks"]
     a_races = sorted((r for r in spec["races"] if r.get("priority") == "A"), key=lambda r: r["date"])
     steps = {}
+    b_race_weeks = {(date.fromisoformat(r["date"]) - timedelta(days=date.fromisoformat(r["date"]).weekday())).isoformat()
+                    for r in spec.get("races", []) if r.get("priority") == "B"}
+    last_long_mp = False
 
     def a_race_for(week):
         return next((r for r in a_races if r["date"] >= week["week_start"]), a_races[-1])
@@ -265,14 +282,15 @@ def build_roadmap(plan, threshold_s, goals, days=None, lthr=None, runs=None):
         if race and race.get("priority") == "C":
             ks[0] = session(race["date"], "race", "race", tx["race"].format(prio="C", name=race["name"]),
                             {"km": race["distance_km"]})
-        # long run
-        if cls == "m" and phase == "specific" and role == "build":
+        # long run; big marathon-pace long runs never two weeks in a row or the week before a B race
+        before_b = (date.fromisoformat(w["week_start"]) + timedelta(weeks=1)).isoformat() in b_race_weeks
+        if cls == "m" and phase == "specific" and role == "build" and not last_long_mp and not before_b:
             mp = max(10, min(16, round(long_km * 0.45)))
             ks.append(session(slot_day["long"], "long", "mp_long", tx["mp_long"].format(km=long_km, mp=mp),
                               tg.target("race:42.195", "mp_long", long_km, mp), "race:42.195"))
         elif cls == "m" and phase == "build" and role == "build":
             n = advance("long_m", True)   # easy, last 8 km at M, easy, 3x 4 km at M, ...
-            if n % 2 == 0:
+            if n % 2 == 0 or before_b:
                 ks.append(session(slot_day["long"], "long", "long", tx["long"].format(km=long_km), tg.target(None, "long", long_km)))
             else:
                 key = "long_mp_end" if n // 2 % 2 == 0 else "long_mp_blocks"
@@ -286,8 +304,11 @@ def build_roadmap(plan, threshold_s, goals, days=None, lthr=None, runs=None):
             ks.append(session(slot_day["long"], "long", "long", tx["long_steady" if late_base else "long"].format(km=long_km),
                               tg.target(None, "long", long_km)))
         w["key_sessions"] = ks
+        last_long_mp = any(x["slot"] == "long" and x["type"] == "mp_long" and x["target"].get("mp_km", 0) >= BIG_MP_KM
+                           for x in ks)
 
     _milestones(plan, tg, tx, cls_of=lambda w: distance_class(float(a_race_for(w)["distance_km"])), a_races=a_races)
+    _space_after_races(plan)
     plan["roadmap"] = {"threshold_pace": fmt_pace(threshold_s), "goals": {f"{k:g}": v for k, v in goals.items()},
                        "days": days, "lthr": lthr, "runs_per_week": runs}
     return tg.notes
@@ -347,12 +368,16 @@ def _milestones(plan, tg, tx, cls_of, a_races):
                 top = max(longs, key=lambda s: s["target"].get("km", 0))
                 top["milestone"] = True
                 top["title"] = tx["longest"].format(title=top["title"][0].lower() + top["title"][1:])
-            back = race_day - timedelta(days=race_day.weekday()) - timedelta(weeks=2)
-            w = next((x for x in weeks if x["week_start"] == back.isoformat()), None)
-            q = w and next((s for s in w["key_sessions"] if s["slot"] == "q1" and s["type"] != "race"), None)
-            if q:
-                q["milestone"] = True
-                q["title"] = tx["rehearsal"].format(title=q["title"])
+            for back in (2, 3):
+                wk = (race_day - timedelta(days=race_day.weekday()) - timedelta(weeks=back)).isoformat()
+                w = next((x for x in weeks if x["week_start"] == wk and x["role"] == "build"), None)
+                q = w and next((s for s in w["key_sessions"] if s["slot"] == "q1" and s["type"] != "race"), None)
+                if q:
+                    en, sk, basis = REHEARSAL[cls]
+                    q.update(type="race_pace", title=tx["rehearsal"].format(title=sk if tx is TEXT["sk"] else en),
+                             target=tg.target(basis, "race_pace"), basis=basis, milestone=True)
+                    q.pop("ladder", None), q.pop("step", None)
+                    break
         if cls == "m":
             top = max(longs, key=lambda s: s["target"].get("km", 0), default=None)
             if top and not top["milestone"]:
@@ -365,6 +390,107 @@ def _milestones(plan, tg, tx, cls_of, a_races):
         for s in ms:
             if s not in keep:
                 s["milestone"] = False
+
+
+def recovery_days(s):
+    """Easy days needed after a race or test before the next hard session."""
+    km = (s.get("target") or {}).get("km") or 0
+    return 3 if s["type"] == "race" and float(km) >= 20 else 2
+
+
+def _space_after_races(plan):
+    """Move a hard session that follows a race or test too soon to the first allowed day of the
+    same week, or drop it when that day is taken (the draft's rule; the coach may decide otherwise)."""
+    weeks = plan["weeks"]
+    hard = lambda x: x["type"] in HARD
+    for w in weeks:
+        for s in w["key_sessions"]:
+            if s["type"] not in ("race", "test"):
+                continue
+            d0 = date.fromisoformat(s["date"])
+            gap = recovery_days(s)
+            for w2 in weeks:
+                for x in list(w2["key_sessions"]):
+                    dx = date.fromisoformat(x["date"])
+                    if x is s or not hard(x) or not 0 < (dx - d0).days <= gap:
+                        continue
+                    new = d0 + timedelta(days=gap + 1)
+                    end = date.fromisoformat(w2["week_start"]) + timedelta(days=6)
+                    taken = any(y is not x and hard(y) and abs((date.fromisoformat(y["date"]) - new).days) <= 1
+                                for wk in weeks for y in wk["key_sessions"])
+                    if new <= end and not taken:
+                        x["date"], x["id"] = new.isoformat(), f"{new.isoformat()}-{x['slot']}"
+                    else:
+                        w2["key_sessions"].remove(x)
+
+
+def check_roadmap(plan):
+    """The rules a roadmap must keep, whoever wrote it. Returns [(level, message)], level FAIL/WARN."""
+    out = []
+    rm = plan.get("roadmap") or {}
+    thr = None
+    if rm.get("threshold_pace"):
+        m, sec = rm["threshold_pace"].split(":")
+        thr = int(m) * 60 + int(sec)
+    weeks = plan["weeks"]
+    ks = sorted((dict(s, _week=w) for w in weeks for s in w.get("key_sessions") or []), key=lambda s: s["date"])
+    need = ("id", "date", "slot", "type", "title", "target", "milestone", "status")
+    for s in ks:
+        miss = [k for k in need if k not in s]
+        if miss:
+            out.append(("FAIL", f"{s.get('date')} {s.get('title')}: missing {', '.join(miss)}"))
+        t = s.get("target") or {}
+        if thr and t.get("pct") and t.get("pace"):
+            fast, slow = (int(x.split(":")[0]) * 60 + int(x.split(":")[1]) for x in t["pace"].split("–"))
+            if abs(fast - pace_from_pct(thr, max(t["pct"]))) > 2.5 or abs(slow - pace_from_pct(thr, min(t["pct"]))) > 2.5:
+                out.append(("FAIL", f"{s['date']} {s['title']}: pace {t['pace']} doesn't match {t['pct']} % of "
+                                    f"{rm['threshold_pace']} (run `retarget` to fill paces)"))
+        if s.get("basis") is not None and t.get("pct") is None and s["type"] != "race":
+            out.append(("FAIL", f"{s['date']} {s['title']}: has a basis but no target pace (run `retarget`)"))
+        if s["slot"] == "long" and t.get("km") and float(t["km"]) > s["_week"]["long_km"] + 1 and s["type"] != "race":
+            out.append(("FAIL", f"{s['date']} {s['title']}: {t['km']} km is longer than the week's long run "
+                                f"({s['_week']['long_km']} km, the plan's load rules)"))
+    hard = [s for s in ks if s["type"] in HARD]
+    for a, b in zip(hard, hard[1:]):
+        if (date.fromisoformat(b["date"]) - date.fromisoformat(a["date"])).days == 1:
+            out.append(("FAIL", f"two hard days in a row: {a['date']} {a['title']} and {b['date']} {b['title']}"))
+    for r in (s for s in ks if s["type"] in ("race", "test")):
+        d0, gap = date.fromisoformat(r["date"]), recovery_days(r)
+        for x in hard:
+            days = (date.fromisoformat(x["date"]) - d0).days
+            if x is not r and 0 < days <= 2:
+                out.append(("FAIL", f"{x['date']} {x['title']}: {days} day(s) after {r['title']}"))
+            elif x is not r and 2 < days <= gap:
+                out.append(("WARN", f"{x['date']} {x['title']}: {days} days after {r['title']} (3 easy days after a long race)"))
+    big = [s for s in ks if s["type"] in ("mp", "mp_long") and (s["target"].get("mp_km") or 0) >= BIG_MP_KM]
+    for a, b in zip(big, big[1:]):
+        if (date.fromisoformat(b["date"]) - date.fromisoformat(a["date"])).days <= 8:
+            out.append(("WARN", f"big marathon-pace runs a week apart: {a['date']} and {b['date']}"))
+    races = [s for s in ks if s["type"] == "race"]
+    for x in big:
+        nxt = next((r for r in races if 0 < (date.fromisoformat(r["date"]) - date.fromisoformat(x["date"])).days <= 7
+                    and float(r["target"].get("km") or 0) < 40), None)
+        if nxt:
+            out.append(("WARN", f"{x['date']} {x['title']}: big marathon-pace run in the week before {nxt['title']}"))
+    a_marathons = {r["date"] for r in plan["spec"].get("races", [])
+                   if r.get("priority") == "A" and float(r.get("distance_km", 0)) >= 40}
+    for r in races:
+        if r["date"] in a_marathons:
+            d0 = date.fromisoformat(r["date"])
+            cont = [x for x in ks if x["type"] == "mp" and x["slot"] == "long" and 14 <= (d0 - date.fromisoformat(x["date"])).days <= 28]
+            if not cont:
+                out.append(("WARN", f"{r['title']}: no continuous marathon-pace run 2-4 weeks before it"))
+            for x in cont:
+                after = [p for p in races if 0 < (date.fromisoformat(x["date"]) - date.fromisoformat(p["date"])).days <= 7]
+                if after:
+                    out.append(("FAIL", f"{x['date']} {x['title']}: in the week after {after[0]['title']}"))
+    n_ms = sum(1 for s in ks if s.get("milestone"))
+    if not 4 <= n_ms <= 10:
+        out.append(("WARN", f"{n_ms} milestones (aim for 6-10)"))
+    empty = [w["week_start"] for w in weeks if w["role"] != "recovery" and not w.get("key_sessions")]
+    if empty:
+        out.append(("WARN", f"weeks without key sessions: {', '.join(empty[:4])}" + (" ..." if len(empty) > 4 else "")))
+    return out
 
 
 def retarget(plan, threshold_s, goals, today):
@@ -419,18 +545,19 @@ def judge(s, row, threshold_s, lang="en"):
     return verdict, ", ".join(parts)
 
 
-def fill_actuals(plan, rows, today):
-    """Match analyze_session rows to past key sessions, judge them, and hold back ladders after a
-    session under target or missed. Returns change-log texts."""
+def fill_actuals(plan, rows, today, hold_back=False):
+    """Match analyze_session rows to past key sessions and judge them. After a session under target
+    or missed, propose holding the rest of that ladder back a step (apply it with hold_back=True,
+    once the coach has decided). Returns (change-log entries, proposals)."""
     rm = plan.get("roadmap") or {}
     if not rm.get("threshold_pace"):
-        return []
+        return [], []
     m, sec = rm["threshold_pace"].split(":")
     thr = int(m) * 60 + int(sec)
     by_date = {}
     for r in rows:
         by_date.setdefault(r.get("date", ""), []).append(r)
-    changes, used = [], set()
+    changes, proposals, used = [], [], set()
     lang = "sk" if plan["spec"].get("lang") == "sk" else "en"
     tx = TEXT[lang]
     sessions = sorted((s for w in plan["weeks"] for s in w.get("key_sessions", [])), key=lambda s: s["date"])
@@ -456,7 +583,11 @@ def fill_actuals(plan, rows, today):
         if verdict in ("under", "missed") and s.get("ladder"):
             later = [x for x in sessions if x.get("ladder") == s["ladder"] and x["date"] > s["date"]
                      and x["status"] in ("planned", "adjusted") and x.get("step", 0) > s["step"]]
-            if later:
+            if later and not hold_back:
+                proposals.append(tx["propose"].format(title=s["title"], date=s["date"], verdict=tx["verdict"][verdict],
+                                                      next=from_ladder(later[0]["ladder"], later[0]["step"] - 1, later[0]["date"],
+                                                                       later[0]["slot"], lang, Targets(thr, {}, None))["title"]))
+            elif later:
                 tg = Targets(thr, {float(k): v for k, v in rm.get("goals", {}).items()}, rm.get("lthr"))
                 for x in later:
                     new = from_ladder(x["ladder"], x["step"] - 1, x["date"], x["slot"], lang, tg)
@@ -466,7 +597,7 @@ def fill_actuals(plan, rows, today):
                 changes.append({"date": today, "session": later[0]["id"],
                                 "text": tx["held_log"].format(title=s["title"], date=s["date"], verdict=tx["verdict"][verdict],
                                                              next=later[0]["title"])})
-    return changes
+    return changes, proposals
 
 
 def upcoming(plan, today, n=6):

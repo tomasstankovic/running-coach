@@ -3,6 +3,28 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.12.0
+
+- **The coach designs the key sessions; the script computes and checks.** Tested blind on three
+  fictional runners who needed adapting (Achilles history before a marathon, no flat ground for a
+  half, a 57-year-old 10k runner with a treadmill winter): the roadmap the coach adapted from the
+  script's draft beat the script-led one on all three (68 : 54 points), and the losers' misses all
+  traced back to the draft's defaults. Paces were right in both (0 errors in 344 sessions).
+- `season_plan.py roadmap` now writes a *default draft*; `season.md` §2b has the coach adapt it
+  (injuries, terrain, what worked, recovery, weather, order of sessions) with a reason per change.
+- `season_plan.py check-roadmap`: pace vs. its %, two hard days in a row, quality 1–2 days after a
+  race or test (3 after a half or longer), long run longer than the week's, big marathon-pace runs
+  in consecutive weeks or the week before a B race, the continuous marathon-pace run 2–4 weeks out
+  and never the week after a race, milestone count.
+- `retarget` without a new threshold just fills the targets of the coach's new or edited sessions.
+- Reviews: after a session under target or missed, `actuals` only proposes holding back
+  (`PROPOSE`); the coach decides with the context, `--hold-back` applies it.
+- Draft fixes: no quality 2–3 days after races and tests, big marathon-pace long runs never in
+  consecutive weeks or before a B race, half-marathon pace never drops from build to specific
+  (3× 3 → 2× 5 → 3× 4 → 2× 6 km, then 2× 6 → 3× 5 → 10 km continuous), dress rehearsal a real
+  race-pace session in a full week 2–3 weeks out.
+- Evals: `roadmap-achilles-marathon`, `roadmap-hilly-half`, `roadmap-masters-10k`.
+
 ## 0.11.0
 
 - **Key-session roadmap** (`season_plan.py roadmap`, `key_sessions.py`): every week of the season

@@ -55,30 +55,47 @@ link to it. Agree it with the runner before saving.
 
 ### 2b. Key-session roadmap
 
-Volume alone doesn't show where the preparation is going. Right after `generate`, give every week
-its key sessions:
+Volume alone doesn't show where the preparation is going. Right after `generate`, design the key
+sessions of every week **for this runner**. You are the coach; the script is the calculator, the
+rule check and the memory. (Tested blind on three runners who needed adapting: the coach-designed
+roadmap beat the script's own on all three. The script's draft can't see injuries, terrain, what
+worked before or the winter.)
 
-```bash
-python scripts/season_plan.py roadmap plan.json --threshold-pace 4:12 --lthr 172 \
-    --days q1=tue,q2=fri,long=sun --out plan.json
-```
-
-- `--days`: the quality days and the long-run day from the profile's weekly template. Goals come
-  from the races' `goal` in the plan (or `--goals "21.1=1:29:30,42.2=3:15:00"`).
-- Every week gets 1–3 key sessions from the ladders in `workouts.md` "Progressions": the first
-  quality session (threshold in base, half-marathon pace in build, race pace in the specific
-  phase), a second one with 5+ runs a week (hills/fartlek, then VO2; none in a marathon's specific
-  phase), and the long run. A ladder moves one step per build week: more reps, then longer reps,
-  only then faster. Deload, busy and race weeks don't move it.
-- Targets are stored as % of threshold speed and shown as paces from `paces.py`. Race-pace
-  sessions use the goal pace, but at most 3 % faster than the threshold supports; the script
-  warns when the goal is beyond that, and the runner hears it with the numbers.
-- **Milestones** (★, 6–10 a season): the threshold check at the end of base, the longest run, the
-  B races, the A race; for a marathon the long runs with 14–16 km at marathon pace and a continuous
-  18–23 km at marathon pace 2–4 weeks before the race (never in the week after a race; the long
-  run a week before it stays easy); for shorter goals a dress rehearsal two weeks out.
-- It's an estimate. Say so when you show it, and show the milestones and the next 4–6 sessions
-  rather than the whole list.
+1. **Draft**: `season_plan.py roadmap plan.json --threshold-pace 4:12 --lthr 172 --days
+   q1=tue,q2=fri,long=sun --out plan.json` writes a default for a typical runner (ladders in
+   `workouts.md` "Progressions"; goals from the races' `goal`, or `--goals
+   "21.1=1:29:30,42.2=3:15:00"`). Race-pace targets are at most 3 % faster than the threshold
+   supports; the script warns when a goal is beyond that, and the runner hears it with numbers.
+2. **Make it theirs.** Go through the profile and history and change what doesn't fit, including
+   the *order* of sessions, not just single sessions:
+   - injuries: drop or replace what aggravates them (hill sprints, fast reps, spikes);
+   - terrain: no flat ground means effort/HR sessions; put pace sessions on the days flat ground
+     is available; use the hills they have (hill reps, hill tempo by HR);
+   - what worked before: reuse those formats as checkpoints; what broke them: leave it out, and
+     check that nothing similar is left (e.g. 8× 2 min near 5k pace for someone wrecked by
+     3–5 min VO2);
+   - age and recovery, weather and season (ice, treadmill limits), holidays, the race course;
+   - recovery around races and tests: 2 easy days after a short race or test, 3 after a half or
+     longer; big marathon-pace long runs not in consecutive weeks or the week before a B race.
+   Replace, move, drop or add sessions. Keep the principles: mostly easy, never two hard days in
+   a row, one variable at a time (more reps, then longer reps, then faster), deloads lighter.
+   Write the reason for each change in the session's `note` ("bez kopcových šprintov:
+   Achillovka"). Keep the session format (`id`, `date`, `slot`, `type`, `title`, `target`,
+   `milestone`, `status`, `actual`, `note`) and give every paced session a `basis`: `[lo, hi]` %
+   of threshold speed, or `"race:<km>"` for race pace.
+3. **Fill the targets**: `season_plan.py retarget plan.json --out plan.json` computes every
+   future pace (and HR cap with LTHR) from `basis`. Never write a pace by hand.
+4. **Check**: `season_plan.py check-roadmap plan.json`. Fix every FAIL (pace not matching its %,
+   two hard days in a row, quality 1–2 days after a race or test, a long run longer than the
+   week's, a continuous marathon-pace run in the week after a race). For each WARN, fix it or
+   know why it's right for this runner.
+- **Milestones** (★, 6–10 a season): the threshold check at the end of base (a short B race can
+  be it), the longest run, the B races, the A race; for a marathon the long runs with 14–16 km
+  at marathon pace and a continuous 18–23 km at marathon pace 2–4 weeks before the race (never
+  in the week after a race; the long run a week before it stays easy); for shorter goals a dress
+  rehearsal 2–3 weeks out.
+- It's an estimate. Say so when you show it: the milestones, the next 4–6 sessions, and what you
+  adapted for them and why, rather than the whole list.
 
 **Week mode** starts from the week's key sessions: they set the quality days and their targets.
 Deviate when readiness, illness, terrain or the last session says so, and say why.
@@ -86,15 +103,19 @@ Deviate when readiness, illness, terrain or the last session says so, and say wh
 **Weekly review**: run `analyze_session.py --json` for the week's key sessions and pass the rows to
 `season_plan.py actuals ... --sessions rows.json`. Each past key session gets `actual` (what was
 run, the pace, the HR) and a verdict: `on`, `over` (faster than target with HR under the cap),
-`under` (> 1 % slower, HR over the cap, or a long run > 10 % short) or `missed`. After `under` or
-`missed` the rest of that ladder moves back one step (the next session repeats it); the change is
-logged. `over` changes nothing by itself: if the threshold looks stale, retest it. A session not
-uploaded yet (less than 2 days old) is left open.
+`under` (> 1 % slower, HR over the cap, or a long run > 10 % short) or `missed`. A session not
+uploaded yet (less than 2 days old) is left open. After `under` or `missed` the script only
+*proposes* repeating that step next time (`PROPOSE` lines). Decide with the context: heat, wind,
+hills, a bad night or illness explain a slow session without lost fitness, and a session missed
+for travel isn't a reason to step back. When it is right, edit the next sessions (or run
+`actuals ... --hold-back`), log it, and re-check. `over` changes nothing by itself: if the
+threshold looks stale, retest it.
 
 **New threshold or goal**: `season_plan.py retarget plan.json --threshold-pace 4:05` recomputes
 every future target and logs which paces moved (e.g. "threshold 4:12–4:17 -> 4:08–4:13"). Tell
-the runner how much the paces moved. `replan` keeps the roadmap: new weeks get key sessions
-again, past weeks keep theirs and their results.
+the runner how much the paces moved. Without `--threshold-pace` it only fills the targets of new
+or edited sessions. `replan` keeps the roadmap: new weeks get the default draft
+again (adapt them as in step 2 and re-check), past weeks keep theirs and their results.
 
 Nothing from the roadmap goes to TrainingPeaks on its own: only the current week, planned in
 detail and confirmed, goes to the calendar (`SKILL.md` Step 7).

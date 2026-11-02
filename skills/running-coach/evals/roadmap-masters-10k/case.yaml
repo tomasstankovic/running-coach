@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: roadmap-masters-10k
+expected_outcome: |
+  A 10k roadmap for a 57-year-old who recovers slowly: no 3-5 min VO2 intervals or similar sustained reps near 5k pace (e.g. 8x 2 min), short 200 m reps with long recovery instead, 3x 3 km and 2x 15 min as the backbone, January-February Tuesday sessions fit a 45-min treadmill run and longer tempo goes to Friday outside, no quality within 2 days after the 5k, check-roadmap clean, presented as an estimate. Slovak.
+context:
+  scaffold_script: place-files.sh

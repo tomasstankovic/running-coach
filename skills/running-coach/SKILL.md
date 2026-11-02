@@ -122,8 +122,8 @@ readiness, and how the runner feels. State it at the top of the plan with one se
 ## Step 4: Draft
 
 Build the week from `references/workouts.md`. With a season roadmap, start from the week's key
-sessions (`season.md` §2b): they set the quality days and targets; deviate only with a reason you
-state. The principles that matter most:
+sessions (`season.md` §2b), and change them when this week's readiness, illness, terrain, weather
+or the last session says so; say why. The principles that matter most:
 
 - Mostly easy. One long run, one or two quality sessions, everything else easy (strides are fine).
 - Never two hard days in a row. Keep the long run away from hard days when possible.
@@ -235,8 +235,9 @@ long run, a race). Mention them, and plan the next weeks from the new reference.
 
 With a season plan, also fill in the week's actuals, compare it with its row, and apply the
 re-planning rules (`season.md` §5–6). With a roadmap, pass the key sessions' `analyze_session.py
---json` rows to `season_plan.py actuals --sessions` for their verdicts (`season.md` §2b), and
-re-target when the threshold or a goal changed. Re-run `scripts/forecast.py` with the week's new results
+--json` rows to `season_plan.py actuals --sessions` for their verdicts (`season.md` §2b). Its
+hold-back proposals are yours to decide with the context; re-target when the threshold or a goal
+changed. Re-run `scripts/forecast.py` with the week's new results
 (`analysis.md` "Race predictions") and update the predictions on the plan page; when a race goal
 falls outside the forecast range, say so with the numbers and offer the options. Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
 were above 150 bpm, so slow down, don't lengthen"). Add them to the profile's decision log and

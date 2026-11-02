@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: roadmap-achilles-marathon
+expected_outcome: |
+  A marathon roadmap adapted to an Achilles history: no hill sprints or reps faster than 10k pace (about 4:21/km at a 4:28 threshold) anywhere in the saved sessions, smooth fartlek or tempo instead, quality on Tuesday/Thursday and the long run on Saturday, big marathon-pace long runs not in consecutive weeks and not the week before the half, a continuous ~18-23 km at marathon pace 2-4 weeks before the marathon, paces computed by the script, check-roadmap clean, presented as an estimate. Slovak.
+context:
+  scaffold_script: place-files.sh

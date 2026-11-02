@@ -153,17 +153,19 @@ default, and say so.
 
 ## Progressions
 
-The ladders behind the season roadmap (`season.md` §2b; `scripts/key_sessions.py` has them in
-full). The rule throughout: first more reps, then longer reps, only then a faster pace
-(`methodology.md` §4). One step per build week; after a session under target, repeat the step.
+The ladders behind the roadmap's default draft (`season.md` §2b; `scripts/key_sessions.py` has
+them in full). They describe a typical runner, not this one: the coach adapts them (injuries,
+terrain, what worked, recovery). This is coaching practice, not a tested protocol. The rule
+throughout: first more reps, then longer reps, only then a faster pace (`methodology.md` §4). One
+step per build week; after a session under target, usually repeat the step.
 
 | Phase | Threshold / tempo | VO2 / speed | Long run | Typical milestones |
 |---|---|---|---|---|
 | Base | 5–7× 1 km @ 98–100 % → 3–4× 2 km → 3× 3 km → 2× 15–20 min @ 93–96 % → continuous 25–30 min | hills 8–10× 45–60 s, then fartlek 8–10× 1–2 min | easy, +1–2 km a week; at the end of base the last 15 min steady | threshold check (30 min test or a 10k race) at the end of base |
-| Build | half-marathon pace 3× 3 km → 3× 4 km → 2× 5 km → 2× 6 km | 5–6× 3 min @ 106–110 %, then 5–7× 1 km @ 104–106 % | marathon: every other long run with the last 8 km or 3× 4 km at marathon pace | longest run (30–32 km for a marathon) |
+| Build | half-marathon pace 3× 3 km → 2× 5 km → 3× 4 km → 2× 6 km | 5–6× 3 min @ 106–110 %, then 5–7× 1 km @ 104–106 % | marathon: every other long run with the last 8 km or 3× 4 km at marathon pace | longest run (30–32 km for a marathon) |
 | Specific, marathon | marathon pace mid-week 2× 5 → 2× 6 → 2× 7 km | none: the long run carries the load | 30–32 km with 14–16 km at marathon pace; continuous 18–23 km at marathon pace 2–4 weeks before | both marathon-pace long runs, the tune-up half |
-| Specific, half / 10k | 2× 5 km → 3× 4 km → 3× 5 km @ half-marathon pace; 10k: 3× 2 → 3× 3 → 4× 2.5 km @ 10k pace | 6–8× 800 m @ 108–112 % | half: last 6 km at half-marathon pace | dress rehearsal two weeks out |
-| Specific, 5k | 6× 800 m → 8× 800 m → 5× 1 km @ 5k pace | threshold maintenance 5× 1 km | easy | dress rehearsal two weeks out |
+| Specific, half / 10k | 2× 6 km → 3× 5 km → 10 km continuous @ half-marathon pace; 10k: 3× 2 → 3× 3 → 4× 2.5 km @ 10k pace | 6–8× 800 m @ 108–112 % | half: last 6 km at half-marathon pace | dress rehearsal 2–3 weeks out |
+| Specific, 5k | 6× 800 m → 8× 800 m → 6× 1 km @ 5k pace | threshold maintenance 5× 1 km | easy | dress rehearsal 2–3 weeks out |
 | Taper | sharpening 3× 1 km at race pace | – | shorter; marathon: 6 km at marathon pace inside it | – |
 
 **The continuous marathon-pace run** (18–23 km, after 3–5 km easy) is the best test of marathon

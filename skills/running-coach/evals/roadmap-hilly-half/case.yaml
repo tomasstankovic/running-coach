@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: roadmap-hilly-half
+expected_outcome: |
+  A half-marathon roadmap for a runner with no flat ground at home: pace-based quality only on Saturday at the river loop, Wednesday sessions from home by effort or heart rate (hill reps, hill tempo), half-marathon pace work that grows towards race day, a dress rehearsal 2-3 weeks out on the flat, check-roadmap clean, presented as an estimate. Slovak.
+context:
+  scaffold_script: place-files.sh

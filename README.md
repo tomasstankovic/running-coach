@@ -39,9 +39,11 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   shows plan vs. actual and every change. Illness, a work deadline or a missed week re-plans the
   rest by clear rules, and the weekly review can run by itself every Sunday.
 - **A map of the key sessions.** How threshold, tempo, VO2 and long runs progress through the
-  season, with target paces from your threshold and goals, and 6–10 milestones (the threshold
-  check, the longest run, marathon-pace long runs, tune-up races). Each review compares what you
-  ran with the target (on target, better, under, missed) and moves the next steps accordingly.
+  season, designed around you (injuries, terrain, what worked for you, winter), with target paces
+  computed from your threshold and goals, and 6–10 milestones (the threshold check, the longest
+  run, marathon-pace long runs, tune-up races). A script checks the rules (recovery after races,
+  no two hard days in a row). Each review compares what you ran with the target (on target,
+  better, under, missed), and the next steps follow from it.
 - **Your units, your ground.** Kilometres or minutes, as you prefer. It reads how hilly your runs
   are, asks where you can run fast, and steers by pace on the flat and by heart rate on hills.
   "This week I'm in the mountains" reshapes the rest of the week.

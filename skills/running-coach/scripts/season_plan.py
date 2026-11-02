@@ -10,7 +10,9 @@ Usage:
   season_plan.py roadmap plan.json --threshold-pace 4:10 [--goals "21.1=1:29:30,42.2=3:15:00"]
                  [--days q1=tue,q2=fri,long=sun] [--lthr 174] --out plan.json
                                                             # key sessions + milestones (key_sessions.py)
-  season_plan.py retarget plan.json --threshold-pace 4:05 [--goals ...] --out plan.json
+  season_plan.py retarget plan.json [--threshold-pace 4:05] [--goals ...] --out plan.json
+                                                            # fills/recomputes targets from each `basis`
+  season_plan.py check-roadmap plan.json                    # rules the key sessions must keep
   season_plan.py export plan.json --format markdown          # table for a TP note / profile file
   season_plan.py export plan.json --format batch --out-dir docs [--versions versions.json]
                                                             # plan page database: one JSON file per
@@ -307,13 +309,14 @@ def cmd_retarget(plan, args):
         raise ValueError("no roadmap in the plan yet: run `roadmap` first")
     today = args.today or date.today().isoformat()
     old = plan["roadmap"]["threshold_pace"]
+    new = args.threshold_pace or old
     goals = goals_of(args.goals or plan["roadmap"].get("goals"), plan["spec"])
-    moved, notes = key_sessions.retarget(plan, parse_pace(args.threshold_pace), goals, today)
-    text = f"re-targeted: threshold {old} -> {args.threshold_pace}" + "".join(
-        f"; {k} {a} -> {b}" for k, (a, b) in moved.items())
-    plan.setdefault("changes", []).append({"date": today, "text": text})
+    moved, notes = key_sessions.retarget(plan, parse_pace(new), goals, today)
+    if new != old or moved:   # only filling the targets of new or edited sessions logs nothing
+        text = f"re-targeted: threshold {old} -> {new}" + "".join(f"; {k} {a} -> {b}" for k, (a, b) in moved.items())
+        plan.setdefault("changes", []).append({"date": today, "text": text})
+        print(text, file=sys.stderr)
     plan["warnings"] = notes
-    print(text, file=sys.stderr)
     return plan
 
 
@@ -340,9 +343,12 @@ def cmd_actuals(plan, args):
     if args.sessions:
         with open(args.sessions) as f:
             rows = json.load(f)
-        for c in key_sessions.fill_actuals(plan, rows, today.isoformat()):
+        changes, proposals = key_sessions.fill_actuals(plan, rows, today.isoformat(), args.hold_back)
+        for c in changes:
             plan.setdefault("changes", []).append(c)
             print(f"CHANGE {c['text']}", file=sys.stderr)
+        for p in proposals:   # the coach decides with the context (heat, hills, illness, travel)
+            print(f"PROPOSE {p}", file=sys.stderr)
     return plan
 
 
@@ -406,6 +412,8 @@ def main():
     a.add_argument("--history", required=True)
     a.add_argument("--today")
     a.add_argument("--sessions", help="analyze_session.py --json rows of the key sessions")
+    a.add_argument("--hold-back", action="store_true",
+                   help="apply the proposed hold-backs (after the coach decided they're right)")
     a.add_argument("--out")
     k = sub.add_parser("roadmap")
     k.add_argument("plan")
@@ -417,7 +425,7 @@ def main():
     k.add_argument("--out")
     t = sub.add_parser("retarget")
     t.add_argument("plan")
-    t.add_argument("--threshold-pace", required=True)
+    t.add_argument("--threshold-pace", help="new threshold; default: the stored one (just fill targets)")
     t.add_argument("--goals")
     t.add_argument("--today")
     t.add_argument("--out")
@@ -426,6 +434,8 @@ def main():
     e.add_argument("--format", choices=["markdown", "batch"], default="markdown")
     e.add_argument("--out-dir", help="batch: where to write the document files")
     e.add_argument("--versions", help='batch: {"weeks/2026-11-09": 3, ...} from an ArtifactData list')
+    c = sub.add_parser("check-roadmap")
+    c.add_argument("plan")
     args = ap.parse_args()
 
     try:
@@ -447,6 +457,15 @@ def main():
             if args.cmd == "export":
                 print(export(plan, args.format))
                 return
+            if args.cmd == "check-roadmap":
+                found = key_sessions.check_roadmap(plan)
+                for level, msg in found:
+                    print(f"{level} {msg}")
+                n = sum(len(w.get("key_sessions") or []) for w in plan["weeks"])
+                fails = sum(1 for level, _ in found if level == "FAIL")
+                print(f"{n} key sessions: {fails} FAIL, {len(found) - fails} WARN" if found
+                      else f"{n} key sessions: all rules kept")
+                sys.exit(1 if fails else 0)
             result = {"replan": cmd_replan, "actuals": cmd_actuals, "roadmap": cmd_roadmap,
                       "retarget": cmd_retarget}[args.cmd](plan, args)
     except (ValueError, KeyError) as e:
