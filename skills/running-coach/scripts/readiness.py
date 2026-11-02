@@ -14,7 +14,8 @@ no quality today; still below after 3 more days: cut volume ~25 % for 3-4 days. 
 counts only together with another sign. At least 21 baseline days are needed before HRV is judged.
 
 Output: text (default), --brief (one line for a morning message), --json, or --trend DAYS
-(JSON rows for the plan page's readiness chart).
+(JSON rows for the plan page's readiness chart; "reasons" are flag codes the page translates:
+hrv_low_4d, hrv_low, hrv_night_low, rhr_spike, rhr_high, sleep_short, sleep_very_short).
 
 Resting HR: the 7-day mean above baseline + 1 SD is a flag; a single day +8 bpm or more is a flag
 (practice-based). Sleep under 6 h (or 5 h) is a flag. Prints GREEN / AMBER / RED with reasons.
@@ -57,7 +58,11 @@ def assess(rows, target):
         return None
     base = [r for r in rows if r["date"] < target][-28:]
 
-    flags, notes = [], []
+    flags, notes, codes = [], [], []
+
+    def flag(level, code, message):
+        flags.append((level, message))
+        codes.append(code)
     hrv_info, rhr7 = (None, None), None
 
     def baseline(key):
@@ -101,9 +106,9 @@ def assess(rows, target):
                      f"{math.exp(mean - BAND_SD * sd):.0f}-{math.exp(mean + BAND_SD * sd):.0f} ({n} baseline days)")
         earlier = [hrv_state((date.fromisoformat(target) - timedelta(days=k)).isoformat())[0] for k in (1, 2, 3)]
         if state == -1 and all(e == -1 for e in earlier):
-            flags.append(("red", "HRV 7-day mean below the normal band for 4+ days: cut volume ~25 % for 3-4 days, no quality"))
+            flag("red", "hrv_low_4d", "HRV 7-day mean below the normal band for 4+ days: cut volume ~25 % for 3-4 days, no quality")
         elif state == -1:
-            flags.append(("amber", "HRV 7-day mean below the normal band: no quality today"))
+            flag("amber", "hrv_low", "HRV 7-day mean below the normal band: no quality today")
         elif state == 1:
             notes.append("HRV 7-day mean above the band: fine, unless the runner feels very tired (then treat as amber)")
         single_low = today["hrv"] > 0 and math.log(today["hrv"]) < mean - sd
@@ -119,19 +124,19 @@ def assess(rows, target):
         rhr7 = mean7
         notes.append(f"resting HR {today['rhr']:.0f} (7-day {mean7:.0f}) vs baseline {mean:.0f} ± {sd:.0f}")
         if diff >= 8:
-            flags.append(("amber", f"resting HR {diff:+.0f} bpm today"))
+            flag("amber", "rhr_spike", f"resting HR {diff:+.0f} bpm today")
         elif mean7 > mean + sd:
-            flags.append(("amber", "resting HR 7-day mean above baseline + 1 SD"))
+            flag("amber", "rhr_high", "resting HR 7-day mean above baseline + 1 SD")
 
     if "sleep_h" in today:
         notes.append(f"sleep {today['sleep_h']:.1f} h")
         if today["sleep_h"] < 5:
-            flags.append(("amber", "very short sleep"))
+            flag("amber", "sleep_very_short", "very short sleep")
         elif today["sleep_h"] < 6:
-            flags.append(("amber", "short sleep"))
+            flag("amber", "sleep_short", "short sleep")
 
     if single_low and any(not m.startswith("HRV") for _, m in flags):
-        flags.append(("amber", "HRV last night more than 1 SD below baseline (counts with the other signs)"))
+        flag("amber", "hrv_night_low", "HRV last night more than 1 SD below baseline (counts with the other signs)")
     elif single_low:
         notes.append("HRV last night low, but no other sign: train as planned, recheck tomorrow")
 
@@ -149,7 +154,8 @@ def assess(rows, target):
     mean7, b = hrv_info
     band = (math.exp(b[0] - BAND_SD * b[1]), math.exp(b[0] + BAND_SD * b[1])) if b else (None, None)
     return {"date": target, "verdict": verdict.split(" ")[0], "verdict_text": verdict,
-            "flags": flags, "notes": notes, "hrv": today.get("hrv"),
+            "flags": flags, "reasons": codes, "notes": notes, "hrv": today.get("hrv"),
+            "hrv_state": {-1: "below", 0: "inside", 1: "above"}.get(state),
             "hrv7": round(math.exp(mean7), 1) if mean7 else None,
             "band_lo": round(band[0], 1) if band[0] else None, "band_hi": round(band[1], 1) if band[1] else None,
             "rhr": today.get("rhr"), "rhr7": round(rhr7, 1) if rhr7 else None,
@@ -171,8 +177,8 @@ def main():
         sys.exit("no metrics found")
     if args.trend:
         out = [a for a in (assess(rows, r["date"]) for r in rows[-args.trend:]) if a and a["hrv7"]]
-        print(json.dumps([{k: a[k] for k in ("date", "verdict", "hrv", "hrv7", "band_lo", "band_hi",
-                                              "rhr", "rhr7", "sleep_h")} for a in out]))
+        print(json.dumps([{k: a[k] for k in ("date", "verdict", "reasons", "hrv", "hrv7", "hrv_state", "band_lo",
+                                              "band_hi", "rhr", "rhr7", "sleep_h")} for a in out]))
         return
     target = args.date or rows[-1]["date"]
     a = assess(rows, target)

@@ -96,7 +96,10 @@ Gather the input (format in the script's docstring):
 - **threshold_pace** from the profile; **weekly_km**: mean of the last 8 weeks; **training_pace**:
   total time / total km of all runs in those weeks (Tanda's input).
 - **history**: earlier best races with the weekly km of the 8 weeks before them (onboarding's
-  history summary). They set the optimistic end when the plan brings the volume back.
+  history summary), and with TP the CTL on each race day (`ctl`, from the saved `tp_get_fitness`
+  file). They set the optimistic end when the plan brings the volume back; with CTL they also
+  give the projection below.
+- **ctl** (today's CTL) and **weekly_tss** (mean weekly run TSS of the last 8 weeks) with TP.
 - **plan**: the season plan file, so races and planned volume come from it; add `goal`,
   `course_pct` (a slow course +1–3 %, a fast one −1 %) and `temp_c` to a race when known.
 
@@ -113,6 +116,21 @@ Read it:
   are off (hills, heat, a bad day): suggest a test. Marathon models far apart: little
   marathon-specific evidence yet; the tune-up half and long runs with marathon-pace segments
   narrow it.
+- **Projection: "if the plan happens".** Runners ask what they will run on race day with the
+  training that's planned, not only what they could run today. With `ctl` (today's CTL from
+  `tp_get_fitness`), `ctl` on each history result (CTL on that race day) and a plan whose weeks
+  carry `tss`, the script adds a projection next to the forecast. Add `weekly_tss` (mean weekly run
+  TSS of the last 8 weeks, `tp_get_weekly_summary`): the plan's TSS is a rough per-hour estimate, and
+  the script rescales it to the runner's own TSS per km. It runs the planned TSS through
+  the CTL formula to the race day and applies the runner's own time-vs-CTL slope (their history
+  plus today's level; held between 0.05 and 0.4 % per CTL point, no extrapolation beyond 15 %
+  above the highest CTL they have raced at). Fast end: the whole plan; slow end: 80 % of its load.
+  The marathon goes through the runner's own marathon/half ratio, moved to the planned volume
+  (Vickers model 1). Present both, labelled: "today's form" (evidence) and "if the plan happens"
+  (the runner's history applied to the plan). When the projection barely beats an earlier result,
+  say what it means: the plan matches the runner's earlier load, so a faster time needs more
+  load or better execution (e.g. marathon-specific long runs), not hope. When a week is missed,
+  the next run of the script moves the projection; that is the point.
 - **Plan page**: `forecast.py input.json --json` gives rows for the `predictions` collection
   (`page_docs.py rows.json --collection predictions --id id`): the page shows each race's latest
   forecast with its trend over the weeks and a current-form table.

@@ -3,6 +3,23 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.10.0
+
+- **"If the plan happens"**: `forecast.py` adds a race-day projection next to the forecast from
+  today's form. The plan's weekly TSS is run through the CTL formula to race day and the
+  runner's own results against their CTL give how much faster they get per CTL point (held to
+  0.05–0.4 %, no extrapolation beyond 15 % above the highest CTL they raced at). The marathon
+  goes through their own marathon/half ratio. The plan's TSS estimate is rescaled to the
+  runner's own TSS per km (`weekly_tss`, or today's CTL). Needs `ctl` and `history[].ctl`;
+  without them nothing changes. Proposed and first built in a coaching session on real data.
+- **Plan page, this week**: always Monday to Sunday, rest days shown as rest, strength
+  sessions tagged, the week's total and how many sessions are done.
+- **Plan page, readiness**: today's verdict with what to do and why (HRV, resting HR, sleep),
+  where the 7-day HRV sits in the runner's band, last night's HRV, and the trend only from
+  5 days on. `readiness.py --trend` rows carry `reasons` codes and `hrv_state`.
+- Fix: the page used the UTC date for "today", so after midnight in Europe it marked the wrong
+  day.
+
 ## 0.9.1
 
 - **Choose your setup.** The first conversation explains where the coach keeps things in the

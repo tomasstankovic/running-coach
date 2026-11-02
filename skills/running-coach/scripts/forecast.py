@@ -17,9 +17,11 @@ input.json:
   "threshold_pace": "4:10",                    # optional
   "weekly_km": 38,                             # mean of the last 8 weeks
   "training_pace": "5:55",                     # optional: mean pace of all runs, last 8 weeks (Tanda)
+  "ctl": 28,                                   # optional: CTL today (tp_get_fitness); enables the projection
+  "weekly_tss": 290,                           # optional: mean weekly run TSS, last 8 weeks (calibrates the plan's TSS)
   "history": [                                 # optional: earlier best races and the volume behind them
-    {"date": "2025-04-27", "km": 21.0975, "time": "1:31:40", "weekly_km": 55}
-  ],
+    {"date": "2025-04-27", "km": 21.0975, "time": "1:31:40", "weekly_km": 55, "ctl": 44}
+  ],                                           # ctl: CTL on race day (tp_get_fitness for that date)
   "plan": "plan.json",                         # optional: season_plan.py output (races + planned km)
   "races": [                                   # optional when the plan has them
     {"name": "Spring Marathon", "date": "2027-04-25", "distance_km": 42.195, "goal": "3:25:00",
@@ -40,6 +42,18 @@ How (references/analysis.md "Race predictions"):
   the runner's own earlier result at a similar volume (history) can set the optimistic end. No
   generic "+x % per block" is added. Then the course and the temperature (above 15 °C, 1-2 % per
   5 °C [S39]).
+- Projection to race day ("if the plan happens"): shown next to the forecast, never mixed into it.
+  It needs "ctl", the plan's weekly "tss" and at least one history result with its "ctl". The
+  plan's TSS, rescaled to the runner's own TSS per km ("weekly_tss", or today's CTL as the recent
+  load), is run forward through the CTL formula (42-day average) to the race day. The
+  runner's own results against their CTL then give their personal slope (how much faster per
+  point of CTL), fitted on a log scale with today's level as one point. The slope is held between
+  0.05 and 0.4 % per CTL point, and CTL beyond 15 % above the highest the runner has raced at is
+  not extrapolated. The fast end assumes the whole plan, the slow end 80 % of its load. For the
+  marathon the projected half goes through the runner's own marathon/half ratio, corrected for
+  the planned volume with Vickers model 1, or through Vickers model 1 alone without that history.
+  It is the runner's history applied to the plan, not evidence of fitness: re-run it every week,
+  and trust the forecast when the two disagree.
 """
 import argparse
 import json
@@ -61,6 +75,14 @@ HEAT_FROM, HEAT_PER_5C = 15, (1.0, 2.0)  # % slower per 5 °C above 15 °C [S39]
 HISTORY_VOLUME = 0.9                   # an earlier result counts when the plan reaches 90 % of its volume
 TAPER_WEEKS = 1                        # weeks before the race not counted as "planned volume"
 VOLUME_WEEKS = 8                       # planned weeks counted before the race (weeks -9 to -2)
+CTL_DAYS = 42                          # TrainingPeaks CTL time constant
+SLOPE_RANGE = (0.0005, 0.004)          # personal gain per CTL point on log time: 0.05-0.4 % (guardrail)
+SLOPE_DEFAULT = 0.0015                 # used when the history gives no usable slope
+CTL_STRETCH = 1.15                     # no extrapolation beyond 15 % above the highest raced CTL
+PLAN_SHORTFALL = 0.8                   # slow end of the projection: 80 % of the planned load
+PROJ_SPREAD = 1.0                      # % either side of the projection, at least
+TSS_SCALE = (0.7, 1.4)                 # how far the runner's own TSS per km may rescale the plan's estimate
+HALF = 21.0975
 
 
 def riegel(t, d_from, d_to):
@@ -174,6 +196,109 @@ def planned_volume(plan, race_date):
     return statistics.mean(kms) if kms else None
 
 
+def tss_scale(inp, plan):
+    """The plan's TSS is a rough estimate per hour; rescale it to the runner's own TSS per km
+    (weekly_tss, or CTL x 7 as the recent daily load) so the projected CTL is on their scale."""
+    weeks = [w for w in plan.get("weeks", []) if w.get("tss") and w.get("km")]
+    km = inp.get("weekly_km")
+    own = inp.get("weekly_tss") or (inp["ctl"] * 7 if inp.get("ctl") else None)
+    if not weeks or not km or not own:
+        return 1.0, None
+    planned = sum(w["tss"] for w in weeks) / sum(w["km"] for w in weeks)
+    raw = own / km / planned
+    scale = min(max(raw, TSS_SCALE[0]), TSS_SCALE[1])
+    if abs(scale - 1) < 0.05:
+        return 1.0, None
+    src = "weekly_tss" if inp.get("weekly_tss") else "CTL"
+    return scale, f"plan TSS x {scale:.2f} to match your own {own / km:.1f} TSS per km ({src})"
+
+
+def project_ctl(plan, ctl, today, until, share=1.0):
+    """CTL on `until` if `share` of each planned week's TSS is done from tomorrow on."""
+    weekly = {date.fromisoformat(w["week_start"]): w.get("tss") or 0 for w in plan.get("weeks", [])}
+    d = today
+    while d < until:
+        d += timedelta(days=1)
+        tss = weekly.get(d - timedelta(days=d.weekday()), 0) * share / 7
+        ctl += (tss - ctl) / CTL_DAYS
+    return ctl
+
+
+def personal_slope(points):
+    """Least-squares slope of log(time) on CTL, as a positive gain per CTL point, within SLOPE_RANGE."""
+    if len(points) < 2:
+        return SLOPE_DEFAULT, "no history with CTL: default slope"
+    xs, ys = [c for c, _ in points], [math.log(t) for _, t in points]
+    mx, my = statistics.mean(xs), statistics.mean(ys)
+    sxx = sum((x - mx) ** 2 for x in xs)
+    if sxx < 25:  # all at about the same CTL: nothing to learn from
+        return SLOPE_DEFAULT, "history at a similar CTL: default slope"
+    gain = -sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sxx
+    lo, hi = SLOPE_RANGE
+    clipped = min(max(gain, lo), hi)
+    note = f"personal slope {gain * 100:.2f} % per CTL point" + (f", held at {clipped * 100:.2f} %" if clipped != gain else "")
+    return clipped, note
+
+
+def projection(inp, race, plan, today):
+    """Race-day time if the plan happens, from the runner's own results against their CTL.
+    Returns (low, mid, high, notes) or None when the inputs are missing."""
+    km = race.get("distance_km") or race.get("km")
+    ctl_now = inp.get("ctl")
+    hist = [h for h in inp.get("history", []) if h.get("ctl") is not None]
+    if ctl_now is None or not plan or not hist or not any(w.get("tss") for w in plan.get("weeks", [])):
+        return None
+    rdate = date.fromisoformat(race["date"])
+    ref = km if km <= 25 else HALF               # the curve is built on the half (or the race distance up to 25 km)
+    now = level(inp, ref, today)
+    if not now:
+        return None
+    points = [(ctl_now, now[1])] + [(h["ctl"], riegel(parse_time(h["time"]), h["km"], ref)) for h in hist if h["km"] <= 25]
+    gain, slope_note = personal_slope(points)
+    cap = max(c for c, _ in points) * CTL_STRETCH
+    scale, scale_note = tss_scale(inp, plan)
+    full = project_ctl(plan, ctl_now, today, rdate, scale)
+    short = project_ctl(plan, ctl_now, today, rdate, scale * PLAN_SHORTFALL)
+    notes = [f"CTL {ctl_now:.0f} today -> {full:.0f} on race day with the whole plan ({short:.0f} with 80 % of it)",
+             slope_note] + ([scale_note] if scale_note else [])
+    if full > cap:
+        notes.append(f"CTL above {cap:.0f} is beyond your racing history: not extrapolated")
+    at = lambda c: now[1] * math.exp(-gain * (min(c, cap) - ctl_now))
+    fast, slow = at(full), at(short)
+    if km > 25:
+        planned = planned_volume(plan, rdate)
+        fast, slow = marathon_from_half(fast, inp, planned, notes), marathon_from_half(slow, inp, planned)
+        if fast is None:
+            return None
+    spread = PROJ_SPREAD / 100
+    return fast * (1 - spread), fast, slow * (1 + spread), notes
+
+
+def marathon_from_half(half, inp, planned_km, notes=None):
+    """Marathon from a half-marathon time: the runner's own marathon/half ratio at the volume they
+    had then, moved to the planned volume by Vickers model 1; Vickers model 1 alone without history."""
+    if not planned_km:
+        return None
+    miles = lambda km: km / 1.609344
+    v_plan = vickers_model1(HALF * 1000, half, miles(planned_km))
+    hist = inp.get("history", [])
+    for m in sorted((h for h in hist if h["km"] > 40 and h.get("weekly_km")), key=lambda h: h["date"], reverse=True):
+        mdate = date.fromisoformat(m["date"])
+        halves = [h for h in hist if abs(h["km"] - HALF) < 0.3 and 0 <= (mdate - date.fromisoformat(h["date"])).days <= 70]
+        if not halves:
+            continue
+        h = max(halves, key=lambda h: h["date"])
+        ratio = parse_time(m["time"]) / parse_time(h["time"])
+        v_then = vickers_model1(HALF * 1000, half, miles(m["weekly_km"]))
+        if notes is not None:
+            notes.append(f"your marathon/half ratio {ratio:.3f} ({m['time']} after {h['time']} at {m['weekly_km']:g} km/week), "
+                         f"moved to {planned_km:.0f} km/week")
+        return half * ratio * v_plan / v_then
+    if notes is not None:
+        notes.append(f"no marathon in your history: Vickers model 1 with {planned_km:.0f} km/week")
+    return v_plan
+
+
 def race_forecast(inp, race, plan, today):
     km = race.get("distance_km") or race.get("km")
     rdate = date.fromisoformat(race["date"])
@@ -214,8 +339,19 @@ def race_forecast(inp, race, plan, today):
                    f"{(low - goal) / low * 100:.1f} % faster than the fast end: a stretch" if goal < low and (low - goal) / low <= 0.03 else
                    f"{(low - goal) / low * 100:.1f} % faster than the fast end: out of reach on current evidence" if goal < low else
                    "slower than the range: a safe goal")
-    return {"name": race.get("name", f"{km:g} km"), "date": race["date"], "km": km, "low": low, "mid": mid,
-            "high": high, "goal": goal, "verdict": verdict, "notes": notes, "planned_km": planned}
+    out = {"name": race.get("name", f"{km:g} km"), "date": race["date"], "km": km, "low": low, "mid": mid,
+           "high": high, "goal": goal, "verdict": verdict, "notes": notes, "planned_km": planned}
+    proj = projection(inp, race, plan, today)
+    if proj:
+        adj = (adj_lo + adj_hi) / 200
+        out.update(proj_low=proj[0] * (1 + adj_lo / 100), proj_mid=proj[1] * (1 + adj), proj_high=proj[2] * (1 + adj_hi / 100),
+                   proj_notes=proj[3])
+        if goal:
+            pl, ph = out["proj_low"], out["proj_high"]
+            out["proj_verdict"] = ("inside the projection" if pl <= goal <= ph else
+                                   "slower than the projection: safe if the plan happens" if goal > ph else
+                                   f"{(pl - goal) / pl * 100:.1f} % faster than the projection's fast end")
+    return out
 
 
 def load(path):
@@ -246,7 +382,9 @@ def main():
                  "low": round(p[0]), "mid": round(p[1]), "high": round(p[2])} for name, km, p in now if p]
         rows += [{"id": f"{today}_{f['date']}_{f['km']:g}", "date": today.isoformat(), "kind": "race", "name": f["name"],
                   "race_date": f["date"], "km": f["km"], "low": round(f["low"]), "mid": round(f["mid"]),
-                  "high": round(f["high"]), "goal": f["goal"]} for f in ahead]
+                  "high": round(f["high"]), "goal": f["goal"],
+                  **({k: round(f[k]) for k in ("proj_low", "proj_mid", "proj_high")} if "proj_mid" in f else {})}
+                 for f in ahead]
         print(json.dumps(rows, ensure_ascii=False, indent=1))
         return
     print(f"Current form ({today}):")
@@ -272,6 +410,13 @@ def main():
             print(f"  goal {fmt_time(f['goal'])}: {f['verdict']}")
         for n in f["notes"]:
             print(f"  note: {n}")
+        if "proj_mid" in f:
+            print(f"  if the plan happens: {fmt_time(f['proj_low'])} - {fmt_time(f['proj_high'])}, "
+                  f"likely {fmt_time(f['proj_mid'])} ({fmt_pace(f['proj_mid'] / f['km'])}/km)")
+            if f["goal"]:
+                print(f"  goal {fmt_time(f['goal'])}: {f['proj_verdict']}")
+            for n in f["proj_notes"]:
+                print(f"  projection: {n}")
     if ahead:
         print("\nToday's level is the slow end; new races, tests and key sessions move the forecast. "
               "Re-run it in every weekly review.")

@@ -76,16 +76,31 @@ tr.now td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 .empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 28px; display: grid; gap: 6px; }
 footer { font-size: .8rem; color: var(--muted); }
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.two > section { align-content: start; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
 .panel svg { display: block; width: 100%; height: auto; }
 .panel .cap { font-size: .82rem; color: var(--muted); margin-top: 6px; }
 .days { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
 .days li { display: grid; grid-template-columns: 74px 1fr auto; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--line); }
 .days li:last-child { border-bottom: 0; }
+.days li.today { box-shadow: inset 3px 0 0 var(--accent); margin-left: -14px; padding-left: 11px; }
 .days li.today .d { color: var(--accent); font-weight: 600; }
 .days li.done .t { color: var(--muted); }
+.days li.rest .t { color: var(--muted); }
 .days .d { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.days .t { display: grid; gap: 2px; }
 .days .v { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: .9rem; }
+.days .tag { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-left: 6px; }
+.weeksum { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .85rem; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--line); }
+.ready { display: grid; gap: 10px; }
+.rhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 1.5rem; font-weight: 600; line-height: 1; }
+.chip i { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; color: var(--surface);
+  font-style: normal; font-family: var(--body); font-size: .8rem; font-weight: 700; }
+.advice { font-weight: 500; }
+.why { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.facts b { color: var(--fg); font-weight: 600; }
 .ok { color: var(--good); }
 .pred { display: grid; gap: 4px; }
 .pred .big { font-family: var(--display); font-size: 2rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -115,7 +130,7 @@ table.form td, table.form th { padding: 6px 8px; }
 
       <section id="weekSection" hidden>
         <h2 id="hWeek">This week</h2>
-        <div class="panel"><ul class="days" id="days"></ul></div>
+        <div class="panel"><ul class="days" id="days"></ul><div class="weeksum" id="weekSum"></div></div>
       </section>
 
       <section id="predSection" hidden>
@@ -137,7 +152,13 @@ table.form td, table.form th { padding: 6px 8px; }
       <div class="two" id="trendRow" hidden>
         <section id="readySection" hidden>
           <h2 id="hReady">Readiness</h2>
-          <div class="panel"><svg id="readyChart" role="img" aria-label="7-day HRV against the normal band"></svg>
+          <div class="panel ready">
+            <div class="rhead"><span class="chip" id="readyChip"></span><span class="muted" id="readyDate"></span></div>
+            <div class="advice" id="readyAdvice"></div>
+            <ul class="why" id="readyWhy"></ul>
+            <svg id="readyBar" role="img"></svg>
+            <div class="facts" id="readyFacts"></div>
+            <svg id="readyChart" role="img" aria-label="7-day HRV against the normal band"></svg>
             <div class="cap" id="readyCap"></div></div>
         </section>
         <section id="efSection" hidden>
@@ -178,14 +199,27 @@ const T = {
     role: { deload: "deload", busy: "busy week", "race-B": "B race", taper: "taper", race: "race", recovery: "recovery", build: "" },
     of: "of", pastWeeks: "weeks with data",
     week: "This week", ready: "Readiness", ef: "Aerobic fitness",
-    readyCap: (v, lo, hi) => `HRV 7-day mean ${v} · normal band ${lo}–${hi}. Below the band: no quality, then −25 % volume.`,
     efCap: (n, d) => `Efficiency factor of ${n} steady runs (higher = fitter)` + (d != null ? ` · last decoupling ${d} %` : ""),
-    verdict: { GREEN: "green", AMBER: "amber", RED: "red" },
+    verdict: { GREEN: "Green", AMBER: "Amber", RED: "Red" },
+    advice: { GREEN: "Train as planned.", AMBER: "Easy today: move the quality session, keep the rest easy.",
+      RED: "Rest or very easy; if it lasts, cut volume ~25 % for 3–4 days." },
+    reasons: { hrv_low_4d: "HRV 7-day mean below your band for 4+ days", hrv_low: "HRV 7-day mean below your normal band",
+      hrv_night_low: "last night's HRV well below normal", rhr_spike: "resting HR 8+ beats above normal today",
+      rhr_high: "resting HR raised over the last week", sleep_short: "short sleep (under 6 h)", sleep_very_short: "very short sleep (under 5 h)" },
+    allNormal: "everything within your normal range",
+    rest: "Rest", strength: "strength", total: (v, n) => `Total ${v} · ${n} ${n === 1 ? "session" : "sessions"}`, doneN: (d, n) => `${d} of ${n} done`,
+    band: "your band", mean7: "7-day mean", night: "last night",
+    facts: { hrv: "HRV last night", rhr: "resting HR", sleep: "sleep" },
+    barLabel: "HRV 7-day mean against your normal band",
+    readyCap: "Band = your normal range (mean ± 0.5 SD of the 4–8 weeks before). Below it your body hasn't recovered yet; one low night alone doesn't count.",
+    readyTrend: "HRV 7-day mean over the last weeks, grey band = your normal range, dot colour = that day's verdict",
     pred: "Race predictions", form: "Current form", likely: "likely", range: "range",
     formCols: ["Distance", "Likely", "Range", "Pace"], half: "Half marathon", marathon: "Marathon",
     goal: g => `goal ${g}`, inRange: "inside the range", stretch: p => `${p} % faster than the fast end: a stretch`,
     outOf: p => `${p} % faster than the fast end: out of reach for now`, safe: "slower than the range: safe",
     predCap: d => `As of ${d}. Updated in every weekly review: new races, tests and the plan's volume move it.`,
+    proj: "if the plan happens", today: "today's form",
+    projStretch: p => `${p} % faster than the projection: a stretch`, projOut: p => `${p} % faster than the projection: out of reach for now`,
     trendCap: "Likely time over the weeks (higher = faster), band = range, dashed = goal" },
   sk: { loading: "Načítavam plán…", emptyT: "Plán ešte nie je uložený",
     emptyX: "Týždne sa tu objavia, keď tréner uloží plán sezóny.",
@@ -198,14 +232,27 @@ const T = {
     role: { deload: "odľahčenie", busy: "vyťažený týždeň", "race-B": "B závod", taper: "ladenie", race: "závod", recovery: "regenerácia", build: "" },
     of: "z", pastWeeks: "týždňov s dátami",
     week: "Tento týždeň", ready: "Pripravenosť", ef: "Aerobná forma",
-    readyCap: (v, lo, hi) => `HRV 7-dňový priemer ${v} · bežné pásmo ${lo}–${hi}. Pod pásmom: bez kvality, potom −25 % objemu.`,
     efCap: (n, d) => `Efektivita (EF) ${n} ustálených behov (vyššie = lepšia forma)` + (d != null ? ` · posledný decoupling ${d} %` : ""),
-    verdict: { GREEN: "zelená", AMBER: "oranžová", RED: "červená" },
+    verdict: { GREEN: "Zelená", AMBER: "Oranžová", RED: "Červená" },
+    advice: { GREEN: "Trénuj podľa plánu.", AMBER: "Dnes len ľahko: kvalitný tréning presuň, zvyšok nechaj ľahký.",
+      RED: "Voľno alebo veľmi ľahko; ak to trvá, uber ~25 % objemu na 3–4 dni." },
+    reasons: { hrv_low_4d: "HRV (7-dňový priemer) je pod tvojím pásmom už 4+ dni", hrv_low: "HRV (7-dňový priemer) je pod tvojím bežným pásmom",
+      hrv_night_low: "HRV z poslednej noci je výrazne nižšie než bežne", rhr_spike: "pokojový tep je dnes o 8+ úderov vyšší",
+      rhr_high: "pokojový tep je posledný týždeň zvýšený", sleep_short: "krátky spánok (pod 6 h)", sleep_very_short: "veľmi krátky spánok (pod 5 h)" },
+    allNormal: "všetko v tvojom bežnom rozsahu",
+    rest: "Voľno", strength: "sila", total: (v, n) => `Spolu ${v} · ${n} ${n === 1 ? "tréning" : n < 5 ? "tréningy" : "tréningov"}`, doneN: (d, n) => `hotové ${d} z ${n}`,
+    band: "tvoje pásmo", mean7: "7-dňový priemer", night: "posledná noc",
+    facts: { hrv: "HRV v noci", rhr: "pokojový tep", sleep: "spánok" },
+    barLabel: "HRV 7-dňový priemer voči tvojmu bežnému pásmu",
+    readyCap: "Pásmo = tvoj bežný rozsah (priemer ± 0,5 SD za 4–8 týždňov predtým). Pod ním telo ešte nie je zregenerované; jedna slabšia noc sama nerozhoduje.",
+    readyTrend: "HRV 7-dňový priemer za posledné týždne, sivý pás = tvoj bežný rozsah, farba bodu = verdikt v ten deň",
     pred: "Predikcie", form: "Aktuálna forma", likely: "najpravdepodobnejšie", range: "rozpätie",
     formCols: ["Trať", "Odhad", "Rozpätie", "Tempo"], half: "Polmaratón", marathon: "Maratón",
     goal: g => `cieľ ${g}`, inRange: "v rozpätí", stretch: p => `o ${p} % rýchlejší než rýchly koniec: náročný cieľ`,
     outOf: p => `o ${p} % rýchlejší než rýchly koniec: zatiaľ mimo dosahu`, safe: "pomalší než rozpätie: bezpečný",
     predCap: d => `Stav k ${d}. Aktualizuje sa pri každom týždennom hodnotení: nové závody, testy a objem z plánu ho posúvajú.`,
+    proj: "ak sa plán splní", today: "dnešná forma",
+    projStretch: p => `o ${p} % rýchlejší než projekcia: náročný cieľ`, projOut: p => `o ${p} % rýchlejší než projekcia: zatiaľ mimo dosahu`,
     trendCap: "Odhad času v priebehu týždňov (vyššie = rýchlejšie), pás = rozpätie, čiarkovane = cieľ" },
 };
 const PHASES = ["base", "build", "specific", "taper", "race", "recovery"];
@@ -220,6 +267,9 @@ function fmtDate(iso, opts = { day: "numeric", month: "numeric" }) {
   const l = (state.meta && state.meta.lang) === "sk" ? "sk-SK" : "en-GB";
   return new Date(iso + "T12:00:00").toLocaleDateString(l, opts);
 }
+function localISO(d = new Date()) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function addDays(iso, n) { const x = new Date(iso + "T12:00:00"); x.setDate(x.getDate() + n); return localISO(x); }
+function fmtN(v, digits = 0) { return Number(v).toLocaleString((state.meta && state.meta.lang) === "sk" ? "sk-SK" : "en-GB", { minimumFractionDigits: digits, maximumFractionDigits: digits }); }
 function useTime() { return state.meta && state.meta.unit === "time"; }
 function vol(km, minutes) { return useTime() ? `${(minutes / 60).toFixed(1)} h` : `${Math.round(km)} km`; }
 function fmtT(secs) {
@@ -342,19 +392,36 @@ function drawChart(weeks, today, t) {
 }
 
 function renderWeek(cur, t) {
+  // Always the whole week, Monday to Sunday: a day without a session is a rest day.
   const days = (cur && cur.days) || [];
   $("weekSection").hidden = !days.length;
   $("hWeek").textContent = t.week;
-  const todayIso = new Date().toISOString().slice(0, 10);
-  $("days").replaceChildren(...days.slice().sort((a, b) => a.date < b.date ? -1 : 1).map(d => {
-    const li = el("li", { class: (d.date === todayIso ? "today " : "") + (d.done ? "done" : "") });
-    const title = el("span", { class: "t" }, d.title || "");
-    if (d.done) title.prepend(el("span", { class: "ok" }, "✓ "));
-    const vol = d.km ? `${d.km} km` : d.minutes ? `${d.minutes} min` : "";
-    li.append(el("span", { class: "d" }, fmtDate(d.date, { weekday: "short", day: "numeric", month: "numeric" })), title,
-      el("span", { class: "v" }, vol));
+  if (!days.length) return;
+  const todayIso = localISO();
+  const isRest = d => d.rest || d.kind === "rest";
+  const sessions = days.filter(d => !isRest(d));
+  $("days").replaceChildren(...[0, 1, 2, 3, 4, 5, 6].map(i => {
+    const iso = addDays(cur.week_start, i), list = days.filter(d => d.date === iso), work = list.filter(d => !isRest(d));
+    const done = work.length && work.every(d => d.done);
+    const li = el("li", { class: [iso === todayIso && "today", !work.length && "rest", done && "done"].filter(Boolean).join(" ") });
+    const title = el("span", { class: "t" });
+    if (!work.length) title.append(el("span", {}, (list[0] && list[0].title) || t.rest));
+    work.forEach(d => {
+      const line = el("span", {});
+      if (d.done) line.append(el("span", { class: "ok" }, "✓ "));
+      line.append(d.title || "");
+      if (d.kind === "strength") line.append(el("span", { class: "tag" }, t.strength));
+      title.append(line);
+    });
+    const km = work.reduce((s, d) => s + (d.km || 0), 0), min = work.reduce((s, d) => s + (!d.km && d.minutes || 0), 0);
+    const v = [km && `${fmtN(km, km % 1 ? 1 : 0)} km`, min && `${min} min`].filter(Boolean).join(" + ");
+    li.append(el("span", { class: "d" }, fmtDate(iso, { weekday: "short", day: "numeric", month: "numeric" })), title, el("span", { class: "v" }, v));
     return li;
   }));
+  const runs = sessions.filter(d => d.kind !== "strength"), km = runs.reduce((s, d) => s + (d.km || 0), 0);
+  const nDone = sessions.filter(d => d.done).length;
+  $("weekSum").replaceChildren(el("span", {}, t.total(`${fmtN(km, km % 1 ? 1 : 0)} km`, sessions.length)),
+    ...(nDone ? [el("span", {}, t.doneN(nDone, sessions.length))] : []));
 }
 
 function miniChart(svg, points, opts) {
@@ -365,7 +432,7 @@ function miniChart(svg, points, opts) {
   if (!points.length) return;
   const xs = points.map(p => +p.x), x0 = Math.min(...xs), x1 = Math.max(...xs) || x0 + 1;
   const ys = points.flatMap(p => [p.y, p.lo, p.hi].filter(v => v != null));
-  let y0 = Math.min(...ys), y1 = Math.max(...ys); const pad = (y1 - y0) * 0.15 || 1; y0 -= pad; y1 += pad;
+  let y0 = Math.min(...ys), y1 = Math.max(...ys); const pad = (y1 - y0) * (opts.bandFill ? 0.45 : 0.15) || 1; y0 -= pad; y1 += pad;
   if (opts.ref != null) { y0 = Math.min(y0, opts.ref - pad); y1 = Math.max(y1, opts.ref + pad); }
   const frac = v => (v - y0) / (y1 - y0);
   const X = v => pl + (W - pl - pr) * ((+v - x0) / ((x1 - x0) || 1)), Y = v => pt + (H - pt - pb) * (opts.invert ? frac(v) : 1 - frac(v));
@@ -377,11 +444,15 @@ function miniChart(svg, points, opts) {
   const banded = points.filter(p => p.lo != null && p.hi != null);
   if (banded.length > 1) {
     const top = banded.map(p => `${X(p.x)},${Y(p.hi)}`), bottom = banded.slice().reverse().map(p => `${X(p.x)},${Y(p.lo)}`);
-    svg.append(svgEl("polygon", { points: top.concat(bottom).join(" "), fill: "var(--good)", opacity: 0.15 }));
+    svg.append(svgEl("polygon", { points: top.concat(bottom).join(" "), fill: opts.bandFill || "var(--good)", opacity: opts.bandFill ? 0.22 : 0.15 }));
   }
   if (opts.line && points.length > 1)
     svg.append(svgEl("polyline", { points: points.map(p => `${X(p.x)},${Y(p.y)}`).join(" "), fill: "none", stroke: "var(--fg)", "stroke-width": 2 }));
-  points.forEach(p => svg.append(svgEl("circle", { cx: X(p.x), cy: Y(p.y), r: opts.line ? 2.5 : 4, fill: p.color || "var(--fg)" })));
+  points.forEach(p => {
+    const c = svgEl("circle", { cx: X(p.x), cy: Y(p.y), r: opts.dot || (opts.line ? 2.5 : 4), fill: p.color || "var(--fg)", stroke: "var(--surface)", "stroke-width": 1 });
+    if (p.tip) c.append(svgEl("title", {}, p.tip));
+    svg.append(c);
+  });
   const first = new Date(x0), last = new Date(x1);
   svg.append(svgEl("text", { x: pl, y: H - 6, "font-size": 11, fill: "var(--muted)" }, fmtDate(first.toISOString().slice(0, 10))));
   svg.append(svgEl("text", { x: W - pr, y: H - 6, "text-anchor": "end", "font-size": 11, fill: "var(--muted)" }, fmtDate(last.toISOString().slice(0, 10))));
@@ -394,12 +465,7 @@ function renderTrends(t) {
   $("trendRow").hidden = !tr.length && !se.length;
   $("hReady").textContent = t.ready; $("hEf").textContent = t.ef;
   const col = v => v === "RED" ? "var(--race)" : v === "AMBER" ? "var(--warn)" : "var(--good)";
-  if (tr.length) {
-    miniChart($("readyChart"), tr.map(r => ({ x: new Date(r.date + "T12:00:00"), y: r.hrv7, lo: r.band_lo, hi: r.band_hi, color: col(r.verdict) })),
-      { line: true, fmt: v => v.toFixed(0) });
-    const l = tr[tr.length - 1];
-    $("readyCap").textContent = `${fmtDate(l.date)} · ${t.verdict[l.verdict] || l.verdict} · ` + t.readyCap(l.hrv7.toFixed(0), (l.band_lo || 0).toFixed(0), (l.band_hi || 0).toFixed(0));
-  }
+  if (tr.length) renderReadiness(tr, t, col);
   if (se.length) {
     miniChart($("efChart"), se.map(r => ({ x: new Date(r.date + "T12:00:00"), y: r.ef, color: r.decoupling > 10 ? "var(--race)" : r.decoupling > 5 ? "var(--warn)" : "var(--good)" })),
       { line: false, fmt: v => v.toFixed(2) });
@@ -408,8 +474,54 @@ function renderTrends(t) {
   }
 }
 
+function renderReadiness(tr, t, col) {
+  // Today first: the verdict with what to do and why, then where the 7-day HRV sits in the runner's
+  // band (one bar), then the trend once there are enough days to show one.
+  const l = tr[tr.length - 1], v = l.verdict in t.verdict ? l.verdict : "GREEN";
+  const chip = $("readyChip"), dot = el("i", { "aria-hidden": "true" }, { GREEN: "✓", AMBER: "!", RED: "×" }[v]);
+  dot.style.background = col(v); chip.replaceChildren(dot, t.verdict[v]);
+  $("readyDate").textContent = fmtDate(l.date, { weekday: "long", day: "numeric", month: "numeric" });
+  $("readyAdvice").textContent = t.advice[v];
+  const reasons = l.reasons || (l.band_lo != null && l.hrv7 < l.band_lo ? ["hrv_low"] : []);
+  $("readyWhy").replaceChildren(...(reasons.length ? reasons.map(r => el("li", {}, t.reasons[r] || r)) : [el("li", {}, t.allNormal)]));
+
+  const lo = l.band_lo, hi = l.band_hi, m = l.hrv7, bar = $("readyBar");
+  bar.replaceChildren(); bar.style.display = lo != null && hi != null ? "" : "none";
+  const digits = lo != null && (Math.abs(m - lo) < 1 || Math.abs(m - hi) < 1) ? 1 : 0;
+  if (lo != null && hi != null) {
+    const W = 520, H = 76, pl = 12, pr = 12, ty = 40, vals = [lo, hi, m].concat(l.hrv != null ? [l.hrv] : []);
+    const span = (hi - lo) || 1, d0 = Math.min(...vals) - span * 0.6, d1 = Math.max(...vals) + span * 0.6;
+    const X = x => pl + (W - pl - pr) * (x - d0) / (d1 - d0);
+    bar.setAttribute("viewBox", `0 0 ${W} ${H}`); bar.setAttribute("aria-label", t.barLabel);
+    bar.append(svgEl("rect", { x: pl, y: ty - 5, width: W - pl - pr, height: 10, rx: 5, fill: "var(--line)" }));
+    bar.append(svgEl("rect", { x: X(lo), y: ty - 5, width: Math.max(4, X(hi) - X(lo)), height: 10, rx: 5, fill: "var(--muted)", opacity: 0.45 }));
+    [[lo, "middle"], [hi, "middle"]].forEach(([x, a]) => bar.append(svgEl("text", { x: X(x), y: ty + 24, "text-anchor": a, "font-size": 12, fill: "var(--muted)" }, fmtN(x, digits))));
+    if (X(hi) - X(lo) > 110) bar.append(svgEl("text", { x: (X(lo) + X(hi)) / 2, y: ty + 24, "text-anchor": "middle", "font-size": 12, fill: "var(--muted)" }, t.band));
+    if (l.hrv != null) {
+      const n = svgEl("circle", { cx: X(l.hrv), cy: ty, r: 5, fill: "var(--surface)", stroke: "var(--fg)", "stroke-width": 1.5 });
+      n.append(svgEl("title", {}, `${t.night}: ${fmtN(l.hrv)}`)); bar.append(n);
+    }
+    bar.append(svgEl("line", { x1: X(m), x2: X(m), y1: ty - 12, y2: ty + 12, stroke: "var(--fg)", "stroke-width": 2.5, "stroke-linecap": "round" }));
+    const lx = Math.min(Math.max(X(m), pl + 40), W - pr - 40);
+    bar.append(svgEl("text", { x: lx, y: ty - 18, "text-anchor": "middle", "font-size": 13, "font-weight": 600, fill: "var(--fg)" }, `${fmtN(m, digits)} · ${t.mean7}`));
+  }
+  const facts = [];
+  const fact = (label, val) => { const s = el("span"); s.append(`${label} `, el("b", {}, val)); facts.push(s); };
+  if (l.hrv != null) fact(`○ ${t.facts.hrv}`, fmtN(l.hrv));
+  if (l.rhr != null) fact(t.facts.rhr, fmtN(l.rhr));
+  if (l.sleep_h != null) fact(t.facts.sleep, `${fmtN(l.sleep_h, 1)} h`);
+  $("readyFacts").replaceChildren(...facts);
+
+  const chart = $("readyChart"), trend = tr.length >= 5;
+  chart.style.display = trend ? "" : "none";
+  if (trend) miniChart(chart, tr.map(r => ({ x: new Date(r.date + "T12:00:00"), y: r.hrv7, lo: r.band_lo, hi: r.band_hi, color: col(r.verdict),
+      tip: `${fmtDate(r.date)} · ${t.verdict[r.verdict] || r.verdict} · ${t.mean7} ${fmtN(r.hrv7, 1)}` })),
+    { line: true, dot: 3.5, bandFill: "var(--muted)", fmt: v => fmtN(v) });
+  $("readyCap").textContent = t.readyCap + (trend ? " " + t.readyTrend + "." : "");
+}
+
 function renderPredictions(t) {
-  const rows = state.predictions || [], todayIso = new Date().toISOString().slice(0, 10);
+  const rows = state.predictions || [], todayIso = localISO();
   const dist = km => Math.abs(km - 21.0975) < 0.2 ? t.half : Math.abs(km - 42.195) < 0.3 ? t.marathon : `${+km.toFixed(2)} km`;
   const groups = {};
   rows.filter(r => r.kind === "race" && r.race_date >= todayIso).forEach(r => { (groups[`${r.race_date}|${r.km}`] ||= []).push(r); });
@@ -421,19 +533,23 @@ function renderPredictions(t) {
   Object.values(groups).sort((a, b) => a[0].race_date < b[0].race_date ? -1 : 1).forEach(g => {
     g.sort((a, b) => a.date < b.date ? -1 : 1);
     const l = g[g.length - 1], p = el("div", { class: "panel pred" });
+    // With a projection ("if the plan happens") it is the headline; today's form stays visible below it.
+    const pj = l.proj_mid != null, lo = pj ? l.proj_low : l.low, mid = pj ? l.proj_mid : l.mid, hi = pj ? l.proj_high : l.high;
     p.append(el("div", { class: "eyebrow" }, `${l.name} · ${fmtDate(l.race_date, { day: "numeric", month: "numeric", year: "numeric" })} · ${dist(l.km)}`),
-      el("div", { class: "big" }, fmtT(l.mid)),
-      el("div", { class: "sub" }, `${t.likely} · ${t.range} ${fmtT(l.low)}–${fmtT(l.high)}`));
+      el("div", { class: "big" }, fmtT(mid)),
+      el("div", { class: "sub" }, `${pj ? t.proj : t.likely} · ${t.range} ${fmtT(lo)}–${fmtT(hi)}`));
+    if (pj) p.append(el("div", { class: "sub" }, `${t.today} ${fmtT(l.mid)} · ${t.range} ${fmtT(l.low)}–${fmtT(l.high)}`));
     if (l.goal) {
-      const gap = ((l.low - l.goal) / l.low * 100).toFixed(1);
-      const [cls, txt] = l.goal >= l.low && l.goal <= l.high ? ["ok", t.inRange] : l.goal > l.high ? ["ok", t.safe]
-        : gap <= 3 ? ["warn", t.stretch(gap)] : ["off", t.outOf(gap)];
+      const gap = ((lo - l.goal) / lo * 100).toFixed(1);
+      const [cls, txt] = l.goal >= lo && l.goal <= hi ? ["ok", t.inRange] : l.goal > hi ? ["ok", t.safe]
+        : gap <= 3 ? ["warn", pj ? t.projStretch(gap) : t.stretch(gap)] : ["off", pj ? t.projOut(gap) : t.outOf(gap)];
       const d = el("div", { class: "sub" }); d.append(`${t.goal(fmtT(l.goal))} · `, el("span", { class: `gap ${cls}` }, txt)); p.append(d);
     }
     if (g.length > 1) {
       const svg = svgEl("svg", { role: "img", "aria-label": t.trendCap });
       p.append(svg, el("div", { class: "cap" }, t.trendCap));
-      miniChart(svg, g.map(r => ({ x: new Date(r.date + "T12:00:00"), y: r.mid, lo: r.low, hi: r.high })),
+      miniChart(svg, g.map(r => r.proj_mid != null ? { x: new Date(r.date + "T12:00:00"), y: r.proj_mid, lo: r.proj_low, hi: r.proj_high }
+        : { x: new Date(r.date + "T12:00:00"), y: r.mid, lo: r.low, hi: r.high }),
         { line: true, invert: true, ref: l.goal || null, padL: 56, fmt: v => fmtT(v) });
     }
     box.append(p);

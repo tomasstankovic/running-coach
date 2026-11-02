@@ -94,10 +94,14 @@ Keep one visible view of it.
 
 5. Keep it alive (each of these is optional; the page hides a section without data):
    - **This week**: when a week is planned in detail, `update` its `weeks/<monday>` document with
-     `days`: `[{"date", "title", "km" or "minutes", "done": false}, ...]`. Mark `done: true` in
-     the review or the morning check-in.
+     `days`: `[{"date", "title", "km" or "minutes", "done": false}, ...]`. Strength sessions get
+     `"kind": "strength"`; a day with no entry shows as a rest day (or add `"rest": true` with a
+     title such as "Voľno, prechádzka"). The page always shows Monday to Sunday with the week's
+     total. Mark `done: true` in the review or the morning check-in.
    - **Readiness**: `readiness.py metrics.json --trend 56` → rows for the `trends` collection
-     (one per day: HRV 7-day mean, the normal band, verdict, resting HR, sleep).
+     (one per day: HRV 7-day mean, the normal band, verdict with its reason codes, resting HR,
+     sleep). The page shows today's verdict, what to do and why, where the HRV sits in the band,
+     and the trend from 5 days on.
    - **Aerobic fitness**: `analyze_session.py <data_file> --json --title "..."` for long and
      steady runs → rows for the `sessions` collection (EF, decoupling, km, date).
    - **Predictions**: `forecast.py input.json --json` → rows for the `predictions` collection

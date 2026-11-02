@@ -214,6 +214,12 @@ class Readiness(TempDir):
         self.assertRegex(brief, r"^2026-10-26 GREEN: .*HRV 7d")
         trend = json.loads(run("readiness.py", path, "--trend", 14).stdout)
         self.assertTrue(trend and {"date", "verdict", "hrv7", "band_lo", "band_hi"} <= set(trend[-1]))
+        self.assertEqual((trend[-1]["reasons"], trend[-1]["hrv_state"]), ([], "inside"))
+
+    def test_trend_rows_carry_reason_codes(self):
+        trend = json.loads(run("readiness.py", self.write("m.json", self.series(drop_from=50)), "--trend", 3).stdout)
+        self.assertEqual(trend[-1]["hrv_state"], "below")
+        self.assertIn("hrv_low_4d", trend[-1]["reasons"])
 
     def test_short_history_is_not_judged(self):
         out = run("readiness.py", self.write("m.json", self.series()[:15])).stdout
@@ -374,8 +380,8 @@ class Forecast(TempDir):
         base.update(extra)
         return base
 
-    def plan(self, km):
-        weeks = [{"week_start": (date(2026, 11, 2) + timedelta(weeks=i)).isoformat(), "km": km} for i in range(26)]
+    def plan(self, km, tss=None):
+        weeks = [{"week_start": (date(2026, 11, 2) + timedelta(weeks=i)).isoformat(), "km": km, "tss": tss} for i in range(26)]
         races = [{"name": "Spring M", "date": "2027-04-25", "distance_km": 42.195, "priority": "A", "goal": "3:15:00"}]
         return str(self.write("plan.json", {"spec": {"races": races}, "weeks": weeks}))
 
@@ -428,6 +434,34 @@ class Forecast(TempDir):
         self.assertIn("5 km", out)
         self.assertIn("Marathon", out)
         self.assertIn("not enough data", out)   # no marathon from a 5 km workout effort
+
+    def history(self):
+        return [{"date": "2025-04-06", "km": 21.0975, "time": "1:36:00", "weekly_km": 55, "ctl": 50},
+                {"date": "2025-05-04", "km": 42.195, "time": "3:28:00", "weekly_km": 58, "ctl": 52},
+                {"date": "2024-10-13", "km": 10, "time": "44:30", "weekly_km": 40, "ctl": 36}]
+
+    def test_projection_needs_ctl_and_planned_tss(self):
+        key = "2026-11-01_2027-04-25_42.195"
+        self.assertNotIn("proj_mid", self.rows(self.inp(plan=self.plan(60, 300), history=self.history()))[key])
+        self.assertNotIn("proj_mid", self.rows(self.inp(plan=self.plan(60), history=self.history(), ctl=35))[key])
+
+    def test_projection_follows_the_planned_load(self):
+        key = "2026-11-01_2027-04-25_42.195"
+        light = self.rows(self.inp(plan=self.plan(45, 230), history=self.history(), ctl=35, weekly_tss=210))[key]
+        heavy = self.rows(self.inp(plan=self.plan(65, 330), history=self.history(), ctl=35, weekly_tss=210))[key]
+        self.assertLessEqual(heavy["proj_low"], heavy["proj_mid"])
+        self.assertLessEqual(heavy["proj_mid"], heavy["proj_high"])
+        self.assertLess(heavy["proj_mid"], light["proj_mid"])
+        out = run("forecast.py", self.write("f.json", self.inp(plan=self.plan(65, 330), history=self.history(), ctl=35))).stdout
+        self.assertIn("if the plan happens", out)
+        self.assertIn("marathon/half ratio", out)
+
+    def test_projection_rescales_the_plans_tss(self):
+        # plan estimates 3.5 TSS/km, the runner does 7: the projection must say it rescaled
+        data = self.inp(plan=self.plan(60, 210), history=self.history(), ctl=35, weekly_tss=280)
+        out = run("forecast.py", self.write("f.json", data)).stdout
+        self.assertIn("plan TSS x 1.40", out)
+        self.assertIn("-> 42 on race day", out)   # 210 TSS a week x 1.4 / 7 days, not 30
 
 
 class PageDocs(TempDir):

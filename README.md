@@ -50,8 +50,10 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   weekly volume.
 - **Knows what you could run.** Current form over 5 km, 10 km, half and marathon, and a forecast
   for each of your races, from your recent races, threshold, weekly volume, your plan and your own
-  past results, adjusted for course and heat. Ranges, not wishful single numbers; the plan page
-  shows how each forecast moves week by week, and it tells you when a goal drifts out of reach.
+  past results, adjusted for course and heat. Ranges, not wishful single numbers. With
+  TrainingPeaks it also projects race day "if the plan happens", from your own results against
+  your CTL. The plan page shows how each forecast moves week by week, and it tells you when a goal
+  drifts out of reach.
 - **Computed, not guessed.** Paces, heart-rate zones, race predictions and splits come from
   scripts, so they're the same every week.
 - **Checked before you see it.** A load checker flags volume jumps above ~10 %, back-to-back hard

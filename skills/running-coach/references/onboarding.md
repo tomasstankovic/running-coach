@@ -93,7 +93,9 @@ So study **12–24 months** before judging the present.
    ```
    It prints a monthly table (load, CTL, days off), peak fitness and where the runner is now
    relative to it, build blocks with their ramp rate, breaks of 7+ days, likely races (big
-   efforts after a taper) and best efforts.
+   efforts after a taper) and best efforts. Note the CTL on each race day (from the same fitness
+   file): `forecast.py` uses it for its "if the plan happens" projection. Keep these races with
+   their date, time, weekly km and CTL in the profile's history.
 4. Drill into what matters, without reading everything: for the best race and the peak block
    before it, `tp_get_weekly_summary` for 3–4 representative weeks (peak week, a typical build
    week, race week). That shows what training produced their best result: volume, long runs,
