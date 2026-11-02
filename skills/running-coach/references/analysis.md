@@ -80,6 +80,18 @@ End every analysis with what changes next time, in the runner's language:
 - long run decoupling > 10 % → keep the long run, slow it down, check fuel and heat
 - EF rising over weeks → say so; it's motivating and it's real progress
 
+## Durability on long runs
+
+For runs of 90+ min `analyze_session.py` also reports **durability**: how much efficiency (graded
+pace per heartbeat) is lost in the last quarter compared with the early part after the warm-up.
+Under ~3 % the runner holds pace well when tired; 3–6 % a moderate fade; over 6 % a large fade,
+often what decides the last 10 km of a marathon [S23]. Fuelling, heat and hills affect it too, so
+compare like with like (the same course, similar weather, with or without gels). Track it over the
+season (`durability` in the `sessions` rows on the page): it should fall as the long runs and the
+marathon-pace work build. A runner whose marathon falls apart after 30 km with good half-marathon
+form usually needs this more than more speed: longer long runs, marathon pace late in long runs,
+and fuelling practice.
+
 ## Race predictions
 
 **`scripts/forecast.py`** answers "what could I run now?" over 5 km, 10 km, half and marathon, and

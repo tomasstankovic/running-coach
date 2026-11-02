@@ -124,6 +124,13 @@ footer { font-size: .8rem; color: var(--muted); }
 .zhead b { font-family: var(--display); font-size: 1.35rem; font-weight: 600; }
 .zhist { list-style: none; margin: 0; padding: 0; font-size: .85rem; color: var(--muted); display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
 @media (max-width: 560px) { .zt .u, .zt .pc { display: none; } }
+.blk { display: grid; gap: 8px; }
+.blk .bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.blk .bar i { display: block; height: 100%; background: var(--build); }
+.blk ul { margin: 0; padding-left: 18px; font-size: .9rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: .85rem; }
+.health { font-size: .9rem; display: grid; gap: 2px; }
+.health .lv { font-weight: 600; }
 .ready { display: grid; gap: 10px; }
 .rhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 1.5rem; font-weight: 600; line-height: 1; }
@@ -208,6 +215,7 @@ table.form td, table.form th { padding: 6px 8px; }
             <div class="rhead"><span class="chip" id="readyChip"></span><span class="muted" id="readyDate"></span></div>
             <div class="advice" id="readyAdvice"></div>
             <ul class="why" id="readyWhy"></ul>
+            <div class="health" id="readyHealth"></div>
             <svg id="readyBar" role="img"></svg>
             <div class="facts" id="readyFacts"></div>
             <svg id="readyChart" role="img" aria-label="7-day HRV against the normal band"></svg>
@@ -216,9 +224,16 @@ table.form td, table.form th { padding: 6px 8px; }
         <section id="efSection" hidden>
           <h2 id="hEf">Aerobic fitness</h2>
           <div class="panel"><svg id="efChart" role="img" aria-label="Efficiency factor of steady runs"></svg>
-            <div class="cap" id="efCap"></div></div>
+            <div class="cap" id="efCap"></div>
+            <svg id="durChart" role="img" aria-label="Durability of long runs" style="margin-top:10px"></svg>
+            <div class="cap" id="durCap"></div></div>
         </section>
       </div>
+
+      <section id="blockSection" hidden>
+        <h2 id="hBlocks">Blocks</h2>
+        <div class="two" id="blocks"></div>
+      </section>
 
       <section>
         <h2 id="hWeeks">Weeks</h2>
@@ -272,7 +287,11 @@ const T = {
     zones: "Training zones", zCols: ["Zone", "Pace /km", "% threshold", "HR", "Use"], thr: "Threshold", method: "method",
     zFrom: (s, d) => `${s}, ${d}`, zEasy: (c, s) => `Easy running: HR up to ${c}${s ? ` (${s})` : ""}.`,
     zPower: w => `Running power · rFTP ${w} W`, zHrT: "Heart rate",
-    zHist: "Threshold over time", zCap: "Your own zones (TrainingPeaks, your watch). Checked every month and after races or tests; changes only with your yes, then in TrainingPeaks and on the watch too.",
+    zHist: "Threshold over time",
+    blocks: "Block reports", blkVol: (a, p, pct) => `${a} of ${p} km` + (pct != null ? ` (${pct} %)` : ""),
+    vd2: { on: "on target", over: "better", under: "under", missed: "missed" },
+    durCap: d => `Durability: efficiency lost in the last quarter of runs over 90 min (lower = holds better)` + (d != null ? ` · last ${d} %` : ""),
+    health: { pain: "Pain", illness: "Illness", stop: "stop, get it checked", reduce: "no quality, shorter", easy: "easy is OK" }, zCap: "Your own zones (TrainingPeaks, your watch). Checked every month and after races or tests; changes only with your yes, then in TrainingPeaks and on the watch too.",
     pred: "Race predictions", form: "Current form", likely: "likely", range: "range",
     formCols: ["Distance", "Likely", "Range", "Pace"], half: "Half marathon", marathon: "Marathon",
     goal: g => `goal ${g}`, inRange: "inside the range", stretch: p => `${p} % faster than the fast end: a stretch`,
@@ -313,7 +332,11 @@ const T = {
     zones: "Tréningové zóny", zCols: ["Zóna", "Tempo /km", "% prahu", "Tep", "Na čo"], thr: "Prah", method: "metodika",
     zFrom: (s, d) => `${s}, ${d}`, zEasy: (c, s) => `Ľahký beh: tep do ${c}${s ? ` (${s})` : ""}.`,
     zPower: w => `Bežecký výkon · rFTP ${w} W`, zHrT: "Tep",
-    zHist: "Vývoj prahu", zCap: "Tvoje vlastné zóny (TrainingPeaks, hodinky). Kontrolujú sa raz za mesiac a po pretekoch či teste; menia sa len s tvojím súhlasom, potom aj v TrainingPeaks a v hodinkách.",
+    zHist: "Vývoj prahu",
+    blocks: "Prehľad blokov", blkVol: (a, p, pct) => `${a} z ${p} km` + (pct != null ? ` (${pct} %)` : ""),
+    vd2: { on: "v cieli", over: "lepšie", under: "pod cieľom", missed: "vynechané" },
+    durCap: d => `Výdrž: pokles efektivity v poslednej štvrtine behov nad 90 min (nižšie = lepšie)` + (d != null ? ` · posledný ${d} %` : ""),
+    health: { pain: "Bolesť", illness: "Choroba", stop: "prestaň, daj si to skontrolovať", reduce: "bez kvality, kratšie", easy: "ľahko je OK" }, zCap: "Tvoje vlastné zóny (TrainingPeaks, hodinky). Kontrolujú sa raz za mesiac a po pretekoch či teste; menia sa len s tvojím súhlasom, potom aj v TrainingPeaks a v hodinkách.",
     pred: "Predikcie", form: "Aktuálna forma", likely: "najpravdepodobnejšie", range: "rozpätie",
     formCols: ["Trať", "Odhad", "Rozpätie", "Tempo"], half: "Polmaratón", marathon: "Maratón",
     goal: g => `cieľ ${g}`, inRange: "v rozpätí", stretch: p => `o ${p} % rýchlejší než rýchly koniec: náročný cieľ`,
@@ -324,7 +347,7 @@ const T = {
     trendCap: "Odhad času v priebehu týždňov (vyššie = rýchlejšie), pás = rozpätie, čiarkovane = cieľ" },
 };
 const PHASES = ["base", "build", "specific", "taper", "race", "recovery"];
-const state = { meta: null, weeks: null, changes: [], trends: [], sessions: [], predictions: [], zones: [] };
+const state = { meta: null, weeks: null, changes: [], trends: [], sessions: [], predictions: [], zones: [], blocks: [], health: [] };
 const $ = id => document.getElementById(id);
 const el = (tag, attrs = {}, text) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
 const svgEl = (tag, attrs = {}, text) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; return e; };
@@ -384,6 +407,7 @@ function render() {
   renderWeek(cur, t);
   renderKeySessions(weeks, t);
   renderZones(t);
+  renderBlocks(t);
   renderTrends(t);
   renderPredictions(t);
 
@@ -542,6 +566,12 @@ function renderTrends(t) {
     const l = se[se.length - 1];
     $("efCap").textContent = t.efCap(se.length, l.decoupling != null ? l.decoupling.toFixed(1) : null);
   }
+  const du = state.sessions.filter(r => r.durability != null).sort((a, b) => a.date < b.date ? -1 : 1).slice(-20);
+  $("durChart").style.display = du.length >= 2 ? "" : "none";
+  if (du.length >= 2) miniChart($("durChart"), du.map(r => ({ x: new Date(r.date + "T12:00:00"), y: r.durability,
+      color: r.durability < 3 ? "var(--good)" : r.durability < 6 ? "var(--warn)" : "var(--race)",
+      tip: `${fmtDate(r.date)} · ${r.title || ""} ${fmtN(r.durability, 1)} %` })), { line: true, dot: 3.5, fmt: v => `${fmtN(v, 1)} %` });
+  $("durCap").textContent = du.length ? t.durCap(fmtN(du[du.length - 1].durability, 1)) : "";
 }
 
 function renderZones(t) {
@@ -603,6 +633,25 @@ function renderZones(t) {
   $("zCap").textContent = t.zCap;
 }
 
+function renderBlocks(t) {
+  const bl = (state.blocks || []).slice().sort((a, b) => a.from < b.from ? 1 : -1);
+  $("blockSection").hidden = !bl.length;
+  if (!bl.length) return;
+  $("hBlocks").textContent = t.blocks;
+  $("blocks").replaceChildren(...bl.map(b => {
+    const p = el("div", { class: "panel blk" });
+    const phases = (b.phase || "").split("+").map(x => t.phase[x] || x).join(" + ");
+    p.append(el("div", { class: "eyebrow" }, `${phases} · ${fmtDate(b.from)} – ${fmtDate(b.to)}`),
+      el("div", {}, t.blkVol(b.actual_km, b.planned_km, b.pct)));
+    const bar = el("div", { class: "bar" }), fill = el("i"); fill.style.width = `${Math.min(100, b.pct || 0)}%`; bar.append(fill); p.append(bar);
+    const chips = el("div", { class: "chips" });
+    Object.entries(b.verdicts || {}).forEach(([k, n]) => chips.append(el("span", { class: `vd ${k}` }, `${n}× ${t.vd2[k] || k}`)));
+    p.append(chips);
+    if ((b.takeaways || []).length) { const ul = el("ul"); b.takeaways.forEach(x => ul.append(el("li", {}, x))); p.append(ul); }
+    return p;
+  }));
+}
+
 let ksView = (() => { try { return localStorage.getItem("ksView") || "next"; } catch (e) { return "next"; } })();
 function renderKeySessions(weeks, t) {
   // The roadmap: next sessions and the milestones by default, grouped by phase; done ones show
@@ -661,6 +710,17 @@ function renderReadiness(tr, t, col) {
   dot.style.background = col(v); chip.replaceChildren(dot, t.verdict[v]);
   $("readyDate").textContent = fmtDate(l.date, { weekday: "long", day: "numeric", month: "numeric" });
   $("readyAdvice").textContent = t.advice[v];
+  // active pain and illness from the diary (TrainingPeaks notes), last report per body part / episode
+  const recent = state.health.filter(h => h.date >= addDays(localISO(), -30)).sort((a, b) => a.date < b.date ? -1 : 1);
+  const lastOf = {};
+  recent.forEach(h => { lastOf[h.type === "pain" ? `p:${(h.part || "").toLowerCase()}` : "illness"] = h; });
+  const active = Object.values(lastOf).filter(h => h.status !== "resolved");
+  $("readyHealth").replaceChildren(...active.map(h => {
+    const d = el("div"), lv = h.type === "pain" ? (h.score >= 6 ? "stop" : h.score > 3 ? "reduce" : "easy") : (h.fever ? "stop" : "easy");
+    d.append(el("span", { class: "lv" }, `${t.health[h.type] || h.type}: ${h.type === "pain" ? `${h.part} ${h.score}/10` : h.symptoms || ""}`),
+      ` · ${t.health[lv]} (${fmtDate(h.date)})`);
+    return d;
+  }));
   const reasons = l.reasons || (l.band_lo != null && l.hrv7 < l.band_lo ? ["hrv_low"] : []);
   $("readyWhy").replaceChildren(...(reasons.length ? reasons.map(r => el("li", {}, t.reasons[r] || r)) : [el("li", {}, t.allNormal)]));
 
@@ -759,6 +819,8 @@ async function start() {
   db.collection("sessions").onSnapshot(s => { state.sessions = s.docs.map(d => d.data()); render(); }, () => {});
   db.collection("predictions").onSnapshot(s => { state.predictions = s.docs.map(d => d.data()); render(); }, () => {});
   db.collection("zones").onSnapshot(s => { state.zones = s.docs.map(d => d.data()); render(); }, () => {});
+  db.collection("blocks").onSnapshot(s => { state.blocks = s.docs.map(d => d.data()); render(); }, () => {});
+  db.collection("health").onSnapshot(s => { state.health = s.docs.map(d => d.data()); render(); }, () => {});
 }
 start();
 </script>

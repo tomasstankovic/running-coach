@@ -174,6 +174,25 @@ with gels as in the race. Verdict: HR in the second half at most ~92 % of LTHR a
 the goal pace is realistic. HR climbing past that or a fade in the last 5 km → race the first
 half slower, and say so in the race plan.
 
+## Fuelling practice (gut training)
+
+The gut adapts to carbohydrate during running like the legs adapt to load: what's tolerated at
+race pace goes up with practice [S37]. For a marathon (and halves over ~90 min), practise on the
+long runs of the build and specific phases:
+
+1. **Step up**: 30 g/h on the first long runs → 45 → 60 → 75 → 90 g/h, one step only when the
+   last one went without stomach trouble (bloating, cramps, nausea, urgency). Glucose:fructose
+   products for anything over 60 g/h.
+2. **Use the race products** and the race's drink at least on the last 3–4 long runs, and on the
+   marathon-pace long runs at race pace.
+3. **Record each one**: after the long run ask for grams per hour, products, and GI comfort 0–10
+   (0 = no trouble), and add a comment to that workout in TP: `tp_add_workout_comment` with
+   "Výživa: 60 g/h (2 gély + iónový nápoj), žalúdok 1/10" (after the runner agreed, like the health
+   diary). The highest rate tolerated well goes into the profile (`Gut: 60 g/h, 2027-03-21`) and
+   into `race_plan.py` (`gut_trained_gph`).
+4. **Key sessions**: the roadmap's marathon-pace long runs are the dress rehearsals for fuelling
+   too: say so in their description.
+
 ## Race week
 
 | Session | Structure |

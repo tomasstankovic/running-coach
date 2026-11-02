@@ -25,10 +25,10 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 | **Season** | "plan my season up to the marathon", "show me the plan", "I have a work deadline for two weeks", "show me the key sessions", "what are the big workouts" | `references/season.md` (§2b key-session roadmap) |
 | **Review** | "how did my week go?" | this file; with a season plan also `season.md` §5–6 |
 | **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
-| **Check-in** | "should I run today?", "slept badly" | `references/checkin-and-race.md` |
+| **Check-in** | "should I run today?", "slept badly", "my calf hurts", "I have a cold" (pain and illness go to the TP diary) | `references/checkin-and-race.md` |
 | **Analyse** | "how was my long run?", "look at Wednesday's intervals" | `references/analysis.md` |
 | **Predict** | "what could I run a 10k in now?", "is 3:20 realistic for my spring marathon?" | `references/analysis.md` "Race predictions" |
-| **Race** | "race plan / pacing / what to eat" | `references/checkin-and-race.md` |
+| **Race** | "race plan / pacing / what to eat", "plán na Prahu" (course, weather, splits, fuelling) | `references/checkin-and-race.md` |
 | **Strength** | "add strength", or the profile says they want it; discuss whether and what setting first | `references/strength.md` |
 
 Review usually flows into Week. A first conversation goes through Onboarding before any plan.
@@ -99,6 +99,10 @@ python scripts/zones.py show --tp-settings zones.json --lang sk   # Tréningové
 python scripts/zones.py suggest evidence.json --lang sk           # should the zones change?
 python scripts/zones.py lt1 runs.json --lthr 174                  # personal easy cap from decoupling
 python scripts/zones.py show --method daniels --race 10=43:05     # another method, to compare
+python scripts/race_plan.py race.json --lang sk                   # race plan: target, weather, splits, fuel
+python scripts/weather.py --lat 50.08 --lon 14.42 --date 2027-04-03 --start 10:00 --hours 1.5
+python scripts/health_log.py read notes.json --lang sk            # pain and illness diary (TP notes)
+python scripts/block_report.py plan.json --phase base --lang sk   # what a block brought
 ```
 
 - **Training zones** ("Tréningové zóny" in Slovak) is the name the runner sees, in chat and on

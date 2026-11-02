@@ -175,6 +175,12 @@ Keep one visible view of it.
      export puts them on the page. The page shows the next sessions with the milestones by
      default (also "milestones" and "all"), grouped by phase, with target pace, HR cap, the
      result and its verdict, and an "adjusted" mark that leads to the change log.
+   - **Durability**: the `sessions` rows of runs over 90 min carry `durability` (efficiency lost in
+     the last quarter, `analysis.md` "Durability on long runs"); the page charts it.
+   - **Pain and illness**: `health_log.py read notes.json --json` → its `rows` to the `health`
+     collection (`--id id`); the readiness panel shows what's active.
+   - **Block reports**: at the end of each phase, `block_report.py plan.json --phase <phase> ...
+     --json` → the `blocks` collection (`--id id`), and its takeaways go into the next block.
    - **Training zones**: `zones.py show ... --lang sk --json` → the `current` document and a history
      entry for the `zones` collection (`page_docs.py ... --collection zones --id id`). The page
      shows the table (pace, % of threshold, HR, use), power if set, and how the threshold moved.
@@ -238,6 +244,10 @@ Review mode (`SKILL.md`) is the weekly checkpoint. With the plan it also:
    "Keeping the zones current"); a proposed change waits for the runner's yes.
 3. Applies section 5 if something changed, then plans next week in detail (Week mode) from the
    next row.
+4. Reads the pain and illness diary (`health_log.py read`), and in the last week of a phase writes
+   the block report (`block_report.py --phase ...` with the page's rows: sessions, predictions,
+   zones, trends, health): what the block brought and what the next one changes. Show it to the
+   runner in the review and add it to the page.
 
 **Scheduled review.** If the `create_scheduled_task` tool is available (Claude desktop app), offer
 once to schedule the review, e.g. Sunday 19:00 (`cronExpression` `0 19 * * 0`). The prompt must be

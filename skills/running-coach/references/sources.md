@@ -91,6 +91,8 @@ Citations were checked against PubMed, the journal or the full text in October 2
 | S48 | 80/20 zones (1, 2, X, 3, Y, 4, 5) | practice | Fitzgerald M. *80/20 Running*. Penguin, 2014 · 80/20 Endurance zone calculators in TrainingPeaks: help.trainingpeaks.com/hc/en-us/articles/360017420092 |
 | S49 | Friel's LTHR-based zones | practice | Friel J. Joe Friel's quick guide to setting zones. TrainingPeaks: trainingpeaks.com/learn/articles/joe-friel-s-quick-guide-to-setting-zones/ · *The Triathlete's Training Bible* |
 | S50 | Aerobic threshold from heart-rate drift (< 5 % in ~60 min) | practice | Uphill Athlete. Heart rate drift test: uphillathlete.com/heart-rate-drift/ |
+| S51 | Grade-adjusted pace from running data; downhill at most ~12 % faster | practice (large data set) | Robb D. An improved GAP model. Strava Engineering, 2017: medium.com/strava-engineering/an-improved-gap-model-8b07ae8886c3 |
+| S53 | Pain-monitoring model: running with pain up to a limit that settles by the next morning | moderate (RCT, tendinopathy) | Silbernagel KG, Thomeé R, Eriksson BI, Karlsson J. Continued sports activity, using a pain-monitoring model, during rehabilitation in patients with Achilles tendinopathy. *Am J Sports Med* 2007;35(6):897–906. doi:10.1177/0363546506298279 (not checked) |
 
 ## Conventions without a single source
 

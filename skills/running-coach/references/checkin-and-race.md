@@ -15,7 +15,9 @@ runner reporting how they feel before a session.
    (`methodology.md` §7) and prints green / amber / red with the reasons. Without metrics, skip
    this and rely on how they feel.
 3. **Subjective**: ask at most three quick things if not already said: sleep, legs (fresh /
-   normal / heavy / sore), mood and stress, any pain or illness symptoms.
+   normal / heavy / sore), mood and stress, any pain or illness symptoms. With TP, also read the
+   diary: `tp_list_notes` for the last 30 days → `scripts/health_log.py read` (active pain or
+   illness and what it means, "Pain and illness diary" below).
 4. **Decide** (subjective beats objective when they disagree strongly, e.g. green numbers but
    feverish):
 
@@ -41,30 +43,79 @@ than elites, who lose ~1–3 %) [S39]. Above ~28 °C (or WBGT ~25 °C) move key 
 cool of the day or shorten them. Dizziness, nausea, headache, chills or goose bumps in the heat:
 stop, cool down, drink. Confusion or collapse: an emergency, cool first and call for help [S40].
 
-### Morning brief (scheduled)
+### Morning brief (scheduled, to the phone)
 
-The check-in can run by itself every morning, so the runner wakes up to a three-line answer. If
-the `create_scheduled_task` tool is available (Claude desktop app), offer it once after the
-first check-in, e.g. daily at 06:30 (`cronExpression` `30 6 * * *`). Self-contained prompt, filled
-in, in the runner's language:
+The check-in can run by itself every morning, so the runner wakes up to one line on the phone and
+the full answer in the app. If the `create_scheduled_task` tool is available (Claude desktop app),
+offer it once after the first check-in, e.g. daily at 06:30 (`cronExpression` `30 6 * * *`); set
+it up only after a yes. Self-contained prompt, filled in, in the runner's language:
 
-> Use the running-coach skill for <name>'s morning check-in. Data: TrainingPeaks (trainingpeaks
-> MCP). Load `tp_get_metrics` for the last 56 days and today's planned workout
-> (`tp_get_workouts` for today). Run `scripts/readiness.py --brief` on the metrics. Answer in
-> 3–5 lines: the verdict, what to do today exactly (keep, trim or swap the session, with paces and
-> HR cap), and what moves if something changes. If a plan page URL is in the profile, add today's
-> readiness row to its `trends` collection. Never change the TrainingPeaks calendar: if the
-> session should change, say so and wait for the runner's yes.
+> Use the running-coach skill for <name>'s morning brief. Data: TrainingPeaks (trainingpeaks
+> MCP). Load `tp_get_metrics` for the last 56 days, today's planned workout (`tp_get_workouts`
+> for today) and the notes of the last 30 days (`tp_list_notes`). Run `scripts/readiness.py
+> --brief` on the metrics and `scripts/health_log.py read` on the notes. Weather for <town>
+> (lat <lat>, lon <lon>) at <usual run time>: `scripts/weather.py`. Write the check-in in 3–5
+> lines: the verdict, what to do today exactly (keep, trim or swap the session, with paces and
+> HR cap; heat adjustment if any), active pain or illness, and what moves if something changes.
+> Then send ONE line with PushNotification (under 180 characters), e.g. "Zelená · 6× 1 km
+> 4:10–4:15, tep do 174 · 8 °C" or "Oranžová · intervaly presuň, dnes 40 min ľahko do 145". If a
+> plan page URL is in the profile, add today's readiness row to its `trends` collection. Never
+> change the TrainingPeaks calendar: if the session should change, say so and wait for the
+> runner's yes.
 
-Tell the runner it runs only while the app is open (otherwise at the next launch). Without
-scheduled tasks, the runner just asks "mám dnes behať?".
+Tell the runner: it runs only while the app is open (otherwise at the next launch), and the line
+reaches the phone when Remote Control is connected (otherwise it's a desktop notification). Use
+the coordinates of their town, never a home address. Without scheduled tasks, the runner just
+asks "mám dnes behať?".
+
+### Pain and illness diary (TrainingPeaks notes)
+
+TrainingPeaks is the one place for pain and illness: a calendar note per report, on the day it
+happened, so the runner, a physio or a coach sees it next to the training, and every chat and
+review reads the same history. (TP's own "Injury" metric has no documented scale, so the notes
+carry the score.)
+
+- **Ask once** whether reports may go to TP straight away; record the answer in the profile
+  (`Health log: TP notes, write on report` or `ask each time`). Without that agreement, ask
+  before each note.
+- **Writing**: `scripts/health_log.py note --type pain --part "lýtko vľavo" --score 3 --when
+  during --lang sk` (or `--type illness --symptoms "..." [--fever] [--chest]`) prints the title
+  and description; pass them to `tp_create_note` with the date it happened. Follow-ups use
+  `--status same|better|worse|resolved`. Ask for the score 0–10, where it is, when it hurts
+  (during, after, the next morning, at rest), and whether it changes the stride.
+- **Reading**: `tp_list_notes` (last 30–60 days) → `health_log.py read --lang sk`: active issues,
+  trends per body part and the rule for each [S8, S53]:
+
+| | Training |
+|---|---|
+| pain up to 3/10 that settles by the next morning | easy running is fine, watch it |
+| pain 4–5/10 | no quality, shorter runs, watch it |
+| 6+/10, a changed stride, pain at rest or at night, or worse three reports in a row | stop, get it checked |
+| same place for more than 14 days | get it checked |
+| illness: nose and throat only | easy running if they feel OK |
+| fever, chest or whole-body symptoms | no running until gone, then a 10–20 min test run and as many easy days as days missed |
+
+  Check-ins, reviews and the block report read it; the page shows active issues (`health`
+  collection from `--json`).
 
 ## Race day
 
 Triggered by "race plan", "pacing for Sunday", "what should I eat before the race", or the
 race-week part of a block.
 
-Produce one compact race plan (in the runner's language):
+Produce one compact race plan (in the runner's language). `scripts/race_plan.py` puts it
+together: the forecast range moved for the weather (the real forecast up to 16 days out, the
+typical weather of that date before that, `weather.py`), the goal checked against it, splits by
+the course profile (a GPX of the course: from the race website, or a route the runner exported),
+and the fuelling plan, capped at what the runner's gut tolerated in training ("Fuelling practice"
+in `workouts.md`):
+
+```bash
+python scripts/race_plan.py race.json --lang sk      # format in the script's docstring
+```
+
+Re-run it in race week with the real forecast and the latest `forecast.py` range. The steps below
+are what it does and what to add by hand:
 
 1. **Goal & realistic range**: start from `forecast.py` (`analysis.md` "Race predictions"): its
    race-day range already holds recent results, threshold, volume, course and heat. Then check it

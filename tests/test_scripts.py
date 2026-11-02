@@ -259,6 +259,20 @@ def session(*steps):
     return {"totals": {"Duration": t}, "lapData": laps, "data": []}
 
 
+class Durability(unittest.TestCase):
+    def series(self, fade):
+        # 2 h steady at 5:00/km NGP, HR 140 -> 140 + fade over the run
+        return [{"time": t, "HeartRate": 140 + fade * t / 7200, "NGP": 5.0} for t in range(0, 7201, 10)]
+
+    def test_late_fade_is_measured(self):
+        import analyze_session
+        flat = analyze_session.durability(self.series(0))
+        fading = analyze_session.durability(self.series(12))
+        self.assertAlmostEqual(flat[0], 0, places=1)
+        self.assertGreater(fading[0], 4)
+        self.assertIsNone(analyze_session.durability(self.series(0)[:400]))   # under 90 min
+
+
 class AnalyzeSession(TempDir):
     def laps(self):
         laps, t = [], 0
@@ -731,6 +745,112 @@ class Zones(TempDir):
         self.assertTrue(any("probably faster" in n for n in hint["notes"]))
         old = self.suggest()
         self.assertTrue(any("retest" in n for n in old["notes"]))
+
+
+class RacePlan(TempDir):
+    """race_plan.py and weather.py on a fictional half marathon (no network: weather given)."""
+
+    def gpx(self):
+        pts = []
+        for i in range(0, 2111):
+            km = i / 100
+            ele = 200 + (25 * min(1, max(0, km - 6)) if km < 14 else 25 * max(0, 1 - (km - 14)))
+            pts.append(f'<trkpt lat="{48.15 + km / 111.0:.6f}" lon="17.1"><ele>{ele:.1f}</ele></trkpt>')
+        path = self.dir / "c.gpx"
+        path.write_text('<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1"><trk><trkseg>'
+                        + "".join(pts) + "</trkseg></trk></gpx>")
+        return path
+
+    def plan(self, **extra):
+        cfg = {"race": {"name": "City Half", "date": "2027-04-03", "start": "10:00", "distance_km": 21.0975},
+               "forecast": {"low": 5330, "mid": 5420, "high": 5540}, "goal": "1:29:30", "course_gpx": str(self.gpx()),
+               "aid_km": [5, 10, 15, 20], "weight_kg": 70, "gut_trained_gph": 60, "weather": {"temp_c": 10, "dew_c": 4,
+                                                                                                "source": "forecast"}}
+        cfg.update(extra)
+        return json.loads(run("race_plan.py", self.write("r.json", cfg), "--json", "--no-weather").stdout)
+
+    def test_splits_follow_the_course_and_add_up(self):
+        out = self.plan()
+        self.assertEqual(out["target"], "1:29:30")
+        self.assertEqual(out["splits"][-1]["cum"], "1:29:30")
+        by_km = {s["km"]: s for s in out["splits"]}
+        self.assertGreater(by_km[7]["grade"], 2)             # the climb
+        self.assertGreater(paces.parse_pace(by_km[7]["pace"]), paces.parse_pace(by_km[3]["pace"]))
+        self.assertLess(paces.parse_pace(by_km[15]["pace"]), paces.parse_pace(by_km[3]["pace"]))
+        self.assertEqual(out["climb_m"], 25)
+
+    def test_heat_moves_the_range_and_a_fast_goal_is_capped(self):
+        warm = self.plan(weather={"temp_c": 25, "dew_c": 17, "source": "forecast"}, goal="1:27:00")
+        self.assertEqual(warm["heat_pct"], [4.0, 4.0])        # humid: the upper end of 2 x (1-2 %)
+        self.assertNotEqual(warm["target"], "1:27:00")        # the fast end of the range, not the goal
+        self.assertEqual(warm["verdict"], "out")
+
+    def test_fuelling_is_capped_by_the_gut_and_matched_to_aid_stations(self):
+        m = self.plan(race={"name": "M", "date": "2027-05-02", "start": "09:00", "distance_km": 42.195},
+                      forecast={"low": 12000, "mid": 12300, "high": 12700}, goal="3:25:00", course_gpx=None,
+                      aid_km=[5, 10, 15, 20, 25, 30, 35, 40], gut_trained_gph=60)
+        self.assertEqual(m["gph"], 60)                        # 60-90 g/h for a marathon, capped at 60
+        self.assertGreaterEqual(len(m["fuel"]), 7)
+        self.assertTrue(all(f["aid_km"] is None or abs(f["aid_km"] - f["km"]) <= 1 for f in m["fuel"]))
+        self.assertEqual(m["pre"]["load"], [700, 840])         # 10-12 g/kg for 70 kg
+
+    def test_heat_rule(self):
+        import weather
+        self.assertEqual(weather.heat_pct({"temp_c": 12}), (0.0, 0.0))
+        self.assertEqual(weather.heat_pct({"temp_c": 20, "dew_c": 8}), (1.0, 2.0))
+        self.assertEqual(weather.heat_pct({"source": "climate", "temp_c": 12, "temp_p75_c": 20}), (1.0, 2.0))
+
+
+class HealthLog(TempDir):
+    def note(self, day, *args):
+        n = json.loads(run("health_log.py", "note", *args).stdout)
+        n["date"] = day
+        return n
+
+    def read(self, notes):
+        return json.loads(run("health_log.py", "read", self.write("n.json", {"notes": notes}), "--today", "2026-11-02",
+                              "--json").stdout)
+
+    def test_note_format_round_trips(self):
+        n = self.note("2026-11-01", "--type", "pain", "--part", "left calf", "--score", "3", "--when", "during")
+        self.assertEqual(n["title"], "Pain: left calf 3/10")
+        self.assertIn("rc: type=pain; part=left calf; score=3", n["description"])
+        issue = self.read([n])["issues"][0]
+        self.assertEqual((issue["level"], issue["score"]), ("easy", 3))
+
+    def test_rising_pain_means_stop_and_resolved_is_quiet(self):
+        notes = [self.note(d, "--type", "pain", "--part", "calf", "--score", str(sc), "--status", st)
+                 for d, sc, st in (("2026-10-25", 2, "new"), ("2026-10-28", 3, "worse"), ("2026-10-31", 4, "worse"))]
+        notes += [self.note("2026-10-10", "--type", "pain", "--part", "knee", "--score", "2"),
+                  self.note("2026-10-14", "--type", "pain", "--part", "knee", "--score", "0", "--status", "resolved")]
+        issues = {i.get("part"): i for i in self.read(notes)["issues"]}
+        self.assertEqual(issues["calf"]["level"], "stop")
+        self.assertFalse(issues["knee"]["active"])
+
+    def test_fever_means_no_running(self):
+        out = self.read([self.note("2026-11-01", "--type", "illness", "--symptoms", "flu", "--fever")])
+        ill = next(i for i in out["issues"] if i["type"] == "illness")
+        self.assertEqual(ill["level"], "stop")
+        self.assertTrue(any(i["type"] == "note" for i in out["issues"]))   # see a doctor if chest pain...
+
+    def test_other_notes_are_ignored(self):
+        self.assertEqual(self.read([{"date": "2026-11-01", "title": "Running coach profile", "description": "x"}])["issues"], [])
+
+
+class BlockReport(TempDir):
+    def test_block_summary(self):
+        plan = season_plan.generate(dict(KeySessions.SPEC))
+        for w in plan["weeks"][:3]:
+            w["actual_km"] = w["km"] * 0.8
+        path = self.write("plan.json", plan)
+        sessions = self.write("s.json", [{"date": "2026-11-15", "kind": "steady", "ef": 1.2, "durability": 5.5},
+                                         {"date": "2026-11-29", "kind": "steady", "ef": 1.24, "durability": 4.0}])
+        out = json.loads(run("block_report.py", path, "--from", "2026-11-09", "--to", "2026-11-23",
+                             "--sessions", sessions, "--json").stdout)
+        self.assertEqual(out["weeks"], 3)
+        self.assertEqual(out["pct"], 80)
+        self.assertTrue(any("80 %" in t for t in out["takeaways"]))
+        self.assertEqual(out["durability"], [5.5, 4.0])     # the block runs to Sunday 29 Nov
 
 
 class PageDocs(TempDir):

@@ -44,6 +44,19 @@ Most "AI training plans" are a fresh guess every time. This one works like a coa
   reserve, Daniels VDOT) to compare, and a personal easy-run cap from your own long runs' drift.
   Checked every month and after races or tests; a change is proposed with what it means for your
   paces, and written to TrainingPeaks only after your yes.
+- **Race plans for the real course and the real day.** The target from your forecast, moved for
+  the weather (the real forecast in race week, the typical weather of that date before), splits by
+  the course profile from its GPX, and the fuelling plan with gel times at the aid stations, capped
+  at what your stomach handled in training.
+- **Durability.** How much efficiency you lose in the last quarter of long runs: the thing that
+  decides the last 10 km of a marathon, tracked over the season.
+- **Pain and illness diary in TrainingPeaks.** Each report is a note in your TP calendar, so TP
+  is the one record; the coach reads it back in every check-in and review and tells you what it
+  means for training.
+- **Morning brief to your phone.** One line every morning: readiness, today's session with its
+  paces, active niggles, the weather.
+- **Block reports.** At the end of each phase: volume, key sessions, durability, threshold,
+  forecast, readiness and health, and what the next block changes.
 - **A map of the key sessions.** How threshold, tempo, VO2 and long runs progress through the
   season, designed around you (injuries, terrain, what worked for you, winter), with target paces
   computed from your threshold and goals, and 6–10 milestones (the threshold check, the longest
@@ -175,7 +188,8 @@ today?").
 | predictions | "What could I run a half marathon in now?" · "Is 3:15 realistic for my marathon?" |
 | life happens | "I've had a fever since Tuesday." · "Work is crazy for two weeks." · "I'm in the mountains until Sunday." |
 | strength | "Add two strength sessions a week, I have a kettlebell at home." |
-| race week | "Race plan for Sunday's half: pacing and what to eat." |
+| race week | "Race plan for Sunday's half: pacing and what to eat." · "Plan for Prague with this GPX." |
+| pain, illness | "My left calf hurts, 3/10 during runs." · "I've got a cold, no fever." |
 | training zones | "Show me my training zones." · "I ran a half on Sunday: should my zones change?" · "When should I retest my threshold?" |
 
 **Where it remembers you.** With TrainingPeaks, your profile (goals, availability, zones,
@@ -220,6 +234,10 @@ skills/running-coach/
     ├── analyze_session.py      one session from TrainingPeaks → reps, drift, efficiency
     ├── forecast.py             current form over 5k–marathon + race-day forecast per race
     ├── zones.py                training zones (pace, HR, power) and proposals to update them
+    ├── race_plan.py            race plan: target with weather, splits by course, fuelling
+    ├── weather.py              forecast or typical weather for a run or race (Open-Meteo)
+    ├── health_log.py           pain and illness diary as TrainingPeaks notes
+    ├── block_report.py         what a training block brought
     ├── history_summary.py      1–2 years → seasons, peaks, breaks, likely races, best efforts
     ├── season_plan.py          rough season plan, re-planning, actuals, export to the plan page
     ├── key_sessions.py         key-session roadmap: progressions, milestones, targets, verdicts

@@ -37,6 +37,8 @@ import sys
 DECOUPLING_GOOD, DECOUPLING_HIGH = 5.0, 10.0     # % (Friel / TrainingPeaks convention)
 MIN_STEADY_MIN = 60                              # decoupling means little on shorter runs
 WARMUP_SKIP_S = 600
+DURABILITY_MIN_S = 5400          # durability only for runs of 90+ min
+DURABILITY_OK, DURABILITY_HIGH = 3.0, 6.0   # % efficiency lost late in the run (practice, cf. [S23])
 REP_CV_EVEN, REP_CV_UNEVEN = 2.0, 4.0            # % pace CV across reps (practice-based)
 REP_FADE = 3.0                                   # % slower last rep vs first = fading
 REP_FASTER = 2.0                                 # % faster last rep vs first = pushed the end
@@ -200,6 +202,29 @@ def series_halves(series, start=0, stop=None, skip=WARMUP_SKIP_S):
     return (ra - rb) / ra * 100, statistics.mean(p[2] for p in a), statistics.mean(p[2] for p in b)
 
 
+def durability(series, skip=WARMUP_SKIP_S):
+    """Efficiency late in a long run vs. early: (% EF lost, early HR, late HR, early pace, late pace).
+    Early = after the warm-up to 40 % of the run; late = the last 25 %. The drop shows how well the
+    runner holds pace for the same heart rate when tired (durability [S23]); runs under 90 min: None."""
+    pts = []
+    for p in series:
+        t, hr, ngp = p.get("time"), p.get("HeartRate"), p.get("NGP")
+        if t is None or not hr or not ngp or ngp <= 0 or ngp > 15 or t < skip:
+            continue
+        pts.append((t, 1000 / (ngp * 60), hr))
+    if len(pts) < 40 or pts[-1][0] < DURABILITY_MIN_S:
+        return None
+    end = pts[-1][0]
+    early = [q for q in pts if q[0] <= skip + (end - skip) * 0.4]
+    late = [q for q in pts if q[0] >= end * 0.75]
+    if len(early) < 10 or len(late) < 10:
+        return None
+    ef = lambda xs: statistics.mean(q[1] for q in xs) / statistics.mean(q[2] for q in xs)
+    pace = lambda xs: 1000 / statistics.mean(q[1] for q in xs)
+    return ((ef(early) - ef(late)) / ef(early) * 100, statistics.mean(q[2] for q in early),
+            statistics.mean(q[2] for q in late), pace(early), pace(late))
+
+
 def describe(group):
     dist = statistics.mean(r["dist"] for r in group)
     secs = statistics.mean(r["time"] for r in group)
@@ -309,6 +334,14 @@ def analyze_steady(total, laps, series, args):
         print(f"{verdict[0]} {name} {value:.1f} % ({verdict[1]})")
     if own:
         print(f"HR first half {own[1]:.0f} -> second half {own[2]:.0f} bpm")
+    dura = durability(series) if series else None
+    if dura:
+        drop, h1, h2, p1, p2 = dura
+        verdict = "OK" if drop < DURABILITY_OK else "NOTE"
+        what = "holds well when tired" if drop < DURABILITY_OK else "moderate fade late" if drop < DURABILITY_HIGH \
+            else "large fade late: a marathon limiter"
+        print(f"{verdict} durability: efficiency {drop:+.1f} % lost in the last quarter vs. early "
+              f"({fmt_pace(p1)}/km at {h1:.0f} bpm -> {fmt_pace(p2)}/km at {h2:.0f} bpm; {what})")
     if (own or tp_dec) and gain / max(dist, 1) >= 10:
         print("note: hilly route; NGP corrects pace for gradient, but descents and heat still distort drift")
     if args.easy_cap and series:
@@ -336,7 +369,9 @@ def summary_row(path, args):
     else:
         own = series_halves(series) if series else None
         ngp, hr = total.get("NGP"), total.get("Avg heart rate")
+        dura = durability(series) if series else None
         row.update(kind="steady", ef=round((1000 / ngp) / hr, 2) if ngp and hr else None,
+                   durability=round(dura[0], 1) if dura else None,
                    decoupling=round(own[0], 1) if own else total.get("Pa:Hr"),
                    avg_hr=hr, gain_per_km=round((total.get("El. Gain") or 0) / max(row["km"], 1)))
     return row

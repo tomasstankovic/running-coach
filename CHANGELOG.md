@@ -3,6 +3,27 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.15.0
+
+- **Race plan** (`race_plan.py`, `weather.py`): the forecast range moved for the weather (Open-Meteo:
+  the real forecast up to 16 days out, the typical weather of that date in the last 10 years
+  before), the goal checked against it with a safe B, splits by the course's GPX profile (Daniels'
+  hill rule, downhill capped at ~12 % faster from Strava's GAP data), even or negative, and the
+  fuelling plan: carbs per hour by duration capped at what the gut tolerated in training, gel times
+  matched to aid stations, drinking, carb loading, breakfast and caffeine in grams for the runner.
+- **Durability**: `analyze_session.py` reports, for runs of 90+ min, the efficiency lost in the last
+  quarter vs. early (`durability` in the page rows, charted under aerobic fitness).
+- **Pain and illness diary in TrainingPeaks** (`health_log.py`): each report a calendar note with a
+  machine-readable line; read back into check-ins, reviews and the page with the rules (pain
+  monitoring up to 3/10, reduce at 4-5, stop at 6+ or a changed stride; illness by the IOC triage).
+- **Morning brief to the phone**: the scheduled check-in adds the diary and the weather and sends
+  one line with PushNotification.
+- **Fuelling practice**: a gut-training ladder (30 -> 90 g/h) on long runs, recorded as TP workout
+  comments, feeding the race plan.
+- **Block reports** (`block_report.py`): volume, key-session verdicts, milestones, efficiency and
+  durability, threshold, forecast, readiness, health and takeaways; a blocks section on the page.
+- Sources S51 (Strava GAP), S53 (pain-monitoring model).
+
 ## 0.14.0
 
 - **The runner's own zones are the default**, whatever the method (TrainingPeaks and the watch:
