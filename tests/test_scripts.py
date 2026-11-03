@@ -779,6 +779,13 @@ class RacePlan(TempDir):
         self.assertLess(paces.parse_pace(by_km[15]["pace"]), paces.parse_pace(by_km[3]["pace"]))
         self.assertEqual(out["climb_m"], 25)
 
+    def test_weather_typed_in_is_shown(self):
+        cfg = {"race": {"name": "T", "date": "2027-04-03", "distance_km": 21.0975}, "goal": "1:35:00",
+               "weather": {"temp_c": 21, "dew_c": 16}}
+        out = run("race_plan.py", self.write("g.json", cfg), "--no-weather").stdout
+        self.assertIn("Weather: 21 °C, dew point 16 °C (given)", out)
+        self.assertIn("slower for the heat", out)
+
     def test_heat_moves_the_range_and_a_fast_goal_is_capped(self):
         warm = self.plan(weather={"temp_c": 25, "dew_c": 17, "source": "forecast"}, goal="1:27:00")
         self.assertEqual(warm["heat_pct"], [4.0, 4.0])        # humid: the upper end of 2 x (1-2 %)

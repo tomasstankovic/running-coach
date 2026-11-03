@@ -3,6 +3,14 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## Unreleased
+
+- Race plan: weather typed in by the runner (instead of fetched) is shown as "given" with the
+  heat line; it used to read "no weather data" although the heat was counted.
+- **README**: a picture of three real answers at the top (morning brief, race plan, session
+  analysis; fictional runner), a one-minute install, and a table of what the plugin adds over
+  plain Claude, from the evals.
+
 ## 0.15.1
 
 - **Race plan fuelling adds up**: the gels start after 20-30 min and stop before the finish, so

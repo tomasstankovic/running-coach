@@ -31,6 +31,21 @@ learns who you are and what you've run, plans the season with you, checks in eve
 your sessions, and changes the plan when life happens. Paces, zones, load limits and predictions
 come from scripts, not guesses, and it never touches your calendar without your yes.
 
+<p align="center"><img src="docs/img/demo.png" width="100%" alt="Three answers from Running Coach: a morning brief that swaps a tempo run for an easy run on a low-HRV day, a race plan for a hilly half marathon adjusted for 21 °C with splits and fuelling, and an interval session read rep by rep that flags a stale threshold"></p>
+<p align="center"><sub>The plugin's own script output for a fictional runner: morning brief · race plan · session analysis</sub></p>
+
+### Try it in a minute
+
+In Claude Code:
+
+```bash
+claude plugin install running-coach --marketplace tomasstankovic/running-coach
+```
+
+In Claude chat or Cowork, add the marketplace `tomasstankovic/running-coach` under *Customize →
+Plugins* ([all options](#install)). Then just ask: *"Plan my week: 4 runs, a 10k in 8 weeks."*
+No TrainingPeaks or Strava needed to start; connect them later for check-ins and analysis.
+
 **Contents:** [Who it's for](#who-its-for) · [What it does](#what-it-does) ·
 [A season with the coach](#a-season-with-the-coach) · [Install](#install) ·
 [Connect your data](#connect-your-data) · [Privacy and safety](#privacy-and-safety) ·
@@ -142,7 +157,25 @@ It replies in your language (tested in English and Slovak).
   evidence-based tapers, strength, fuelling and heat guidance; each rule carries its source and
   how strong the evidence is ([sources](skills/running-coach/references/sources.md)).
 - **Tested.** Behaviour tests for every script, and 19 eval cases of real coaching conversations
-  run against Claude with and without the skill.
+  run against Claude with and without the skill ([results](#with-and-without-the-plugin)).
+
+### With and without the plugin
+
+The same question asked of Claude with the plugin and without it, scored against what a coach
+would expect: the eval cases for the 0.15 features, run with `claude plugin eval` on 2 November
+2026, fictional runners, 1–2 runs per case.
+
+| Question | Without | With | What plain Claude missed |
+|---|---:|---:|---|
+| Race plan for a hilly half at 21 °C, goal 1:35 | 25 % | 100 % | the goal moved for the heat, fuelling that adds up to 45 g/h, carb loading |
+| "My base block is over, how did it go?" | 50 % | 100 % | which key sessions were missed and why, what that means for the next block |
+| Morning brief on a low-HRV day | 50 % | 100 % | swapping the tempo for an easy run; the one-line phone notification |
+| Calf pain up from 2/10 to 5/10 in ten days | 67 % | 100 % | asking before writing to the TrainingPeaks diary |
+| "My stomach turns on gels in races" | 75 % | 100 % | a log after each long run that becomes the race-day rate |
+| "Hard at the end" of a 26 km long run | 100 % | 100 % | nothing: plain Claude reads this one well too |
+
+A small set, so read it as a direction, not a benchmark. Run it yourself:
+[Development](#development).
 
 <p align="center"><img src="docs/img/plan-page.jpg" width="720" alt="Season plan page: phases, planned and actual weekly volume, races"></p>
 

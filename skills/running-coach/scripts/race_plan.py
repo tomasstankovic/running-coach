@@ -159,6 +159,8 @@ def build(cfg, use_weather=True, today=None):
     if not mid:
         raise ValueError("needs a forecast (forecast.py) or a goal")
     w = cfg.get("weather")
+    if w and not w.get("source"):
+        w = {**w, "source": "given"}                 # typed in by the runner, e.g. from a weather app
     if not w and use_weather and race.get("lat") is not None:
         w = wx.weather(race["lat"], race["lon"], race["date"], race.get("start", "09:00"), mid / 3600 + 0.25, today)
     heat = wx.heat_pct(w)
@@ -211,7 +213,7 @@ TX = {
     "en": {"title": "Race plan", "target": "Plan", "b": "safe B", "range": "forecast with the weather",
            "verdict": {"inside": "goal inside the range", "stretch": "goal a stretch", "out": "goal out of reach today",
                        "safe": "goal slower than the range: safe", "forecast": "no goal: the forecast"},
-           "weather": "Weather", "forecast_w": "forecast", "climate_w": "typical for the date", "no_w": "no weather data",
+           "weather": "Weather", "forecast_w": "forecast", "climate_w": "typical for the date", "given_w": "given", "no_w": "no weather data",
            "splits": "Splits", "km": "km", "grade": "grade", "pace": "pace", "time": "time",
            "fuel": "Fuelling", "during": "during", "gel": "gel", "aid": "aid station", "drink": "Drinking",
            "before": "Before", "carb": "carb loading", "breakfast": "breakfast", "caffeine": "caffeine",
@@ -230,7 +232,7 @@ TX = {
     "sk": {"title": "Plán pretekov", "target": "Plán", "b": "bezpečné B", "range": "predpoveď s počasím",
            "verdict": {"inside": "cieľ v rozpätí", "stretch": "náročný cieľ", "out": "cieľ dnes mimo dosahu",
                        "safe": "cieľ pomalší než rozpätie: bezpečný", "forecast": "bez cieľa: podľa predpovede"},
-           "weather": "Počasie", "forecast_w": "predpoveď", "climate_w": "typické pre tento deň", "no_w": "bez údajov o počasí",
+           "weather": "Počasie", "forecast_w": "predpoveď", "climate_w": "typické pre tento deň", "given_w": "zadané", "no_w": "bez údajov o počasí",
            "splits": "Medzičasy", "km": "km", "grade": "sklon", "pace": "tempo", "time": "čas",
            "fuel": "Výživa", "during": "počas", "gel": "gél", "aid": "občerstvovačka", "drink": "Pitie",
            "before": "Pred pretekmi", "carb": "sacharidové plnenie", "breakfast": "raňajky", "caffeine": "kofeín",
@@ -259,7 +261,7 @@ def render(p, lang):
              + (f" · {tx['verdict'][p['verdict']]}" if p["goal"] else "")]
     w = p["weather"] or {}
     if w.get("source"):
-        src = tx["forecast_w"] if w["source"] == "forecast" else tx["climate_w"]
+        src = tx.get(w["source"] + "_w", tx["climate_w"])
         lines.append(f"{tx['weather']}: {w['temp_c']} °C" + (f" ({tx['up_to']} {w['temp_p75_c']} °C)" if w.get("temp_p75_c") else "")
                      + (f", {tx['dew']} {w['dew_c']} °C" if w.get("dew_c") is not None else "")
                      + (f", {tx['wind']} {w['wind_kmh']} km/h" if w.get("wind_kmh") is not None else "") + f" ({src})")
