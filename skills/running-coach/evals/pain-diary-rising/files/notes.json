@@ -1,0 +1,28 @@
+{
+ "notes": [
+  {
+   "id": 6433012,
+   "date": "2026-10-24T00:00:00",
+   "title": "Bolesť: lýtko vľavo 2/10",
+   "description": "po behu\nrc: type=pain; part=lýtko vľavo; score=2; status=new; gait=normal; when=after"
+  },
+  {
+   "id": 3530829,
+   "date": "2026-10-28T00:00:00",
+   "title": "Bolesť: lýtko vľavo 3/10 (horšie)",
+   "description": "počas behu\nrc: type=pain; part=lýtko vľavo; score=3; status=worse; gait=normal; when=during"
+  },
+  {
+   "id": 7624039,
+   "date": "2026-10-31T00:00:00",
+   "title": "Bolesť: lýtko vľavo 4/10 (horšie)",
+   "description": "počas behu\nrc: type=pain; part=lýtko vľavo; score=4; status=worse; gait=normal; when=during"
+  },
+  {
+   "id": 5550001,
+   "date": "2026-10-20T00:00:00",
+   "title": "Masáž",
+   "description": "Športová masáž, stehná."
+  }
+ ]
+}

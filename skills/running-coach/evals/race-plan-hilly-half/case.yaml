@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: race-plan-hilly-half
+expected_outcome: |
+  The coach builds the race plan with race_plan.py from the course GPX and the given weather: 21 °C with dew point 16 °C slows the forecast range by about 2.4 %, so the 1:35 goal is out of reach that day; the plan runs at about 1:36:45 (4:35/km) with a safe B about 1:38:40. Splits slow to about 5:00/km on the climb (km 7-8) and speed up to about 4:19/km on the descent (km 15-16), run by effort/HR. Fuelling 45 g/h (capped at the runner's tolerated 45 g/h): 2 gels plus about 23 g from sports drink, drinking to thirst with more in the heat and sodium; carb loading about 680-820 g a day for 36-48 h, breakfast about 136 g carbs 3 h before; no caffeine since never tried. Slovak.
+context:
+  scaffold_script: place-files.sh

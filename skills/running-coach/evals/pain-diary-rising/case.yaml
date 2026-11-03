@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: pain-diary-rising
+expected_outcome: |
+  The coach reads the TP notes with health_log.py read: the left calf went 2 -> 3 -> 4/10 and now hurts more again, worse three reports in a row, so the rule is stop running and get it checked (physio or doctor); tomorrow's 6x 1 km intervals are off. The coach asks the questions the diary needs (score, when it hurts, whether it changes the stride) or uses what the runner said, prepares a TP note with health_log.py note (part, score, status worse), and asks before writing it, because the profile says ask each time. Nothing is written to TP. Slovak.
+context:
+  scaffold_script: place-files.sh

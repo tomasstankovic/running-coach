@@ -63,7 +63,16 @@ it up only after a yes. Self-contained prompt, filled in, in the runner's langua
 > change the TrainingPeaks calendar: if the session should change, say so and wait for the
 > runner's yes.
 
-Tell the runner: it runs only while the app is open (otherwise at the next launch), and the line
+The brief is read on waking, often on the phone: one short line each for the verdict (with the
+numbers that decided it), today's session, pain or illness, and what moves; no reasoning
+paragraphs. Example:
+
+> **Oranžová**: HRV 7 dní 59 pod pásmom 60–63, tep a spánok v norme.
+> **Dnes**: namiesto 3× 2 km 40–45 min ľahko 5:35–6:00, tep do 145.
+> **Achilovka** 2/10 po behu: ľahký beh OK, pri 3/10 skonči.
+> **Tempo** presuň na najbližší deň, keď bude HRV späť v pásme.
+
+The runner asks for more if they want it. Tell the runner: it runs only while the app is open (otherwise at the next launch), and the line
 reaches the phone when Remote Control is connected (otherwise it's a desktop notification). Use
 the coordinates of their town, never a home address. Without scheduled tasks, the runner just
 asks "mám dnes behať?".

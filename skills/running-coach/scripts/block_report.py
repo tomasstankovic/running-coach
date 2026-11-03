@@ -49,7 +49,7 @@ TX = {
            "t_over": "{n} tréningov rýchlejších než cieľ: skontrolovať prah (pretek alebo test)",
            "t_fc_better": "predpoveď pre {race} sa zlepšila o {d}", "t_fc_worse": "predpoveď pre {race} sa zhoršila o {d}",
            "t_dur": "výdrž sa zlepšila z {a} % na {b} %", "t_dur_bad": "výdrž sa zhoršila ({a} % -> {b} %): dlhé behy, výživa alebo únava?",
-           "t_ready": "{n} oranžových/červených dní: pozri spánok, stres a záťaž", "t_health": "{n} dní s bolesťou alebo chorobou"},
+           "t_ready": "oranžové alebo červené dni: {n}, pozri spánok, stres a záťaž", "t_health": "dni s bolesťou alebo chorobou: {n}"},
 }
 
 

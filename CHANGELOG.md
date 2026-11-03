@@ -3,6 +3,30 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.15.1
+
+- **Race plan fuelling adds up**: the gels start after 20-30 min and stop before the finish, so
+  they alone fell short of the hourly rate (2 gels = ~31 g/h on a plan of 45 g/h). The plan now
+  gives the total and the rest from the sports drink (`carbs_total_g`, `drink_carbs_g`).
+- **Shorter morning brief**: one line each for the verdict, today, pain or illness and what
+  moves, with an example.
+- Race plan output: no "wind None km/h", the heat line is labelled; block report: Slovak counts
+  read naturally.
+- **Evals** for the 0.15.0 features: race plan on a hilly course in the heat, rising calf pain in
+  the diary, an amber morning brief, a block overview, durability on a long run, fuelling
+  practice (fictional data, tag `v015`).
+- **SKILL.md review** (skill-creator guidelines): the description also triggers on pain and
+  niggles ("bolí ma lýtko"), the morning brief, block reviews and gut training; the modes table
+  points to the block report, durability and fuelling practice; a scripts table says what each
+  script gives and which reference explains it (instead of a list of commands under Zones); the
+  review reads the pain diary.
+- **Fewer tokens per answer**: planning a week (role, draft, load check, plan format, saving to
+  TrainingPeaks or `.ics`) moved from `SKILL.md` to `references/week.md`, read only when a week is
+  planned. Check-ins, the morning brief, race plans, analysis and zones load ~1,300 fewer tokens.
+- **README**: who it's for (and not for), features grouped by what they do, a season with the
+  coach step by step (incl. scheduled brief and review), privacy and safety (the one network
+  call is the weather), and an FAQ.
+
 ## 0.15.0
 
 - **Race plan** (`race_plan.py`, `weather.py`): the forecast range moved for the weather (Open-Meteo:

@@ -118,7 +118,7 @@ or edited sessions. `replan` keeps the roadmap: new weeks get the default draft
 again (adapt them as in step 2 and re-check), past weeks keep theirs and their results.
 
 Nothing from the roadmap goes to TrainingPeaks on its own: only the current week, planned in
-detail and confirmed, goes to the calendar (`SKILL.md` Step 7).
+detail and confirmed, goes to the calendar (`week.md` §5).
 
 ## 3. TrainingPeaks ATP
 

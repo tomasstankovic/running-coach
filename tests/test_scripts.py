@@ -793,6 +793,10 @@ class RacePlan(TempDir):
         self.assertGreaterEqual(len(m["fuel"]), 7)
         self.assertTrue(all(f["aid_km"] is None or abs(f["aid_km"] - f["km"]) <= 1 for f in m["fuel"]))
         self.assertEqual(m["pre"]["load"], [700, 840])         # 10-12 g/kg for 70 kg
+        half = self.plan()                                    # ~90 min: the gels alone fall short of the rate
+        self.assertEqual(half["carbs_total_g"], round(half["gph"] * paces.parse_time(half["target"]) / 3600))
+        self.assertEqual(half["drink_carbs_g"], half["carbs_total_g"] - 25 * len(half["fuel"]))
+        self.assertGreater(half["drink_carbs_g"], 0)
 
     def test_heat_rule(self):
         import weather

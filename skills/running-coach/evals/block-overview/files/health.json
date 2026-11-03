@@ -1,0 +1,12 @@
+{
+ "issues": [],
+ "rows": [
+  {
+   "date": "2026-12-14",
+   "type": "illness",
+   "title": "Choroba: nádcha, horúčka",
+   "level": "stop",
+   "active": false
+  }
+ ]
+}

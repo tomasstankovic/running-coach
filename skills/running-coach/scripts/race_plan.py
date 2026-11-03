@@ -198,9 +198,13 @@ def build(cfg, use_weather=True, today=None):
     if minutes > 150 and not cfg.get("gut_trained_gph"):
         notes.append(("no_gut", {}))
     climb = sum(max(0, g) * min(1, dist - i) * 10 for i, g in enumerate(grades))
+    # the gels start late and stop before the finish, so the rest of the hourly rate comes from the drink
+    need = round(gph * minutes / 60) if gph else 0
+    drink_g = need - len(fuel) * gel if need - len(fuel) * gel >= 10 else 0
     return {"race": race, "weather": w, "heat_pct": heat, "range": [low, mid_h, high], "goal": goal, "verdict": verdict,
             "target": target, "b_goal": b_goal, "splits": spl, "climb_m": round(climb), "gph": gph, "gph_band": band,
-            "gut": cfg.get("gut_trained_gph"), "fuel": fuel, "gel_g": gel, "pre": pre, "notes": notes}
+            "gut": cfg.get("gut_trained_gph"), "fuel": fuel, "gel_g": gel, "carbs_total_g": need,
+            "drink_carbs_g": drink_g, "pre": pre, "notes": notes}
 
 
 TX = {
@@ -211,9 +215,11 @@ TX = {
            "splits": "Splits", "km": "km", "grade": "grade", "pace": "pace", "time": "time",
            "fuel": "Fuelling", "during": "during", "gel": "gel", "aid": "aid station", "drink": "Drinking",
            "before": "Before", "carb": "carb loading", "breakfast": "breakfast", "caffeine": "caffeine",
-           "climb": "climb", "dew": "dew point", "wind": "wind", "up_to": "up to",
+           "climb": "climb", "dew": "dew point", "wind": "wind", "up_to": "up to", "heat": "slower for the heat",
            "gph": lambda g, b, gut: (f"{g} g/h" + (f" (position stands {b[0]}-{b[1]} g/h" + (f", capped at your tolerated {gut} g/h" if gut else "") + ")" if b else ""))
                   if g else "none needed; a few sips of sports drink are optional",
+           "total": lambda t, n, gels, drink: f"in all ~{t} g: {n} gels ({gels} g)"
+                    + (f" + ~{drink} g from sports drink (~{drink / 60:.1f} L at 6 %)" if drink else ""),
            "drink_t": lambda warm, long: "0.4-0.8 L/h to thirst" + ("; more in the heat" if warm else "")
                     + ("; with sodium" if warm or long else "") + ". Never finish heavier than you started.",
            "load": lambda l: f"{l[0]}-{l[1]} g carbs a day for the last 36-48 h, low fibre" if l else "normal carb-rich eating, nothing new",
@@ -228,9 +234,11 @@ TX = {
            "splits": "Medzičasy", "km": "km", "grade": "sklon", "pace": "tempo", "time": "čas",
            "fuel": "Výživa", "during": "počas", "gel": "gél", "aid": "občerstvovačka", "drink": "Pitie",
            "before": "Pred pretekmi", "carb": "sacharidové plnenie", "breakfast": "raňajky", "caffeine": "kofeín",
-           "climb": "stúpanie", "dew": "rosný bod", "wind": "vietor", "up_to": "do",
+           "climb": "stúpanie", "dew": "rosný bod", "wind": "vietor", "up_to": "do", "heat": "pomalšie kvôli teplu",
            "gph": lambda g, b, gut: (f"{g} g/h" + (f" (odporúčania {b[0]}-{b[1]} g/h" + (f", obmedzené na tvojich vyskúšaných {gut} g/h" if gut else "") + ")" if b else ""))
                   if g else "netreba; pár dúškov iontového nápoja je voliteľných",
+           "total": lambda t, n, gels, drink: f"spolu ~{t} g: {n}× gél ({gels} g)"
+                    + (f" + ~{drink} g z iónového nápoja (~{drink / 60:.1f} l pri 6 %)".replace(".", ",") if drink else ""),
            "drink_t": lambda warm, long: "0,4-0,8 l/h podľa smädu" + ("; v teple viac" if warm else "")
                     + ("; so sodíkom" if warm or long else "") + ". Nikdy nedobehni ťažší, než si štartoval.",
            "load": lambda l: f"{l[0]}-{l[1]} g sacharidov denne posledných 36-48 h, málo vlákniny" if l else "bežné jedlo bohaté na sacharidy, nič nové",
@@ -253,9 +261,11 @@ def render(p, lang):
     if w.get("source"):
         src = tx["forecast_w"] if w["source"] == "forecast" else tx["climate_w"]
         lines.append(f"{tx['weather']}: {w['temp_c']} °C" + (f" ({tx['up_to']} {w['temp_p75_c']} °C)" if w.get("temp_p75_c") else "")
-                     + f", {tx['dew']} {w.get('dew_c')} °C, {tx['wind']} {w.get('wind_kmh')} km/h ({src})")
-        if p["heat_pct"][1]:
-            lines.append(f"  +{p['heat_pct'][0]:g}-{p['heat_pct'][1]:g} %")
+                     + (f", {tx['dew']} {w['dew_c']} °C" if w.get("dew_c") is not None else "")
+                     + (f", {tx['wind']} {w['wind_kmh']} km/h" if w.get("wind_kmh") is not None else "") + f" ({src})")
+        lo_h, hi_h = p["heat_pct"]
+        if hi_h:
+            lines.append(f"  {tx['heat']}: +{lo_h:g} %" if lo_h == hi_h else f"  {tx['heat']}: +{lo_h:g}-{hi_h:g} %")
     else:
         lines.append(f"{tx['weather']}: {tx['no_w']}")
     lines += ["", f"{tx['splits']} ({tx['climb']} {p['climb_m']} m):",
@@ -268,6 +278,8 @@ def render(p, lang):
     for f in p["fuel"]:
         where = f" ({tx['aid']} {f['aid_km']:g} km)" if f["aid_km"] is not None else ""
         lines.append(f"  {f['minute']:>3} min · km {f['km']:g}: {tx['gel']} {p['gel_g']} g{where}")
+    if p["carbs_total_g"]:
+        lines.append("  " + tx["total"](p["carbs_total_g"], len(p["fuel"]), len(p["fuel"]) * p["gel_g"], p["drink_carbs_g"]))
     pre = p["pre"]
     lines += [f"  {tx['drink']}: " + tx["drink_t"](pre["warm"], pre["long"]), "", f"{tx['before']}:",
               f"  {tx['carb']}: " + tx["load"](pre["load"]), f"  {tx['breakfast']}: " + tx["bf"](pre["breakfast_g"]),

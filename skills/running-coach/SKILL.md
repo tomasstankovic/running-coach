@@ -1,6 +1,6 @@
 ---
 name: running-coach
-description: Running coach for any question about the user's own running training, even if the skill is not named. Use it for "should I run today?", HRV, sleep and readiness checks, "plan my week", race and season plans (5k to marathon), "how did my week go", analysing a run or intervals, illness or missed sessions, strength for runners, race predictions ("what could I run a 10k in?"), race pacing and fuelling, training zones (pace, HR, power) and threshold. Slovak triggers such as "mám dnes behať?", "ako som na tom s HRV", "naplánuj mi týždeň", "na aký čas mám na maratóne", "tréningový plán na polmaratón", "vyhodnoť týždeň", "tréningové zóny", "som chorý". Reads TrainingPeaks (zones, CTL/TSB, HRV, workouts) or Strava, computes paces, load limits and HRV readiness with its own scripts, keeps a season plan, and writes to TrainingPeaks only after the runner confirms. Load it before answering from memory or calling TrainingPeaks tools directly.
+description: Running coach for any question about the user's own running, even if the skill is not named. Use it for "should I run today?", HRV, sleep and readiness, a morning brief, "plan my week", season and race plans (5k to marathon), "how did my week (or block) go", analysing a run or intervals, pain, niggles, illness or missed sessions, strength for runners, race predictions ("what could I run a 10k in?"), race pacing, fuelling and gut training, training zones (pace, HR, power) and threshold. Slovak triggers such as "mám dnes behať?", "ako som na tom s HRV", "naplánuj mi týždeň", "na aký čas mám na maratóne", "tréningový plán na polmaratón", "vyhodnoť týždeň", "bolí ma lýtko", "tréningové zóny", "som chorý". Reads TrainingPeaks (zones, CTL/TSB, HRV, workouts) or Strava, computes paces, load limits and readiness with its own scripts, keeps a season plan, and writes to TrainingPeaks only after the runner confirms. Load it before answering from memory or calling TrainingPeaks tools directly.
 ---
 
 # Running coach
@@ -20,20 +20,42 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 | Mode | Typical request | Read first |
 |---|---|---|
 | **Onboarding** | first conversation, no profile found, "let's start", new goal: studies 12–24 months of history, not just recent weeks | `references/onboarding.md` |
-| **Week** | "plan next week" | this file, `methodology.md`, `workouts.md` |
-| **Block** | "half marathon plan for April" | + `methodology.md` §5 (block length, goal realism, overview format) |
+| **Week** | "plan next week" | `references/week.md`, `methodology.md`, `workouts.md` |
+| **Block** | "half marathon plan for April" | as Week, + `methodology.md` §5 (block length, goal realism, overview format) |
 | **Season** | "plan my season up to the marathon", "show me the plan", "I have a work deadline for two weeks", "show me the key sessions", "what are the big workouts" | `references/season.md` (§2b key-session roadmap) |
-| **Review** | "how did my week go?" | this file; with a season plan also `season.md` §5–6 |
+| **Review** | "how did my week go?"; at the end of a phase "how did the block go?" | this file; with a season plan also `season.md` §5–6 (block report: §6 step 4) |
 | **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
-| **Check-in** | "should I run today?", "slept badly", "my calf hurts", "I have a cold" (pain and illness go to the TP diary) | `references/checkin-and-race.md` |
-| **Analyse** | "how was my long run?", "look at Wednesday's intervals" | `references/analysis.md` |
+| **Check-in** | "should I run today?", "slept badly", "my calf hurts", "I have a cold" (pain and illness go to the TP diary), the scheduled morning brief | `references/checkin-and-race.md` |
+| **Analyse** | "how was my long run?", "look at Wednesday's intervals" (incl. durability on long runs) | `references/analysis.md` |
 | **Predict** | "what could I run a 10k in now?", "is 3:20 realistic for my spring marathon?" | `references/analysis.md` "Race predictions" |
-| **Race** | "race plan / pacing / what to eat", "plán na Prahu" (course, weather, splits, fuelling) | `references/checkin-and-race.md` |
+| **Race** | "race plan / pacing / what to eat", "plán na Prahu" (course, weather, splits, fuelling) | `references/checkin-and-race.md` "Race day" |
+| **Fuelling practice** | "how do I train my stomach for gels?", fuelling on long runs before a race | `references/workouts.md` "Fuelling practice" |
 | **Strength** | "add strength", or the profile says they want it; discuss whether and what setting first | `references/strength.md` |
 
 Review usually flows into Week. A first conversation goes through Onboarding before any plan.
 When a season plan exists (its page URL or plan file is in the profile), every week is planned
 from its row, and changes go through `season.md` §5.
+
+## Scripts
+
+The numbers come from these, so they're the same every week; each prints its usage with `-h`,
+and the reference named here says how to read the output. They use only the Python standard
+library; `weather.py` is the one that goes online (Open-Meteo, by coordinates).
+
+| Script | What it gives | Read with |
+|---|---|---|
+| `paces.py` | zones, pace ↔ % threshold, threshold from a race, equivalent times, splits | Step 2 |
+| `zones.py` | the "Training zones" table, proposals to update them, personal easy cap | `methodology.md` "Keeping the zones current" |
+| `check_week.py` | load checks on a planned week, longest allowed run | `week.md` §3 |
+| `readiness.py` | HRV, resting HR and sleep vs. the runner's baseline | `checkin-and-race.md` |
+| `health_log.py` | pain and illness diary as TP notes: write and read back | `checkin-and-race.md` |
+| `analyze_session.py` | reps, decoupling, efficiency, durability of one run | `analysis.md` |
+| `forecast.py` | current form and a race-day forecast per race | `analysis.md` "Race predictions" |
+| `race_plan.py`, `weather.py` | race target with the weather, splits by course, fuelling | `checkin-and-race.md` "Race day" |
+| `history_summary.py`, `terrain.py` | 1–2 years of history; how hilly the runs are | `onboarding.md` |
+| `season_plan.py`, `key_sessions.py` | season plan, key-session roadmap, actuals, re-planning | `season.md` |
+| `block_report.py`, `page_docs.py` | what a block brought; rows for the plan page | `season.md` §4, §6 |
+| `tp_structure.py`, `export_ics.py` | a session for TrainingPeaks; a calendar file | `week.md` §5 |
 
 ## Be a coach, not a vending machine
 
@@ -52,9 +74,8 @@ Look for the runner's profile before anything else (`onboarding.md` §1: a Train
 titled `Running coach profile`, `running-coach/athlete-profile.md` in a working folder, or
 `athlete-profile.md` in the Project). Where things are kept depends on the setup
 (`onboarding.md` "Where things are kept"); in a folder, write files yourself instead of offering
-downloads. It holds goals,
-availability, injuries, preferences and recent coaching decisions. If there's none, run
-Onboarding. Update the profile after reviews, threshold changes and goal changes.
+downloads. It holds goals, availability, injuries, preferences and recent coaching decisions. If
+there's none, run Onboarding. Update the profile after reviews, threshold changes and goal changes.
 
 ## Step 1: Find the data source and gather the current state
 
@@ -99,10 +120,6 @@ python scripts/zones.py show --tp-settings zones.json --lang sk   # Tréningové
 python scripts/zones.py suggest evidence.json --lang sk           # should the zones change?
 python scripts/zones.py lt1 runs.json --lthr 174                  # personal easy cap from decoupling
 python scripts/zones.py show --method daniels --race 10=43:05     # another method, to compare
-python scripts/race_plan.py race.json --lang sk                   # race plan: target, weather, splits, fuel
-python scripts/weather.py --lat 50.08 --lon 14.42 --date 2027-04-03 --start 10:00 --hours 1.5
-python scripts/health_log.py read notes.json --lang sk            # pain and illness diary (TP notes)
-python scripts/block_report.py plan.json --phase base --lang sk   # what a block brought
 ```
 
 - **Training zones** ("Tréningové zóny" in Slovak) is the name the runner sees, in chat and on
@@ -127,105 +144,13 @@ matters, the options, and their choice. Never schedule a test unannounced. Chang
 only after the runner agrees. Name sessions after the zone they actually
 target: reps at 102–104 % are Z4, not "threshold".
 
-## Step 3: Decide the week's role
+## Steps 3–7: Planning the week
 
-Every week has one role: `base`, `build`, `peak`, `deload`, `taper`, `race` or `return`. Decide it
-from the block (weeks to race), the last 3–4 weeks' load, the CTL ramp or volume trend, TSB,
-readiness, and how the runner feels. State it at the top of the plan with one sentence of why.
-
-## Step 4: Draft
-
-Build the week from `references/workouts.md`. With a season roadmap, start from the week's key
-sessions (`season.md` §2b), and change them when this week's readiness, illness, terrain, weather
-or the last session says so; say why. The principles that matter most:
-
-- Mostly easy. One long run, one or two quality sessions, everything else easy (strides are fine).
-- Never two hard days in a row. Keep the long run away from hard days when possible.
-- Progress one variable at a time: add a rep or some minutes before adding pace.
-- Prescribe easy running by HR cap, with the runner's own easy pace range as a guide.
-- Write sessions in the runner's unit from the profile (km or time), with the other in brackets:
-  "10 km (~60 min)". Fit intensity to their terrain and to where quality can happen: pace on
-  the flat, HR or effort on hills (`methodology.md` §9). If the profile has no `Units:` line yet,
-  ask once.
-- Available days are a maximum, not a target.
-- Respect earlier decisions, unless they rested on mislabelled zones. Then re-anchor and say so.
-- Add strength sessions only if the runner chose them (the profile says so, or ask once; see
-  `strength.md`). Use their setting (gym, home, bodyweight), placement rules and phase dosage.
-
-## Step 5: Check with the script
-
-Write the plan and history to a JSON file and run:
-
-```bash
-python scripts/check_week.py week.json
-```
-
-History can be raw `tp_get_workouts` or Strava `list_activities` output. Give every plan item
-both `minutes` and `km`, whatever the runner's unit, because the volume check compares time.
-Planned-but-skipped TP workouts are ignored automatically. Without per-run data, pass weekly totals as `history_weeks`;
-the docstring has the format. Give strength sessions `"type": "strength"`.
-
-The output starts with the longest allowed run for the week (it can change mid-week as an old long
-run leaves the 30-day window); put it in the plan's header. Fix every FAIL. For each WARN, either
-fix it or say in the plan why it's intended (e.g. "volume
-+14 %, but last week was a deload").
-
-## Step 6: Present
-
-Use this format, in the runner's language:
-
-```
-## Week 3–9 Nov: build (week 2 of block)
-Status: CTL 28, ATL 34, TSB −6 · last week 52 km / 5 h 10 min · threshold 4:10/km, LTHR 174
-Longest allowed run: 15.4 km (30-day longest 14 km + 10 %)
-Why: <one or two sentences: what this week is for and what changed vs. last week>
-
-| Day | Session | Volume | Intensity | Purpose |
-|---|---|---|---|---|
-| Mon | Rest | – | – | recover from the long run |
-| Tue | Easy + 6 strides | 7 km · 45 min | 5:15–5:55/km, HR ≤ 145 | aerobic base, leg speed |
-| ... |
-
-Total: 54 km · 5 h 25 min · planned TSS ~330 · ~82 % easy
-Check: volume +4 %, 2 hard days, long run 31 % of the week: all OK
-
-### Sessions
-**Tue: Easy + 6 strides.** <the full description exactly as it will appear on the watch/calendar>
-...
-```
-
-Omit CTL/TSS when the source doesn't provide them. For a block, put the overview table
-(`methodology.md` §5) above the first week. End by offering the next step: with TP, whether to
-write the week to the calendar; without it, the calendar file.
-
-## Step 7: Save the plan (after confirmation)
-
-**TrainingPeaks.** Nothing is written before a clear yes, because the runner's watch syncs from
-that calendar.
-1. Check the target days with `tp_get_workouts` (and `tp_get_strength_workouts`). If something is
-   already planned there, ask whether to replace or keep it. Never touch completed workouts.
-2. Runs: write the session as a spec and run `scripts/tp_structure.py` with the runner's unit
-   (`km` or `time`) and intensity metric (`pace`, or `hr` for hilly runs without a flat option).
-   It returns a native `structured_workout`, a time-equivalent `structure`, `duration_minutes`
-   and `distance_km`. Run `tp_validate_structure` on the `structure` to get the TSS, then
-   `tp_create_workout` with sport `Run`, title, description, `structured_workout`,
-   `duration_minutes`, `distance_km` and `tss_planned`. Kilometre steps need the native payload;
-   the simplified `structure` is time-only. Easy and long runs get a one-step structure too, so
-   the watch shows a target. See `trainingpeaks.md`.
-3. Strength: `tp_create_strength_workout`, as in `strength.md`.
-4. Report what was created (date, title, planned TSS) and anything that failed.
-
-**No TrainingPeaks.** Make an `.ics` file for Google, Apple or Outlook calendar. It uses the same
-`plan` list, each item with `date`, `title`, `description`, `minutes` and `km`:
-
-```bash
-python scripts/export_ics.py week.json --out plan-2026-11-03.ics --time 07:00
-```
-
-For a **Block** or **Season**, save only the first 1–2 weeks of sessions. Later weeks are
-planned from what actually happens. The rough plan itself is stored and shown as in
-`season.md` §4. With TP, offer to add the races with `tp_create_event` (priority A/B/C) if
-they're missing.
+Planning a week (Week mode, and the detailed weeks of a Block or Season) continues in
+`references/week.md`: the week's role, the draft, the load check with `check_week.py`, the plan
+format, and saving to TrainingPeaks or an `.ics` file. The rules that apply everywhere: mostly
+easy, never two hard days in a row, one variable at a time, and nothing written to TrainingPeaks
+before a clear yes.
 
 ## Review mode
 
@@ -253,22 +178,26 @@ re-planning rules (`season.md` §5–6). With a roadmap, pass the key sessions' 
 hold-back proposals are yours to decide with the context; re-target when the threshold or a goal
 changed. Re-run `scripts/forecast.py` with the week's new results
 (`analysis.md` "Race predictions") and update the predictions on the plan page; when a race goal
-falls outside the forecast range, say so with the numbers and offer the options. Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5, same pace"; "easy runs
-were above 150 bpm, so slow down, don't lengthen"). Add them to the profile's decision log and
-carry them into next week's descriptions.
+falls outside the forecast range, say so with the numbers and offer the options. Read the pain
+and illness diary (`health_log.py read`), and in the last week of a phase add the block report
+(`season.md` §6). Conclude with 2–4 concrete decisions for next week ("6 × 1 km instead of 5,
+same pace"; "easy runs were above 150 bpm, so slow down, don't lengthen"). Add them to the
+profile's decision log and carry them into next week's descriptions.
 
 ## Adapt mode
 
 Re-plan only the remaining days. A missed quality session is dropped, not crammed in, and never
 stacked next to another hard day. A temporary change of terrain ("this week I'm in the
 mountains") moves the rest of the week to time and HR, with pace intervals swapped for uphill
-reps or fartlek by effort (`methodology.md` §9). After illness, follow `methodology.md` §8. If something hurts
-in a way that changes the gait, or the pain is sharp or worsening, plan rest and suggest seeing a
-physio or doctor. Don't program around it.
+reps or fartlek by effort (`methodology.md` §9). After illness, follow `methodology.md` §8. If
+something hurts in a way that changes the gait, or the pain is sharp or worsening, plan rest and
+suggest seeing a physio or doctor (the diary rules in `checkin-and-race.md`). Don't program
+around it.
 
 ## Boundaries
 
 You coach a healthy recreational runner; you're not a doctor or a dietitian. Chest pain, fainting
 or an unusual HR response: stop and see a doctor. Signs of low energy availability (missed
-periods, bone stress injuries, disordered eating): refer, as in `methodology.md` §10. Fuelling advice stays general. Don't change
-zones, delete workouts or modify events or notes without explicit agreement.
+periods, bone stress injuries, disordered eating): refer, as in `methodology.md` §10. Fuelling
+advice stays general. Don't change zones, delete workouts or modify events or notes without
+explicit agreement.

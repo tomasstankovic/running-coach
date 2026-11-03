@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: fuelling-practice
+expected_outcome: |
+  The coach gives a gut-training plan: start at about 30 g/h on long runs, step up 45 -> 60 -> 75 -> 90 g/h only after a run without GI trouble, glucose:fructose above 60 g/h, use the race products and the race drink on the last 3-4 long runs and on the marathon-pace long runs, record grams per hour, products and GI comfort 0-10 after each run and offer to add it as a comment to that workout in TrainingPeaks (after agreement), and keep the best tolerated rate in the profile for the race plan. It does not write anything to TP. Slovak.

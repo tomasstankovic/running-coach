@@ -1,0 +1,1782 @@
+{
+ "spec": {
+  "title": "Jar 2027",
+  "lang": "sk",
+  "start": "2026-11-09",
+  "current": {
+   "km": 40,
+   "long_km": 15
+  },
+  "runs_per_week": 5,
+  "easy_pace": "5:50",
+  "peak_km": 65,
+  "races": [
+   {
+    "name": "Polmaratón",
+    "date": "2027-03-21",
+    "distance_km": 21.1,
+    "priority": "B",
+    "goal": "1:38:00"
+   },
+   {
+    "name": "Maratón",
+    "date": "2027-04-25",
+    "distance_km": 42.2,
+    "priority": "A",
+    "goal": "3:25:00"
+   }
+  ]
+ },
+ "weeks": [
+  {
+   "week_start": "2026-11-09",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 42,
+   "minutes": 230,
+   "long_km": 15,
+   "key": "rovinky + krátke kopce",
+   "tss": 210,
+   "actual_km": 39.9,
+   "actual_minutes": 218,
+   "note": "",
+   "n": 1,
+   "key_sessions": [
+    {
+     "id": "2026-11-10-q1",
+     "date": "2026-11-10",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "5× 1 km na prahu",
+     "target": {
+      "pct": [
+       98,
+       100
+      ],
+      "pace": "4:25–4:30",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      98,
+      100
+     ],
+     "ladder": "threshold",
+     "step": 0
+    },
+    {
+     "id": "2026-11-13-q2",
+     "date": "2026-11-13",
+     "slot": "q2",
+     "type": "hills",
+     "title": "8× 45 s do kopca",
+     "target": {},
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "ladder": "hills",
+     "step": 0
+    },
+    {
+     "id": "2026-11-15-long",
+     "date": "2026-11-15",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 15 km",
+     "target": {
+      "km": 15,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2026-11-16",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 43,
+   "minutes": 240,
+   "long_km": 15,
+   "key": "rovinky + krátke kopce",
+   "tss": 220,
+   "actual_km": 43.0,
+   "actual_minutes": 240,
+   "note": "",
+   "n": 2,
+   "key_sessions": [
+    {
+     "id": "2026-11-17-q1",
+     "date": "2026-11-17",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "6× 1 km na prahu",
+     "target": {
+      "pct": [
+       98,
+       100
+      ],
+      "pace": "4:25–4:30",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      98,
+      100
+     ],
+     "ladder": "threshold",
+     "step": 1
+    },
+    {
+     "id": "2026-11-20-q2",
+     "date": "2026-11-20",
+     "slot": "q2",
+     "type": "hills",
+     "title": "10× 45 s do kopca",
+     "target": {},
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "ladder": "hills",
+     "step": 1
+    },
+    {
+     "id": "2026-11-22-long",
+     "date": "2026-11-22",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 15 km",
+     "target": {
+      "km": 15,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2026-11-23",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 45,
+   "minutes": 250,
+   "long_km": 16,
+   "key": "rovinky + krátke kopce",
+   "tss": 225,
+   "actual_km": 40.5,
+   "actual_minutes": 225,
+   "note": "",
+   "n": 3,
+   "key_sessions": [
+    {
+     "id": "2026-11-24-q1",
+     "date": "2026-11-24",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "7× 1 km na prahu",
+     "target": {
+      "pct": [
+       98,
+       100
+      ],
+      "pace": "4:25–4:30",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      98,
+      100
+     ],
+     "ladder": "threshold",
+     "step": 2
+    },
+    {
+     "id": "2026-11-27-q2",
+     "date": "2026-11-27",
+     "slot": "q2",
+     "type": "hills",
+     "title": "10× 60 s do kopca",
+     "target": {},
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "ladder": "hills",
+     "step": 2
+    },
+    {
+     "id": "2026-11-29-long",
+     "date": "2026-11-29",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 16 km",
+     "target": {
+      "km": 16,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2026-11-30",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "deload",
+   "km": 31,
+   "minutes": 175,
+   "long_km": 11,
+   "key": "krátky prah, rovinky",
+   "tss": 160,
+   "actual_km": 26.3,
+   "actual_minutes": 149,
+   "note": "",
+   "n": 4,
+   "key_sessions": [
+    {
+     "id": "2026-12-01-q1",
+     "date": "2026-12-01",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "krátky prah 4× 1 km",
+     "target": {
+      "pct": [
+       97,
+       99
+      ],
+      "pace": "4:28–4:33",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      97,
+      99
+     ]
+    },
+    {
+     "id": "2026-12-06-long",
+     "date": "2026-12-06",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 11 km",
+     "target": {
+      "km": 11,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2026-12-07",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 46,
+   "minutes": 255,
+   "long_km": 16,
+   "key": "rovinky + krátke kopce",
+   "tss": 235,
+   "actual_km": 32.2,
+   "actual_minutes": 178,
+   "note": "",
+   "n": 5,
+   "key_sessions": [
+    {
+     "id": "2026-12-08-q1",
+     "date": "2026-12-08",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "3× 2 km na prahu",
+     "target": {
+      "pct": [
+       97,
+       99
+      ],
+      "pace": "4:28–4:33",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "missed",
+      "summary": "nebežané (choroba / sviatky)"
+     },
+     "note": "",
+     "basis": [
+      97,
+      99
+     ],
+     "ladder": "threshold",
+     "step": 3
+    },
+    {
+     "id": "2026-12-11-q2",
+     "date": "2026-12-11",
+     "slot": "q2",
+     "type": "hills",
+     "title": "fartlek 8× 1 min",
+     "target": {
+      "pct": [
+       100,
+       108
+      ],
+      "pace": "4:05–4:25"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "missed",
+      "summary": "nebežané (choroba / sviatky)"
+     },
+     "note": "",
+     "basis": [
+      100,
+      108
+     ],
+     "ladder": "hills",
+     "step": 3
+    },
+    {
+     "id": "2026-12-13-long",
+     "date": "2026-12-13",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 16 km",
+     "target": {
+      "km": 16,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "missed",
+      "summary": "nebežané (choroba / sviatky)"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2026-12-14",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 48,
+   "minutes": 265,
+   "long_km": 17,
+   "key": "rovinky + krátke kopce",
+   "tss": 245,
+   "actual_km": 28.8,
+   "actual_minutes": 159,
+   "note": "",
+   "n": 6,
+   "key_sessions": [
+    {
+     "id": "2026-12-15-q1",
+     "date": "2026-12-15",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "4× 2 km na prahu",
+     "target": {
+      "pct": [
+       97,
+       99
+      ],
+      "pace": "4:28–4:33",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "missed",
+      "summary": "nebežané (choroba / sviatky)"
+     },
+     "note": "",
+     "basis": [
+      97,
+      99
+     ],
+     "ladder": "threshold",
+     "step": 4
+    },
+    {
+     "id": "2026-12-18-q2",
+     "date": "2026-12-18",
+     "slot": "q2",
+     "type": "hills",
+     "title": "fartlek 10× 1 min",
+     "target": {
+      "pct": [
+       100,
+       108
+      ],
+      "pace": "4:05–4:25"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "missed",
+      "summary": "nebežané (choroba / sviatky)"
+     },
+     "note": "",
+     "basis": [
+      100,
+      108
+     ],
+     "ladder": "hills",
+     "step": 4
+    },
+    {
+     "id": "2026-12-20-long",
+     "date": "2026-12-20",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 17 km",
+     "target": {
+      "km": 17,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "missed",
+      "summary": "nebežané (choroba / sviatky)"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2026-12-21",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 50,
+   "minutes": 275,
+   "long_km": 18,
+   "key": "rovinky + krátke kopce",
+   "tss": 255,
+   "actual_km": 37.5,
+   "actual_minutes": 206,
+   "note": "",
+   "n": 7,
+   "key_sessions": [
+    {
+     "id": "2026-12-22-q1",
+     "date": "2026-12-22",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "3× 3 km na prahu",
+     "target": {
+      "pct": [
+       96,
+       98
+      ],
+      "pace": "4:30–4:36",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      96,
+      98
+     ],
+     "ladder": "threshold",
+     "step": 5
+    },
+    {
+     "id": "2026-12-25-q2",
+     "date": "2026-12-25",
+     "slot": "q2",
+     "type": "hills",
+     "title": "fartlek 8× 2 min",
+     "target": {
+      "pct": [
+       100,
+       106
+      ],
+      "pace": "4:10–4:25"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "under",
+      "summary": "skrátené, ťažké nohy"
+     },
+     "note": "",
+     "basis": [
+      100,
+      106
+     ],
+     "ladder": "hills",
+     "step": 5
+    },
+    {
+     "id": "2026-12-27-long",
+     "date": "2026-12-27",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 18 km",
+     "target": {
+      "km": 18,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2026-12-28",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "deload",
+   "km": 35,
+   "minutes": 195,
+   "long_km": 12,
+   "key": "krátky prah, rovinky",
+   "tss": 180,
+   "actual_km": 28.0,
+   "actual_minutes": 156,
+   "note": "",
+   "n": 8,
+   "key_sessions": [
+    {
+     "id": "2026-12-29-q1",
+     "date": "2026-12-29",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "krátky prah 4× 1 km",
+     "target": {
+      "pct": [
+       97,
+       99
+      ],
+      "pace": "4:28–4:33",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      97,
+      99
+     ]
+    },
+    {
+     "id": "2027-01-03-long",
+     "date": "2027-01-03",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 12 km",
+     "target": {
+      "km": 12,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-01-04",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 52,
+   "minutes": 290,
+   "long_km": 18,
+   "key": "rovinky + krátke kopce",
+   "tss": 265,
+   "actual_km": 46.8,
+   "actual_minutes": 261,
+   "note": "",
+   "n": 9,
+   "key_sessions": [
+    {
+     "id": "2027-01-05-q1",
+     "date": "2027-01-05",
+     "slot": "q1",
+     "type": "tempo",
+     "title": "2× 15 min v tempe",
+     "target": {
+      "pct": [
+       93,
+       96
+      ],
+      "pace": "4:36–4:45",
+      "hr_max": 163
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      93,
+      96
+     ],
+     "ladder": "threshold",
+     "step": 6
+    },
+    {
+     "id": "2027-01-08-q2",
+     "date": "2027-01-08",
+     "slot": "q2",
+     "type": "hills",
+     "title": "fartlek 8× 2 min",
+     "target": {
+      "pct": [
+       100,
+       106
+      ],
+      "pace": "4:10–4:25"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      100,
+      106
+     ],
+     "ladder": "hills",
+     "step": 5
+    },
+    {
+     "id": "2027-01-10-long",
+     "date": "2027-01-10",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 18 km",
+     "target": {
+      "km": 18,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-01-11",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 54,
+   "minutes": 300,
+   "long_km": 19,
+   "key": "rovinky + krátke kopce",
+   "tss": 275,
+   "actual_km": 45.9,
+   "actual_minutes": 255,
+   "note": "",
+   "n": 10,
+   "key_sessions": [
+    {
+     "id": "2027-01-12-q1",
+     "date": "2027-01-12",
+     "slot": "q1",
+     "type": "tempo",
+     "title": "2× 20 min v tempe",
+     "target": {
+      "pct": [
+       93,
+       96
+      ],
+      "pace": "4:36–4:45",
+      "hr_max": 163
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      93,
+      96
+     ],
+     "ladder": "threshold",
+     "step": 7
+    },
+    {
+     "id": "2027-01-15-q2",
+     "date": "2027-01-15",
+     "slot": "q2",
+     "type": "hills",
+     "title": "fartlek 8× 2 min",
+     "target": {
+      "pct": [
+       100,
+       106
+      ],
+      "pace": "4:10–4:25"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      100,
+      106
+     ],
+     "ladder": "hills",
+     "step": 5
+    },
+    {
+     "id": "2027-01-17-long",
+     "date": "2027-01-17",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 19 km",
+     "target": {
+      "km": 19,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-01-18",
+   "phase": "base",
+   "phase_label": "základ",
+   "role": "build",
+   "km": 56,
+   "minutes": 310,
+   "long_km": 20,
+   "key": "rovinky + krátke kopce",
+   "tss": 285,
+   "actual_km": 44.8,
+   "actual_minutes": 248,
+   "note": "",
+   "n": 11,
+   "key_sessions": [
+    {
+     "id": "2027-01-19-q1",
+     "date": "2027-01-19",
+     "slot": "q1",
+     "type": "test",
+     "title": "kontrola prahu: 30 min test",
+     "target": {
+      "pct": [
+       96,
+       100
+      ],
+      "pace": "4:25–4:36",
+      "hr_max": 168
+     },
+     "milestone": true,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      96,
+      100
+     ]
+    },
+    {
+     "id": "2027-01-22-q2",
+     "date": "2027-01-22",
+     "slot": "q2",
+     "type": "hills",
+     "title": "fartlek 8× 2 min",
+     "target": {
+      "pct": [
+       100,
+       106
+      ],
+      "pace": "4:10–4:25"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": "",
+     "basis": [
+      100,
+      106
+     ],
+     "ladder": "hills",
+     "step": 5
+    },
+    {
+     "id": "2027-01-24-long",
+     "date": "2027-01-24",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 20 km, posledných 15 min svižnejšie",
+     "target": {
+      "km": 20,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": {
+      "verdict": "on",
+      "summary": "podľa plánu"
+     },
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-01-25",
+   "phase": "build",
+   "phase_label": "budovanie",
+   "role": "deload",
+   "km": 39,
+   "minutes": 215,
+   "long_km": 16,
+   "key": "krátky prah, rovinky",
+   "tss": 210,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 12,
+   "key_sessions": [
+    {
+     "id": "2027-01-26-q1",
+     "date": "2027-01-26",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "krátky prah 4× 1 km",
+     "target": {
+      "pct": [
+       97,
+       99
+      ],
+      "pace": "4:28–4:33",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": [
+      97,
+      99
+     ]
+    },
+    {
+     "id": "2027-01-31-long",
+     "date": "2027-01-31",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 16 km",
+     "target": {
+      "km": 16,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-02-01",
+   "phase": "build",
+   "phase_label": "budovanie",
+   "role": "build",
+   "km": 58,
+   "minutes": 320,
+   "long_km": 22,
+   "key": "prah (cruise intervaly)",
+   "tss": 310,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 13,
+   "key_sessions": [
+    {
+     "id": "2027-02-02-q1",
+     "date": "2027-02-02",
+     "slot": "q1",
+     "type": "hm_pace",
+     "title": "3× 3 km v polmaratónskom tempe",
+     "target": {
+      "pct": [
+       94.6,
+       95.6
+      ],
+      "pace": "4:37–4:40",
+      "hr_max": 161
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:21.0975",
+     "ladder": "hm",
+     "step": 0
+    },
+    {
+     "id": "2027-02-05-q2",
+     "date": "2027-02-05",
+     "slot": "q2",
+     "type": "vo2",
+     "title": "5× 3 min (VO2)",
+     "target": {
+      "pct": [
+       106,
+       110
+      ],
+      "pace": "4:01–4:10"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": [
+      106,
+      110
+     ],
+     "ladder": "vo2",
+     "step": 0
+    },
+    {
+     "id": "2027-02-07-long",
+     "date": "2027-02-07",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 22 km",
+     "target": {
+      "km": 22,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-02-08",
+   "phase": "build",
+   "phase_label": "budovanie",
+   "role": "build",
+   "km": 60,
+   "minutes": 335,
+   "long_km": 24,
+   "key": "prah (cruise intervaly)",
+   "tss": 325,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 14,
+   "key_sessions": [
+    {
+     "id": "2027-02-09-q1",
+     "date": "2027-02-09",
+     "slot": "q1",
+     "type": "hm_pace",
+     "title": "2× 5 km v polmaratónskom tempe",
+     "target": {
+      "pct": [
+       94.6,
+       95.6
+      ],
+      "pace": "4:37–4:40",
+      "hr_max": 161
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:21.0975",
+     "ladder": "hm",
+     "step": 1
+    },
+    {
+     "id": "2027-02-12-q2",
+     "date": "2027-02-12",
+     "slot": "q2",
+     "type": "vo2",
+     "title": "6× 3 min (VO2)",
+     "target": {
+      "pct": [
+       106,
+       110
+      ],
+      "pace": "4:01–4:10"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": [
+      106,
+      110
+     ],
+     "ladder": "vo2",
+     "step": 1
+    },
+    {
+     "id": "2027-02-14-long",
+     "date": "2027-02-14",
+     "slot": "long",
+     "type": "mp_long",
+     "title": "Dlhý beh 24 km, posledných 8 km v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "km": 24,
+      "mp_km": 8,
+      "hr_max": 155
+     },
+     "milestone": true,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195"
+    }
+   ]
+  },
+  {
+   "week_start": "2027-02-15",
+   "phase": "build",
+   "phase_label": "budovanie",
+   "role": "build",
+   "km": 63,
+   "minutes": 345,
+   "long_km": 26,
+   "key": "prah (cruise intervaly)",
+   "tss": 335,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 15,
+   "key_sessions": [
+    {
+     "id": "2027-02-16-q1",
+     "date": "2027-02-16",
+     "slot": "q1",
+     "type": "hm_pace",
+     "title": "3× 4 km v polmaratónskom tempe",
+     "target": {
+      "pct": [
+       94.6,
+       95.6
+      ],
+      "pace": "4:37–4:40",
+      "hr_max": 161
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:21.0975",
+     "ladder": "hm",
+     "step": 2
+    },
+    {
+     "id": "2027-02-19-q2",
+     "date": "2027-02-19",
+     "slot": "q2",
+     "type": "vo2",
+     "title": "5× 1 km rýchlo",
+     "target": {
+      "pct": [
+       104,
+       106
+      ],
+      "pace": "4:10–4:15"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": [
+      104,
+      106
+     ],
+     "ladder": "vo2",
+     "step": 2
+    },
+    {
+     "id": "2027-02-21-long",
+     "date": "2027-02-21",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 26 km",
+     "target": {
+      "km": 26,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-02-22",
+   "phase": "build",
+   "phase_label": "budovanie",
+   "role": "deload",
+   "km": 44,
+   "minutes": 245,
+   "long_km": 21,
+   "key": "krátky prah, rovinky",
+   "tss": 235,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 16,
+   "key_sessions": [
+    {
+     "id": "2027-02-23-q1",
+     "date": "2027-02-23",
+     "slot": "q1",
+     "type": "threshold",
+     "title": "krátky prah 4× 1 km",
+     "target": {
+      "pct": [
+       97,
+       99
+      ],
+      "pace": "4:28–4:33",
+      "hr_max": 168
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": [
+      97,
+      99
+     ]
+    },
+    {
+     "id": "2027-02-28-long",
+     "date": "2027-02-28",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 21 km",
+     "target": {
+      "km": 21,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-03-01",
+   "phase": "build",
+   "phase_label": "budovanie",
+   "role": "build",
+   "km": 65,
+   "minutes": 360,
+   "long_km": 29,
+   "key": "prah (cruise intervaly)",
+   "tss": 350,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 17,
+   "key_sessions": [
+    {
+     "id": "2027-03-02-q1",
+     "date": "2027-03-02",
+     "slot": "q1",
+     "type": "hm_pace",
+     "title": "2× 6 km v polmaratónskom tempe",
+     "target": {
+      "pct": [
+       94.6,
+       95.6
+      ],
+      "pace": "4:37–4:40",
+      "hr_max": 161
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:21.0975",
+     "ladder": "hm",
+     "step": 3
+    },
+    {
+     "id": "2027-03-05-q2",
+     "date": "2027-03-05",
+     "slot": "q2",
+     "type": "vo2",
+     "title": "6× 1 km rýchlo",
+     "target": {
+      "pct": [
+       104,
+       106
+      ],
+      "pace": "4:10–4:15"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": [
+      104,
+      106
+     ],
+     "ladder": "vo2",
+     "step": 3
+    },
+    {
+     "id": "2027-03-07-long",
+     "date": "2027-03-07",
+     "slot": "long",
+     "type": "mp_long",
+     "title": "Dlhý beh 29 km s 3× 4 km v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "km": 29,
+      "mp_km": 12,
+      "hr_max": 155
+     },
+     "milestone": true,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195"
+    }
+   ]
+  },
+  {
+   "week_start": "2027-03-08",
+   "phase": "specific",
+   "phase_label": "špecifická",
+   "role": "build",
+   "km": 65,
+   "minutes": 360,
+   "long_km": 32,
+   "key": "dlhý beh s úsekmi v maratónskom tempe",
+   "tss": 360,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 18,
+   "key_sessions": [
+    {
+     "id": "2027-03-09-q1",
+     "date": "2027-03-09",
+     "slot": "q1",
+     "type": "mp",
+     "title": "2× 5 km v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "hr_max": 155
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195",
+     "ladder": "mp_mid",
+     "step": 0
+    },
+    {
+     "id": "2027-03-14-long",
+     "date": "2027-03-14",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 32 km",
+     "target": {
+      "km": 32,
+      "hr_max": 139
+     },
+     "milestone": true,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-03-15",
+   "phase": "specific",
+   "phase_label": "špecifická",
+   "role": "race-B",
+   "km": 52,
+   "minutes": 290,
+   "long_km": 21,
+   "key": "B: Polmaratón",
+   "tss": 290,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 19,
+   "key_sessions": [
+    {
+     "id": "2027-03-21-race",
+     "date": "2027-03-21",
+     "slot": "race",
+     "type": "race",
+     "title": "B závod: Polmaratón",
+     "target": {
+      "km": 21.1
+     },
+     "milestone": true,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-03-22",
+   "phase": "specific",
+   "phase_label": "špecifická",
+   "role": "build",
+   "km": 65,
+   "minutes": 360,
+   "long_km": 32,
+   "key": "dlhý beh s úsekmi v maratónskom tempe",
+   "tss": 360,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 20,
+   "key_sessions": [
+    {
+     "id": "2027-03-25-q1",
+     "date": "2027-03-25",
+     "slot": "q1",
+     "type": "mp",
+     "title": "2× 6 km v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "hr_max": 155
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195",
+     "ladder": "mp_mid",
+     "step": 1
+    },
+    {
+     "id": "2027-03-28-long",
+     "date": "2027-03-28",
+     "slot": "long",
+     "type": "long",
+     "title": "Dlhý beh 32 km",
+     "target": {
+      "km": 32,
+      "hr_max": 139
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-03-29",
+   "phase": "specific",
+   "phase_label": "špecifická",
+   "role": "build",
+   "km": 65,
+   "minutes": 360,
+   "long_km": 32,
+   "key": "dlhý beh s úsekmi v maratónskom tempe",
+   "tss": 360,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 21,
+   "key_sessions": [
+    {
+     "id": "2027-03-30-q1",
+     "date": "2027-03-30",
+     "slot": "q1",
+     "type": "mp",
+     "title": "2× 7 km v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "hr_max": 155
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195",
+     "ladder": "mp_mid",
+     "step": 2
+    },
+    {
+     "id": "2027-04-04-long",
+     "date": "2027-04-04",
+     "slot": "long",
+     "type": "mp",
+     "title": "5 km rozklus + 23 km súvisle v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "km": 28,
+      "mp_km": 23,
+      "hr_max": 155
+     },
+     "milestone": true,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195"
+    }
+   ]
+  },
+  {
+   "week_start": "2027-04-05",
+   "phase": "taper",
+   "phase_label": "ladenie",
+   "role": "taper",
+   "km": 49,
+   "minutes": 270,
+   "long_km": 24,
+   "key": "ostrenie v závodnom tempe",
+   "tss": 250,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 22,
+   "key_sessions": [
+    {
+     "id": "2027-04-06-q1",
+     "date": "2027-04-06",
+     "slot": "q1",
+     "type": "race_pace",
+     "title": "ostrenie 3× 1 km v tempe pretekov",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.2"
+    },
+    {
+     "id": "2027-04-11-long",
+     "date": "2027-04-11",
+     "slot": "long",
+     "type": "mp_long",
+     "title": "24 km so 6 km v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "km": 24,
+      "mp_km": 6,
+      "hr_max": 155
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195"
+    }
+   ]
+  },
+  {
+   "week_start": "2027-04-12",
+   "phase": "taper",
+   "phase_label": "ladenie",
+   "role": "taper",
+   "km": 39,
+   "minutes": 215,
+   "long_km": 20,
+   "key": "ostrenie v závodnom tempe",
+   "tss": 200,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 23,
+   "key_sessions": [
+    {
+     "id": "2027-04-13-q1",
+     "date": "2027-04-13",
+     "slot": "q1",
+     "type": "race_pace",
+     "title": "ostrenie 3× 1 km v tempe pretekov",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.2"
+    },
+    {
+     "id": "2027-04-18-long",
+     "date": "2027-04-18",
+     "slot": "long",
+     "type": "mp_long",
+     "title": "20 km so 6 km v maratónskom tempe",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53",
+      "km": 20,
+      "mp_km": 6,
+      "hr_max": 155
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.195"
+    }
+   ]
+  },
+  {
+   "week_start": "2027-04-19",
+   "phase": "race",
+   "phase_label": "závod",
+   "role": "race",
+   "km": 57,
+   "minutes": 315,
+   "long_km": 42,
+   "key": "A: Maratón",
+   "tss": 340,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 24,
+   "key_sessions": [
+    {
+     "id": "2027-04-21-q1",
+     "date": "2027-04-21",
+     "slot": "q1",
+     "type": "race_pace",
+     "title": "ostrenie 3× 1 km v tempe pretekov",
+     "target": {
+      "pct": [
+       90.4,
+       91.4
+      ],
+      "pace": "4:50–4:53"
+     },
+     "milestone": false,
+     "status": "planned",
+     "actual": null,
+     "note": "",
+     "basis": "race:42.2"
+    },
+    {
+     "id": "2027-04-25-race",
+     "date": "2027-04-25",
+     "slot": "race",
+     "type": "race",
+     "title": "A závod: Maratón",
+     "target": {
+      "km": 42.2
+     },
+     "milestone": true,
+     "status": "planned",
+     "actual": null,
+     "note": ""
+    }
+   ]
+  },
+  {
+   "week_start": "2027-04-26",
+   "phase": "recovery",
+   "phase_label": "regenerácia",
+   "role": "recovery",
+   "km": 23,
+   "minutes": 125,
+   "long_km": 7,
+   "key": "regenerácia po závode",
+   "tss": 100,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 25,
+   "key_sessions": []
+  },
+  {
+   "week_start": "2027-05-03",
+   "phase": "recovery",
+   "phase_label": "regenerácia",
+   "role": "recovery",
+   "km": 39,
+   "minutes": 215,
+   "long_km": 12,
+   "key": "len ľahké behy",
+   "tss": 175,
+   "actual_km": null,
+   "actual_minutes": null,
+   "note": "",
+   "n": 26,
+   "key_sessions": []
+  }
+ ],
+ "changes": [],
+ "warnings": [],
+ "roadmap": {
+  "threshold_pace": "4:25",
+  "goals": {
+   "21.1": 5880,
+   "42.2": 12300
+  },
+  "days": {
+   "q1": "tue",
+   "q2": "fri",
+   "long": "sun"
+  },
+  "lthr": 168,
+  "runs_per_week": 5
+ }
+}

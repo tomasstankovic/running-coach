@@ -1,0 +1,74 @@
+[
+ {
+  "date": "2026-11-15",
+  "kind": "steady",
+  "title": "Dlhý beh 15 km",
+  "ef": 1.18,
+  "decoupling": 7.5,
+  "durability": null
+ },
+ {
+  "date": "2026-11-22",
+  "kind": "steady",
+  "title": "Dlhý beh 15 km",
+  "ef": 1.186,
+  "decoupling": 7.2,
+  "durability": null
+ },
+ {
+  "date": "2026-11-29",
+  "kind": "steady",
+  "title": "Dlhý beh 16 km",
+  "ef": 1.192,
+  "decoupling": 6.8,
+  "durability": null
+ },
+ {
+  "date": "2026-12-06",
+  "kind": "steady",
+  "title": "Dlhý beh 11 km",
+  "ef": 1.198,
+  "decoupling": 6.5,
+  "durability": null
+ },
+ {
+  "date": "2026-12-27",
+  "kind": "steady",
+  "title": "Dlhý beh 18 km",
+  "ef": 1.216,
+  "decoupling": 5.4,
+  "durability": 5.4
+ },
+ {
+  "date": "2027-01-03",
+  "kind": "steady",
+  "title": "Dlhý beh 12 km",
+  "ef": 1.222,
+  "decoupling": 5.1,
+  "durability": null
+ },
+ {
+  "date": "2027-01-10",
+  "kind": "steady",
+  "title": "Dlhý beh 18 km",
+  "ef": 1.228,
+  "decoupling": 4.7,
+  "durability": 4.8
+ },
+ {
+  "date": "2027-01-17",
+  "kind": "steady",
+  "title": "Dlhý beh 19 km",
+  "ef": 1.234,
+  "decoupling": 4.3,
+  "durability": 4.5
+ },
+ {
+  "date": "2027-01-24",
+  "kind": "steady",
+  "title": "Dlhý beh 20 km",
+  "ef": 1.24,
+  "decoupling": 4.0,
+  "durability": 4.2
+ }
+]
