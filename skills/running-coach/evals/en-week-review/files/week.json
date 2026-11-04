@@ -1,0 +1,47 @@
+{
+ "week_start": "2026-10-26",
+ "planned_km": 52,
+ "actual_km": 40,
+ "sessions": [
+  {
+   "date": "2026-10-27",
+   "planned": "Cruise intervals 5 x 1.6 km @ 4:28-4:33, 2 min jog",
+   "km_planned": 12,
+   "done": true,
+   "km": 12.2,
+   "laps": "1.6 km reps: 4:26, 4:25, 4:25, 4:24, 4:24 /km; HR max per rep 174, 176, 178, 180, 181"
+  },
+  {
+   "date": "2026-10-28",
+   "planned": "Easy 8 km, HR < 150",
+   "km_planned": 8,
+   "done": true,
+   "km": 8.1,
+   "avg_hr": 141
+  },
+  {
+   "date": "2026-10-29",
+   "planned": "Easy 8 km + 6 strides",
+   "km_planned": 8,
+   "done": false,
+   "note": "work, no time"
+  },
+  {
+   "date": "2026-10-31",
+   "planned": "Easy 6 km",
+   "km_planned": 6,
+   "done": true,
+   "km": 6.0,
+   "avg_hr": 139
+  },
+  {
+   "date": "2026-11-01",
+   "planned": "Long run 18 km easy",
+   "km_planned": 18,
+   "done": true,
+   "km": 14.0,
+   "avg_hr": 146,
+   "note": "stopped at 14 km, right calf tight, about 3/10, eased when walking"
+  }
+ ]
+}

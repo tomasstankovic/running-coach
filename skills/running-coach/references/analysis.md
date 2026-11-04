@@ -131,18 +131,52 @@ Read it:
 - **Projection: "if the plan happens".** Runners ask what they will run on race day with the
   training that's planned, not only what they could run today. With `ctl` (today's CTL from
   `tp_get_fitness`), `ctl` on each history result (CTL on that race day) and a plan whose weeks
-  carry `tss`, the script adds a projection next to the forecast. Add `weekly_tss` (mean weekly run
-  TSS of the last 8 weeks, `tp_get_weekly_summary`): the plan's TSS is a rough per-hour estimate, and
-  the script rescales it to the runner's own TSS per km. It runs the planned TSS through
-  the CTL formula to the race day and applies the runner's own time-vs-CTL slope (their history
-  plus today's level; held between 0.05 and 0.4 % per CTL point, no extrapolation beyond 15 %
-  above the highest CTL they have raced at). Fast end: the whole plan; slow end: 80 % of its load.
+  carry `tss`, the script adds a projection next to the forecast. Always add `weekly_tss` (mean
+  weekly run TSS of the last 8 weeks, `tp_get_weekly_summary` total_tss): the plan's TSS is a rough
+  per-hour estimate, and the script rescales it to the runner's own TSS per km (CTL is no stand-in:
+  it lags behind the load in a build and made plans look ~10 % lighter). It runs the planned TSS
+  through the CTL formula to the race day and applies the runner's own time-vs-CTL slope, fitted
+  twice: with today's level as a point, and from the earlier races alone. A runner who is faster
+  today at a lower CTL than before (a longer base, better consistency) makes the first one flat,
+  as if more load gained little; the middle uses the mean of the two, the fast end the steeper,
+  the slow end the flatter (held between 0.05 and 0.4 % per CTL point, no extrapolation beyond
+  15 % above the highest CTL they have raced at). Fast end: the whole plan; slow end: 80 % of its load.
   The marathon goes through the runner's own marathon/half ratio, moved to the planned volume
   (Vickers model 1). Present both, labelled: "today's form" (evidence) and "if the plan happens"
-  (the runner's history applied to the plan). When the projection barely beats an earlier result,
-  say what it means: the plan matches the runner's earlier load, so a faster time needs more
-  load or better execution (e.g. marathon-specific long runs), not hope. When a week is missed,
-  the next run of the script moves the projection; that is the point.
+  (the runner's history applied to the plan). Check it against the runner's own best results: a
+  projection slower than a result they ran at a similar CTL and volume is a sign of a missing
+  input (`weekly_tss`, a history `ctl`), not news; fix the input before presenting it. When it only
+  matches an earlier result, say what it means: the plan matches the earlier load, so a faster
+  time needs more load or better execution (e.g. marathon-specific long runs). When a week is
+  missed, the next run of the script moves the projection; that is the point.
+- **A marathon that faded.** At ~60 km a week a marathon/half ratio of ~2.24 is typical for
+  recreational runners (Vickers), fade included, so the runner's own ratio is not pessimism; but a
+  fade is also what a block can fix (fuelling, long runs, pacing). When a history marathon slowed
+  after km 30 (`analyze_session.py` on it prints the pace to km 30 and after; 3 % or more slower is
+  a fade), add `"steady_pace"` (pace to km 30) to that history entry. The projection's slow end then
+  assumes the fade comes back, the fast end that it doesn't, and the middle starts at half of it.
+- **Milestones move the middle** with evidence, not hope. They are the plan's: each A and B race has
+  a road of ~5 (4-6) key sessions marked `milestone` with `race` (its date), from the ~12 weeks
+  before it (`season_plan.py roads` sets them on an existing plan; three are too few, one good or
+  bad day would move the forecast too much). `forecast.py` reads them from the plan. After each one,
+  the weekly review sets its `actual.check` from `analyze_session.py`: `held`, `partly` or `faded`
+  (without it the verdict counts: on target or better = held, under = partly; missed ones don't
+  count). The plan page shows each road under the key sessions, with ✓ / ◐ / ✕ / –.
+  - **Marathon:** long runs of 28 km or more, or with 8+ km at marathon pace; one of them with
+    race fuelling (60-90 g/h, `fuel`) and at least one past 30 km. `held` = the marathon-pace parts
+    kept their pace (first to last within ~2 %) and durability under 3 % (efficiency lost in the last
+    quarter), with the planned fuelling tolerated; `faded` = pace dropped 3 %+ or durability 6 %+,
+    or the run was cut short by legs or stomach; `partly` in between. They move the share of an
+    earlier marathon's fade (none recorded: they still show, but change nothing).
+  - **Half marathon, 10 km and shorter:** the threshold check, sessions at race pace (e.g. 2 x 5-6 km
+    or 3 x 4 km at half-marathon pace), a dress rehearsal or tune-up race. `held` = the planned pace,
+    even (first to last within ~2 %), heart rate within the plan (around LTHR at the end, not above
+    it); `faded` = pace not held or heart rate well above; `partly` in between. They move the middle
+    between the flatter and the steeper slope, for the race and for a marathon built on that half.
+    A test or tune-up race also goes in as a result (and a threshold test as the new
+    `threshold_pace`): that moves the whole forecast.
+  - Without a plan, the same list goes into the forecast input as `checks` (`race`, `date`,
+    `name`, `result`).
 - **Plan page**: `forecast.py input.json --json` gives rows for the `predictions` collection
   (`page_docs.py rows.json --collection predictions --id id`): the page shows each race's latest
   forecast with its trend over the weeks and a current-form table.

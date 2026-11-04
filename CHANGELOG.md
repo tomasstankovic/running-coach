@@ -3,8 +3,78 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
-## Unreleased
+## 0.16.0
 
+- **Training on a fixed time budget** (`methodology.md` §11, from a research pass over 58 studies):
+  plan from the hours a runner can really give (onboarding asks for them), with an allocation by
+  budget (≤ 3, 3–5, 5–7, 7+ h); where an extra hour goes (easy running for a half or marathon,
+  about 4 min off a marathon per +10 km a week; quality and strength for 5k/10k); threshold or
+  sub-threshold as the default quality and long intervals over sprints; busy weeks keep 2 runs
+  with intensity, never easy-only; cheaper volume (commutes, doubles, cross-training) and what is
+  not proven for amateurs (Norwegian singles, profile-based emphasis). 11 new sources (S54–S64),
+  each DOI checked in Crossref.
+- **README: "The research behind it"**: the key studies by topic with their size, and the link to
+  all 63 sources.
+- Evals: a 3-hour week for a 10 km goal, and a busy month before a marathon (tag `v016`), plus six
+  in English (tag `en`): a first chat, a weekly review, a taper in miles, a return from a bone
+  stress injury, a trail race from a flat city, and a sub-4 marathon on 4 hours a week.
+- Evals for faster runners (tag `performance`): sub-3 and sub-2:45 marathons, sub-1:30 and
+  sub-1:20 halves, each checked for an honest prediction, gradual volume, race-specific work and
+  the race plan.
+- **Trail and mountain races** (`methodology.md` §9): long runs by time toward the race's
+  duration, vertical in a flat city (incline treadmill, stairs, car parks, weekend hills),
+  power hiking, downhill practice with eccentric strength, and fuel and water for the race's real
+  duration, rehearsed in race kit.
+- **After an update** (`whats-new.md`): the coach notices a new version at the start of a
+  conversation (`Coach version` in the profile), says what is new for that runner, checks their
+  plan and forecast against the new rules and proposes changes (made only after a yes), and
+  publishes the new page template to the same link (the data stays). A scheduled review does
+  the same and asks in its report.
+- **Faster runners** (`methodology.md` §5): volume from the runner's best block with deloads said
+  in the plan, easy doubles past ~6 runs, two quality sessions (double threshold only as labelled
+  practice), the specific phase by distance, the limiter named from two results of different
+  length, and smaller gains per block. The goal table now has half sub-1:20 and marathon sub-2:45.
+- **The first answer to a time goal** (`onboarding.md` §5): the numbers and a fallback goal, the
+  limiter, the block shape with its deload rhythm, the key sessions per phase, a halfway check
+  point, a tune-up 2–4 weeks out, the taper, and race pacing and fuelling, then only the questions
+  that change the plan.
+- **"Today" card at the top of the plan page**: today's session with pace, HR cap and distance,
+  this morning's readiness and what it means for that session (the morning brief now writes one
+  sentence of `advice` with its readiness row), active pain or illness, and tomorrow.
+- **Plan page in the order a runner reads it**: "Where we are" first (the phase, week x of y, what
+  the phase is for and what to focus on, its goal from the plan and what comes next; a coach's
+  note per phase in `phase_notes`), then readiness next to this week (with next week's key
+  sessions), then each race's forecast with its road under it, and only then key sessions, load
+  and form, blocks, zones and history. The four number tiles are gone: their content is in the
+  phase panel, and the race chips count the weeks.
+- **A road to each race.** Every A and B race has its own ~5 milestones (4-6) from the 12 weeks
+  before it, tagged with the race: for a marathon the marathon-pace long runs, the longest run and
+  one with race fuelling; for a half the threshold check and race-pace sessions. Races are the end
+  of a road, no longer milestones. `season_plan.py roads` sets them on an existing plan, keeping
+  every result; `check-roadmap` warns when a road has fewer than 4 or more than 6.
+- **Key sessions on the plan page**: "Next" is only this week and the next, with the next
+  milestone after them; "Done" the sessions run, newest first; "Whole plan" everything. Below,
+  each race's road on a time line (✓ / ◐ / ✕ / –, the next one marked, the race and its forecast
+  at the end). The prediction card shows one line ("milestones 0 of 5 · next …") instead of a list.
+- **Projection "if the plan happens" no longer undersells the plan.** Two fixes, found on a real
+  season where the projection came out slower than the runner's own best at the same load:
+  - Without `weekly_tss` the plan's TSS was rescaled by CTL x 7, which lags behind the load in a
+    build and made the plan ~10 % lighter (race-day CTL 42 instead of 47). The plan's own
+    estimate is now used, and the skill always passes `weekly_tss`.
+  - The time-vs-CTL slope is fitted twice, with today's level and from the earlier races alone. A
+    runner who is already faster at a lower CTL than last season made the single fit flat (0.09 %
+    per CTL point), as if more training bought little; the middle now uses the mean of the two.
+  - The marathon card's "today" mark shows today's form, not the forecast at the plan's volume.
+- **A faded marathon and race checks.** `analyze_session.py` prints a marathon's pace to km 30 and
+  after it. In the forecast history that marathon gets `steady_pace`: the projection's slow end
+  assumes the fade comes back, the fast end that it doesn't, and the middle starts at half of it
+  (it used to assume the full fade, which at ~60 km a week is typical, but trainable). The race's
+  milestones, read from the plan with the review's `actual.check`, move the middle: every one held
+  toward the fast end, every one faded back.
+- **Plan page predictions read at a glance**: one headline time with its label above it ("on race
+  day, if the plan happens") and one range; today's form and the goal are marks on a time line
+  instead of a second range, and the goal's distance from the best case is in seconds or minutes
+  ("25 s faster than the best case: a stretch"), not a percentage against "the projection".
 - Race plan: weather typed in by the runner (instead of fetched) is shown as "given" with the
   heat line; it used to read "no weather data" although the heat was counted.
 - **README**: a picture of three real answers at the top (morning brief, race plan, session

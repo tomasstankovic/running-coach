@@ -59,7 +59,9 @@ it up only after a yes. Self-contained prompt, filled in, in the runner's langua
 > HR cap; heat adjustment if any), active pain or illness, and what moves if something changes.
 > Then send ONE line with PushNotification (under 180 characters), e.g. "Zelená · 6× 1 km
 > 4:10–4:15, tep do 174 · 8 °C" or "Oranžová · intervaly presuň, dnes 40 min ľahko do 145". If a
-> plan page URL is in the profile, add today's readiness row to its `trends` collection. Never
+> plan page URL is in the profile, add today's readiness row to its `trends` collection, with
+> `advice`: one sentence on today's session in the runner's language (the page's "Today" card shows
+> it, e.g. "Daj o 1 úsek menej, na spodku tempa (4:15), alebo vymeň so sobotou."). Never
 > change the TrainingPeaks calendar: if the session should change, say so and wait for the
 > runner's yes.
 

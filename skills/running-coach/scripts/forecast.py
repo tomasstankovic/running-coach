@@ -20,8 +20,14 @@ input.json:
   "ctl": 28,                                   # optional: CTL today (tp_get_fitness); enables the projection
   "weekly_tss": 290,                           # optional: mean weekly run TSS, last 8 weeks (calibrates the plan's TSS)
   "history": [                                 # optional: earlier best races and the volume behind them
-    {"date": "2025-04-27", "km": 21.0975, "time": "1:31:40", "weekly_km": 55, "ctl": 44}
+    {"date": "2025-04-27", "km": 21.0975, "time": "1:31:40", "weekly_km": 55, "ctl": 44},
+    {"date": "2025-05-25", "km": 42.195, "time": "3:22:47", "weekly_km": 58, "ctl": 48,
+     "steady_pace": "4:38"}                    # marathon only, if it faded: pace to km 30
   ],                                           # ctl: CTL on race day (tp_get_fitness for that date)
+  "checks": [                                  # optional without a plan: each race's milestones
+    {"race": "2027-04-25", "date": "2027-03-07", "name": "30 km, 3 x 4 km at M", "result": "held"},
+    {"race": "2027-03-21", "date": "2027-02-12", "name": "2 x 5 km at HM pace", "result": "partly"}
+  ],                                           # result: held | partly | faded | planned
   "plan": "plan.json",                         # optional: season_plan.py output (races + planned km)
   "races": [                                   # optional when the plan has them
     {"name": "Spring Marathon", "date": "2027-04-25", "distance_km": 42.195, "goal": "3:25:00",
@@ -44,14 +50,30 @@ How (references/analysis.md "Race predictions"):
   5 °C [S39]).
 - Projection to race day ("if the plan happens"): shown next to the forecast, never mixed into it.
   It needs "ctl", the plan's weekly "tss" and at least one history result with its "ctl". The
-  plan's TSS, rescaled to the runner's own TSS per km ("weekly_tss", or today's CTL as the recent
-  load), is run forward through the CTL formula (42-day average) to the race day. The
-  runner's own results against their CTL then give their personal slope (how much faster per
-  point of CTL), fitted on a log scale with today's level as one point. The slope is held between
+  plan's TSS, rescaled to the runner's own TSS per km ("weekly_tss"; without it the plan's own
+  estimate is used, as CTL lags behind the load in a build), is run forward through the CTL
+  formula (42-day average) to the race day. The runner's own results against their CTL then give
+  their personal slope (how much faster per point of CTL), on a log scale, in two ways: with
+  today's level as one point, and from the earlier results alone. They differ when the runner has
+  changed since (today faster at a lower CTL than before: the first is flatter), so the middle
+  uses their mean, the fast end the steeper and the slow end the flatter. Slopes are held between
   0.05 and 0.4 % per CTL point, and CTL beyond 15 % above the highest the runner has raced at is
   not extrapolated. The fast end assumes the whole plan, the slow end 80 % of its load. For the
   marathon the projected half goes through the runner's own marathon/half ratio, corrected for
   the planned volume with Vickers model 1, or through Vickers model 1 alone without that history.
+  When that marathon faded ("steady_pace", the pace to km 30), it gives two ratios: as run (the
+  fade comes back: slow end) and at the steady pace (no fade: fast end). The middle starts with
+  half of the fade.
+- Checks: each race's milestones move the middle, with evidence instead of hope. With a plan they
+  are its key sessions marked as milestones of that race ("race": its date; season_plan.py roads),
+  their result the review's "check" (held / partly / faded), else the verdict (on target or better:
+  held, under: partly; missed ones don't count); without a plan, "checks" in the input. A
+  marathon's checks (long runs with marathon pace) move the share of the fade:
+  every one held takes a share of it away, every one faded adds it back, so a block of checks all
+  held ends at the no-fade time. The checks of a race up to 25 km (threshold test, sessions at race
+  pace) move the middle between the flatter and the steeper slope the same way, for that race and
+  for the half a marathon is built on. A test or tune-up race also goes in as a result: that moves
+  the whole forecast.
   It is the runner's history applied to the plan, not evidence of fitness: re-run it every week,
   and trust the forecast when the two disagree.
 """
@@ -75,6 +97,9 @@ HEAT_FROM, HEAT_PER_5C = 15, (1.0, 2.0)  # % slower per 5 °C above 15 °C [S39]
 HISTORY_VOLUME = 0.9                   # an earlier result counts when the plan reaches 90 % of its volume
 TAPER_WEEKS = 1                        # weeks before the race not counted as "planned volume"
 VOLUME_WEEKS = 8                       # planned weeks counted before the race (weeks -9 to -2)
+FADE_START = 0.5                       # share of an earlier marathon's fade assumed before the checks show otherwise
+SLOPE_START = 0.5                      # where the middle sits between the flatter and the steeper slope, before checks
+CHECK_CREDIT = {"held": 1.0, "partly": 0.5, "faded": -1.0, "planned": 0.0}
 CTL_DAYS = 42                          # TrainingPeaks CTL time constant
 SLOPE_RANGE = (0.0005, 0.004)          # personal gain per CTL point on log time: 0.05-0.4 % (guardrail)
 SLOPE_DEFAULT = 0.0015                 # used when the history gives no usable slope
@@ -201,16 +226,17 @@ def tss_scale(inp, plan):
     (weekly_tss, or CTL x 7 as the recent daily load) so the projected CTL is on their scale."""
     weeks = [w for w in plan.get("weeks", []) if w.get("tss") and w.get("km")]
     km = inp.get("weekly_km")
-    own = inp.get("weekly_tss") or (inp["ctl"] * 7 if inp.get("ctl") else None)
-    if not weeks or not km or not own:
+    own = inp.get("weekly_tss")
+    if weeks and km and not own:
+        return 1.0, "no weekly_tss: the plan's own TSS estimate is used"
+    if not weeks or not km:
         return 1.0, None
     planned = sum(w["tss"] for w in weeks) / sum(w["km"] for w in weeks)
     raw = own / km / planned
     scale = min(max(raw, TSS_SCALE[0]), TSS_SCALE[1])
     if abs(scale - 1) < 0.05:
         return 1.0, None
-    src = "weekly_tss" if inp.get("weekly_tss") else "CTL"
-    return scale, f"plan TSS x {scale:.2f} to match your own {own / km:.1f} TSS per km ({src})"
+    return scale, f"plan TSS x {scale:.2f} to match your own {own / km:.1f} TSS per km"
 
 
 def project_ctl(plan, ctl, today, until, share=1.0):
@@ -224,20 +250,30 @@ def project_ctl(plan, ctl, today, until, share=1.0):
     return ctl
 
 
-def personal_slope(points):
-    """Least-squares slope of log(time) on CTL, as a positive gain per CTL point, within SLOPE_RANGE."""
+def fit_slope(points):
+    """Least-squares slope of log(time) on CTL as a positive gain per CTL point, within SLOPE_RANGE;
+    None when the points are too few or all at about the same CTL."""
     if len(points) < 2:
-        return SLOPE_DEFAULT, "no history with CTL: default slope"
+        return None
     xs, ys = [c for c, _ in points], [math.log(t) for _, t in points]
     mx, my = statistics.mean(xs), statistics.mean(ys)
     sxx = sum((x - mx) ** 2 for x in xs)
     if sxx < 25:  # all at about the same CTL: nothing to learn from
-        return SLOPE_DEFAULT, "history at a similar CTL: default slope"
+        return None
     gain = -sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sxx
-    lo, hi = SLOPE_RANGE
-    clipped = min(max(gain, lo), hi)
-    note = f"personal slope {gain * 100:.2f} % per CTL point" + (f", held at {clipped * 100:.2f} %" if clipped != gain else "")
-    return clipped, note
+    return min(max(gain, SLOPE_RANGE[0]), SLOPE_RANGE[1])
+
+
+def personal_slopes(now_point, history):
+    """(flat, steep, note): the slope with today's level as a point and from the earlier results
+    alone. A runner who is faster today at a lower CTL than before makes the first one flatter."""
+    found = [g for g in (fit_slope([now_point] + history), fit_slope(history)) if g is not None]
+    if not found:
+        return SLOPE_DEFAULT, SLOPE_DEFAULT, "history at a similar CTL: default slope"
+    flat, steep = min(found), max(found)
+    note = (f"personal slope {flat * 100:.2f}-{steep * 100:.2f} % per CTL point (with today's level / earlier races alone)"
+            if steep - flat > 0.0001 else f"personal slope {flat * 100:.2f} % per CTL point")
+    return flat, steep, note
 
 
 def projection(inp, race, plan, today):
@@ -253,9 +289,9 @@ def projection(inp, race, plan, today):
     now = level(inp, ref, today)
     if not now:
         return None
-    points = [(ctl_now, now[1])] + [(h["ctl"], riegel(parse_time(h["time"]), h["km"], ref)) for h in hist if h["km"] <= 25]
-    gain, slope_note = personal_slope(points)
-    cap = max(c for c, _ in points) * CTL_STRETCH
+    earlier = [(h["ctl"], riegel(parse_time(h["time"]), h["km"], ref)) for h in hist if h["km"] <= 25]
+    flat, steep, slope_note = personal_slopes((ctl_now, now[1]), earlier)
+    cap = max([ctl_now] + [c for c, _ in earlier]) * CTL_STRETCH
     scale, scale_note = tss_scale(inp, plan)
     full = project_ctl(plan, ctl_now, today, rdate, scale)
     short = project_ctl(plan, ctl_now, today, rdate, scale * PLAN_SHORTFALL)
@@ -263,20 +299,67 @@ def projection(inp, race, plan, today):
              slope_note] + ([scale_note] if scale_note else [])
     if full > cap:
         notes.append(f"CTL above {cap:.0f} is beyond your racing history: not extrapolated")
-    at = lambda c: now[1] * math.exp(-gain * (min(c, cap) - ctl_now))
-    fast, slow = at(full), at(short)
+    w, w_note = slope_weight(inp, race["date"])
+    if w_note:
+        notes.append(w_note)
+    at = lambda c, g: now[1] * math.exp(-g * (min(c, cap) - ctl_now))
+    fast, mid, slow = at(full, steep), at(full, flat + w * (steep - flat)), at(short, flat)
     if km > 25:
         planned = planned_volume(plan, rdate)
-        fast, slow = marathon_from_half(fast, inp, planned, notes), marathon_from_half(slow, inp, planned)
-        if fast is None:
+        r = marathon_ratios(inp, mid, planned, notes, race["date"])
+        if r is None:
             return None
+        fast, mid, slow = fast / mid * r[0], r[1], slow / mid * r[2]
     spread = PROJ_SPREAD / 100
-    return fast * (1 - spread), fast, slow * (1 + spread), notes
+    return min(fast, mid * (1 - spread)), mid, max(slow, mid * (1 + spread)), notes
 
 
-def marathon_from_half(half, inp, planned_km, notes=None):
-    """Marathon from a half-marathon time: the runner's own marathon/half ratio at the volume they
-    had then, moved to the planned volume by Vickers model 1; Vickers model 1 alone without history."""
+def race_checks(inp, race_date=None, long=None):
+    """Checks for one race (by date), or for all races of one kind (long: marathon, else up to 25 km)."""
+    out = []
+    for c in inp.get("checks", []):
+        if c.get("result") not in CHECK_CREDIT:
+            continue
+        if race_date is not None and c.get("race") != race_date:
+            continue
+        if long is not None and ((c.get("race_km") or 0) > 30) != long:
+            continue
+        out.append(c)
+    return out
+
+
+def check_credit(checks, what):
+    """(credit from -1 to 1, note): held +1, partly +0.5, faded -1, planned 0, averaged."""
+    if not checks:
+        return 0.0, None
+    credit = sum(CHECK_CREDIT[c["result"]] for c in checks) / len(checks)
+    done = [c["result"] for c in checks if c["result"] != "planned"]
+    return credit, f"{what}: {len(done)} of {len(checks)} done ({', '.join(done) or 'none yet'})"
+
+
+def fade_share(inp, race_date):
+    """(share of an earlier marathon's fade assumed on race day, note), from that race's checks."""
+    credit, note = check_credit(race_checks(inp, race_date), "marathon checks")
+    share = min(max(FADE_START * (1 - credit), 0.0), 1.0)
+    return share, (f"{note}: {share * 100:.0f} % of the fade assumed" if note else None)
+
+
+def slope_weight(inp, race_date=None):
+    """Where the middle sits between the flatter (0) and the steeper (1) slope: the checks of the
+    race itself when it is up to 25 km, else those of the races up to 25 km (the half under a marathon)."""
+    checks = race_checks(inp, race_date) if race_date else []
+    if not checks or (checks[0].get("race_km") or 0) > 30:
+        checks = race_checks(inp, long=False)
+    credit, note = check_credit(checks, "race-pace checks")
+    w = min(max(SLOPE_START * (1 + credit), 0.0), 1.0)
+    return w, (f"{note}: the middle at {w * 100:.0f} % of the way to the steeper slope" if note else None)
+
+
+def marathon_ratios(inp, half, planned_km, notes=None, race_date=None):
+    """(fast, mid, slow) marathon times from a half-marathon time: the runner's own marathon/half
+    ratio at the volume they had then, moved to the planned volume by Vickers model 1. A faded
+    marathon ("steady_pace") gives the no-fade ratio for the fast end and, with the share of the
+    fade still assumed (fade_share), the middle. Without a marathon in the history: Vickers alone."""
     if not planned_km:
         return None
     miles = lambda km: km / 1.609344
@@ -288,15 +371,24 @@ def marathon_from_half(half, inp, planned_km, notes=None):
         if not halves:
             continue
         h = max(halves, key=lambda h: h["date"])
-        ratio = parse_time(m["time"]) / parse_time(h["time"])
-        v_then = vickers_model1(HALF * 1000, half, miles(m["weekly_km"]))
+        actual = parse_time(m["time"]) / parse_time(h["time"])
+        move = v_plan / vickers_model1(HALF * 1000, half, miles(m["weekly_km"]))
+        steady = parse_pace(m["steady_pace"]) * m["km"] / parse_time(h["time"]) if m.get("steady_pace") else actual
+        steady = min(steady, actual)
+        share, check_note = fade_share(inp, race_date)
+        mid = steady + share * (actual - steady)
         if notes is not None:
-            notes.append(f"your marathon/half ratio {ratio:.3f} ({m['time']} after {h['time']} at {m['weekly_km']:g} km/week), "
+            notes.append(f"your marathon/half ratio {actual:.3f} ({m['time']} after {h['time']} at {m['weekly_km']:g} km/week), "
                          f"moved to {planned_km:.0f} km/week")
-        return half * ratio * v_plan / v_then
+            if steady < actual:
+                notes.append(f"that marathon faded after km 30 ({m['steady_pace']}/km before): {steady:.3f} without the fade; "
+                             f"the middle assumes {share * 100:.0f} % of it")
+                if check_note:
+                    notes.append(check_note)
+        return half * steady * move, half * mid * move, half * actual * move
     if notes is not None:
         notes.append(f"no marathon in your history: Vickers model 1 with {planned_km:.0f} km/week")
-    return v_plan
+    return v_plan, v_plan, v_plan
 
 
 def race_forecast(inp, race, plan, today):
@@ -354,6 +446,23 @@ def race_forecast(inp, race, plan, today):
     return out
 
 
+VERDICT_CHECK = {"on": "held", "over": "held", "under": "partly"}
+
+
+def plan_checks(plan):
+    """The plan's milestones as checks: {race, date, name, result}; [] without a plan or roads."""
+    out = []
+    for w in (plan or {}).get("weeks", []):
+        for s in w.get("key_sessions", []):
+            if not (s.get("milestone") and s.get("race")):
+                continue
+            act = s.get("actual") or {}
+            result = act.get("check") or VERDICT_CHECK.get(act.get("verdict")) or ("planned" if not act else None)
+            if result:
+                out.append({"race": s["race"], "date": s["date"], "name": s["title"], "result": result})
+    return out
+
+
 def load(path):
     with open(path) as f:
         inp = json.load(f)
@@ -363,6 +472,12 @@ def load(path):
             plan = json.load(f)
     races = inp.get("races") or (plan or {}).get("spec", {}).get("races", [])
     today = date.fromisoformat(inp["today"]) if inp.get("today") else date.today()
+    km_of = {r["date"]: r.get("distance_km") or r.get("km") for r in races}
+    from_plan = plan_checks(plan)
+    if from_plan:
+        inp["checks"] = from_plan
+    for c in inp.get("checks", []):
+        c["race_km"] = km_of.get(c.get("race"))
     return inp, plan, races, today
 
 

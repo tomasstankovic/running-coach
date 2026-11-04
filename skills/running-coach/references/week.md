@@ -17,6 +17,9 @@ sessions (`season.md` §2b), and change them when this week's readiness, illness
 or the last session says so; say why. The principles that matter most:
 
 - Mostly easy. One long run, one or two quality sessions, everything else easy (strides are fine).
+- Fit the week to the runner's time budget (`methodology.md` §11): its tier sets the runs, the
+  long run and the quality; extra time goes to easy running for a half or marathon, to quality
+  for 5k/10k; in a busy week keep 2 runs with intensity rather than easy-only.
 - Never two hard days in a row. Keep the long run away from hard days when possible.
 - Progress one variable at a time: add a rep or some minutes before adding pace.
 - Prescribe easy running by HR cap, with the runner's own easy pace range as a guide.

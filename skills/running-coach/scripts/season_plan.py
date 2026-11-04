@@ -13,6 +13,7 @@ Usage:
   season_plan.py retarget plan.json [--threshold-pace 4:05] [--goals ...] --out plan.json
                                                             # fills/recomputes targets from each `basis`
   season_plan.py check-roadmap plan.json                    # rules the key sessions must keep
+  season_plan.py roads plan.json --out plan.json          # each A/B race's milestones (keeps results)
   season_plan.py export plan.json --format markdown          # table for a TP note / profile file
   season_plan.py export plan.json --format batch --out-dir docs [--versions versions.json]
                                                             # plan page database: one JSON file per
@@ -436,6 +437,9 @@ def main():
     e.add_argument("--versions", help='batch: {"weeks/2026-11-09": 3, ...} from an ArtifactData list')
     c = sub.add_parser("check-roadmap")
     c.add_argument("plan")
+    o = sub.add_parser("roads")
+    o.add_argument("plan")
+    o.add_argument("--out")
     args = ap.parse_args()
 
     try:
@@ -466,8 +470,17 @@ def main():
                 print(f"{n} key sessions: {fails} FAIL, {len(found) - fails} WARN" if found
                       else f"{n} key sessions: all rules kept")
                 sys.exit(1 if fails else 0)
-            result = {"replan": cmd_replan, "actuals": cmd_actuals, "roadmap": cmd_roadmap,
-                      "retarget": cmd_retarget}[args.cmd](plan, args)
+            if args.cmd == "roads":
+                key_sessions.race_roads(plan)
+                for r in plan["spec"].get("races", []):
+                    road = [x for w in plan["weeks"] for x in w.get("key_sessions", []) if x.get("milestone") and x.get("race") == r["date"]]
+                    if road:
+                        print(f"{r['name']} {r['date']}: " + "; ".join(f"{x['date']} {x['title']}" + (" (fuel)" if x.get("fuel") else "")
+                                                                for x in road), file=sys.stderr)
+                result = plan
+            else:
+                result = {"replan": cmd_replan, "actuals": cmd_actuals, "roadmap": cmd_roadmap,
+                          "retarget": cmd_retarget}[args.cmd](plan, args)
     except (ValueError, KeyError) as e:
         sys.exit(f"error: {e}")
 

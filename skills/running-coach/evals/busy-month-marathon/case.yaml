@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: busy-month-marathon
+expected_outcome: |
+  The runner's work will allow only 2 runs of about 45 min plus one 60 min run a week for the next 4 weeks, 14 weeks before a 3:30 marathon (normally 5 runs, ~50 km). The coach keeps intensity: at least one of the runs each week has some quality (threshold or tempo reps, or strides/short fast reps), not easy-only, cuts volume, keeps a long run of about 60-75 min weekly or every 1-2 weeks, explains that fitness holds for a few weeks this way (and that easy-only would lose more), and gives a gradual return after the 4 weeks with no catching up. It doesn't change the goal now; it re-checks after the busy month. Slovak.
+context:
+  scaffold_script: place-files.sh

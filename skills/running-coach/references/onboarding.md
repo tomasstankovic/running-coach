@@ -52,7 +52,8 @@ already answers, and ask the runner to confirm or correct it rather than asking 
    success?
 2. **Background**: how long they've been running, best recent results (distance + time + date),
    biggest weekly volume they've handled, and other sports.
-3. **Availability**: runs per week, which days, the longest time available on weekdays and on
+3. **Availability**: runs per week, which days, the total hours a week they can really give
+   (the time budget, `methodology.md` §11), the longest time available on weekdays and on
    weekends, preferred long-run day, and morning or evening.
 4. **Units, terrain & tools** (`methodology.md` §9):
    - Kilometres or time: how they want sessions written ("10 km easy" vs. "60 min easy").
@@ -167,9 +168,11 @@ these up or down):
 | HM finish | 3–4 | 25–35 km | 16–18 km | 10k comfortably |
 | HM sub-1:45 | 4–5 | 40–50 km | 18–21 km | 10k ≈ 47:30 |
 | HM sub-1:30 | 5–6 | 55–75 km | 20–24 km | 10k ≈ 41:00 |
+| HM sub-1:20 | 6–7 | 80–100 km | 24–28 km | 10k ≈ 36:15 |
 | Marathon finish | 4 | 40–55 km | 30–32 km | HM comfortably |
 | Marathon sub-3:30 | 5–6 | 60–80 km | 32–35 km | HM ≈ 1:39 |
 | Marathon sub-3:00 | 6–7 | 80–110 km | 32–36 km | HM ≈ 1:25 |
+| Marathon sub-2:45 | 6–8 (easy doubles) | 95–130 km | 32–36 km | HM ≈ 1:19 |
 
 Gains that are realistic within one block (12–16 weeks) for someone already training
 consistently: ~2–4 % on race time. For someone returning from a break, or who has never trained
@@ -214,6 +217,21 @@ starts from it.
 
 ## 5. Propose the plan shape
 
+**The first answer to a time goal** ("can I run sub-3, and how would you build it?") already
+carries the coaching, before the questions. In this order, short:
+1. The numbers: goal pace, what the recent results predict (`paces.py predict`, `forecast.py`
+   when there is history), the gap in %, and the verdict with its conditions plus a fallback goal.
+2. The limiter, when there are two results of different length (`methodology.md` §5 "Faster
+   runners").
+3. The block shape: phases with dates, volume start → peak with the deload rhythm said ("every
+   4th week ~25 % lighter"), the peak long run.
+4. The key sessions of each phase with paces; the specific phase by distance from `workouts.md`
+   "Race-specific" (half: half-marathon-pace blocks; marathon: marathon pace inside long runs).
+5. A check point halfway (date and the result that confirms the goal), a tune-up race or dress
+   rehearsal 2–4 weeks before a half or marathon, and the taper length (`methodology.md` §6).
+6. Half, marathon or anything over ~2 hours: race pacing and fuelling, a line each (`season.md` §2).
+7. Then at most 5–6 questions, only those whose answers change the plan.
+
 Recommend the block structure (phases and their lengths, from `methodology.md`), weekly volume to
 start at and to peak at, runs per week, where strength fits, and the next 1–2 weeks in detail
 (then continue as in Week mode). With a race goal, build the season plan (`season.md`): races
@@ -238,6 +256,7 @@ Without TP, rewrite the file in the folder, or in chat give the updated file. Ke
 # Running coach profile
 updated: 2026-11-02 · source: TrainingPeaks
 Setup: TrainingPeaks + folder (Claude desktop, Code) · profile: TP note · plan: page + running-coach/plan.json
+Coach version: 0.16.0
 
 ## Goal
 - A race: City half marathon, 2027-03-28, road, target 1:38 (≈ 4:39/km)

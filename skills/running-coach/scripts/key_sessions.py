@@ -16,10 +16,12 @@ gap is reported. `retarget` fills or recomputes every future target from `basis`
 coach's edits, or after a new threshold or goal). `check-roadmap` checks the rules the coach's
 version must keep: paces, hard days, recovery after races, marathon-pace long runs, milestones.
 
-Milestones (6-10 a season): threshold check at the end of base, the longest run, the B races,
-for a marathon the long runs with 14-16 km at marathon pace and a continuous 18-23 km at
-marathon pace 2-4 weeks before (never in the week after a race), a dress rehearsal for shorter
-goals, and the A race.
+Milestones: every A and B race has its own road of ~5 (4-6) from the ~12 weeks before it, each
+tagged with the race ("race": its date); the race itself is the end of the road, not a milestone.
+A marathon's road: the long runs with 14-16 km at marathon pace, a continuous 18-23 km at
+marathon pace 2-4 weeks before (never in the week after a race), the longest run, and one long
+run with race fuelling ("fuel"); a shorter race's: the threshold check, sessions at race pace and a
+dress rehearsal. Their results move the race forecast (forecast.py, from the plan).
 
 After the review, `actuals --sessions` judges each session (on / over / under / missed) and
 proposes holding back the next step after under or missed; the coach decides with the context
@@ -37,6 +39,9 @@ TOLERANCE = (0.01, 0.02)  # rep pace: > 1 % slower than the target = under, > 2 
 HR_SLACK = 3             # bpm over the cap before a session counts as under target
 HARD = {"threshold", "tempo", "vo2", "hm_pace", "mp", "mp_long", "race_pace", "test", "race", "hills", "speed", "fartlek"}
 BIG_MP_KM = 14           # a long run with this much at marathon pace is a big session
+ROAD_TARGET, ROAD_RANGE = 5, (4, 6)   # milestones per A or B race
+ROAD_WEEKS, ROAD_TAPER_DAYS = 12, 10   # a road's window before the race; the taper days don't count
+FUEL_KM = 26             # the long run with race fuelling: an easy one of at least this much
 
 # Ladders: (en, sk, % of threshold speed or None). "{km}" is filled with the week's long run.
 LADDERS = {
@@ -309,6 +314,7 @@ def build_roadmap(plan, threshold_s, goals, days=None, lthr=None, runs=None):
 
     _milestones(plan, tg, tx, cls_of=lambda w: distance_class(float(a_race_for(w)["distance_km"])), a_races=a_races)
     _space_after_races(plan)
+    race_roads(plan)
     plan["roadmap"] = {"threshold_pace": fmt_pace(threshold_s), "goals": {f"{k:g}": v for k, v in goals.items()},
                        "days": days, "lthr": lthr, "runs_per_week": runs}
     return tg.notes
@@ -390,6 +396,55 @@ def _milestones(plan, tg, tx, cls_of, a_races):
         for s in ms:
             if s not in keep:
                 s["milestone"] = False
+
+
+def race_roads(plan):
+    """Give every A and B race its road: ~5 milestones from the key sessions of the 12 weeks before
+    it (the taper's last 10 days left out), tagged "race": <date>. Milestones already chosen by the
+    rules stay; the latest fitting sessions fill up the rest. Races are the end of a road, not
+    milestones. A marathon's road gets one long run with race fuelling ("fuel"). Keeps every
+    result and edit, so it also updates an existing plan (`season_plan.py roads`)."""
+    weeks = plan["weeks"]
+    races = sorted((r for r in plan["spec"].get("races", []) if r.get("priority") in ("A", "B")), key=lambda r: r["date"])
+    sessions = sorted((s for w in weeks for s in w.get("key_sessions", [])), key=lambda s: s["date"])
+    for s in sessions:
+        if s["type"] == "race":
+            s["milestone"] = False
+        if s.get("race") and s["race"] not in {r["date"] for r in races}:
+            s.pop("race")
+    taken = {s["id"] for s in sessions if s.get("race") and s.get("milestone")}
+    for r in races:
+        day, km = date.fromisoformat(r["date"]), float(r["distance_km"])
+        marathon = distance_class(km) == "m"
+        lo = (day - timedelta(weeks=ROAD_WEEKS)).isoformat()
+        hi = (day - timedelta(days=ROAD_TAPER_DAYS)).isoformat()
+        window = [s for s in sessions if lo <= s["date"] <= hi and s["type"] != "race"
+                  and (s["id"] not in taken or s.get("race") == r["date"])]
+        if marathon:
+            fits = lambda s: s["slot"] == "long" and (s["type"] in ("mp", "mp_long") or (s["target"].get("km") or 0) >= 28)
+        else:
+            at_race_pace = lambda b: isinstance(b, str) and b.startswith("race:") and abs(float(b[5:]) - km) < 0.5
+            fits = lambda s: s["type"] == "test" or at_race_pace(s.get("basis"))
+        road = [s for s in window if s.get("milestone") and s.get("race") in (None, r["date"]) and fits(s)]
+        need = ROAD_TARGET - len(road)
+        if need > 0:
+            road += [s for s in window if fits(s) and s not in road][-need:]   # the latest: the most race-specific
+        road = sorted(road, key=lambda s: s["date"])[-ROAD_RANGE[1]:]
+        if marathon and not any(s.get("fuel") for s in road):
+            easy = [s for s in road if s["type"] == "long" and (s["target"].get("km") or 0) >= FUEL_KM]
+            pick = max(easy, key=lambda s: s["target"].get("km") or 0) if easy else None
+            pick = pick or max((s for s in window if s["slot"] == "long" and s["type"] == "long"
+                                and (s["target"].get("km") or 0) >= FUEL_KM), key=lambda s: s["target"].get("km") or 0, default=None)
+            if pick:
+                pick["fuel"] = True
+                if pick not in road:
+                    road = sorted(road + [pick], key=lambda s: s["date"])[-ROAD_RANGE[1]:]
+        for s in road:
+            s.update(milestone=True, race=r["date"])
+            taken.add(s["id"])
+    for s in sessions:
+        if s.get("milestone") and not s.get("race"):
+            s["milestone"] = False
 
 
 def recovery_days(s):
@@ -484,9 +539,11 @@ def check_roadmap(plan):
                 after = [p for p in races if 0 < (date.fromisoformat(x["date"]) - date.fromisoformat(p["date"])).days <= 7]
                 if after:
                     out.append(("FAIL", f"{x['date']} {x['title']}: in the week after {after[0]['title']}"))
-    n_ms = sum(1 for s in ks if s.get("milestone"))
-    if not 4 <= n_ms <= 10:
-        out.append(("WARN", f"{n_ms} milestones (aim for 6-10)"))
+    for r in (r for r in plan["spec"].get("races", []) if r.get("priority") in ("A", "B")):
+        n_ms = sum(1 for s in ks if s.get("milestone") and s.get("race") == r["date"])
+        if not ROAD_RANGE[0] <= n_ms <= ROAD_RANGE[1]:
+            out.append(("WARN", f"{r['name']}: {n_ms} milestones on its road (aim for {ROAD_RANGE[0]}-{ROAD_RANGE[1]}; "
+                                f"season_plan.py roads)"))
     empty = [w["week_start"] for w in weeks if w["role"] != "recovery" and not w.get("key_sessions")]
     if empty:
         out.append(("WARN", f"weeks without key sessions: {', '.join(empty[:4])}" + (" ..." if len(empty) > 4 else "")))

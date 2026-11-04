@@ -53,6 +53,12 @@ runner as part of the reality check, with numbers.
 Present the plan as the block overview table (`methodology.md` §5) or, when the page exists,
 link to it. Agree it with the runner before saving.
 
+For a half, a marathon or a race over ~2 hours, the first answer about the season already names
+the two free gains, in a line each: the race pacing (even, or a slightly slower first half; no
+fast start) and the fuelling, practised on the long runs from the build onward (carbohydrate per
+hour by duration, and drinking from what they will carry or find on the course; "Race day" in
+`checkin-and-race.md`, "Fuelling practice" in `workouts.md`). The full race plan comes in race week.
+
 ### 2b. Key-session roadmap
 
 Volume alone doesn't show where the preparation is going. Right after `generate`, design the key
@@ -89,11 +95,15 @@ worked before or the winter.)
    two hard days in a row, quality 1–2 days after a race or test, a long run longer than the
    week's, a continuous marathon-pace run in the week after a race). For each WARN, fix it or
    know why it's right for this runner.
-- **Milestones** (★, 6–10 a season): the threshold check at the end of base (a short B race can
-  be it), the longest run, the B races, the A race; for a marathon the long runs with 14–16 km
-  at marathon pace and a continuous 18–23 km at marathon pace 2–4 weeks before the race (never
-  in the week after a race; the long run a week before it stays easy); for shorter goals a dress
-  rehearsal 2–3 weeks out.
+- **Milestones** (★): each A and B race has its own road of ~5 (4–6) from the ~12 weeks before it,
+  tagged with the race (`race`: its date); the race itself is the end of the road, not a milestone.
+  For a marathon: the long runs with 14–16 km at marathon pace, a continuous 18–23 km at marathon
+  pace 2–4 weeks before the race (never in the week after a race; the long run a week before it
+  stays easy), the longest run, and one long run with race fuelling (`fuel`). For shorter goals:
+  the threshold check at the end of base, sessions at race pace and a dress rehearsal 2–3 weeks
+  out. `roadmap` sets them; on an existing plan or after edits, `season_plan.py roads plan.json
+  --out plan.json` (keeps every result). Their results move the race forecast (`analysis.md`
+  "Milestones move the middle").
 - It's an estimate. Say so when you show it: the milestones, the next 4–6 sessions, and what you
   adapted for them and why, rather than the whole list.
 
@@ -158,6 +168,12 @@ Keep one visible view of it.
 4. Save the page URL in the profile (`Plan page: https://claude.ai/artifact/...`). Never publish a
    second page for the same runner; update the one in the profile. The page is private until the
    runner shares it from its Share menu.
+6. New template: the page keeps the HTML it was published with, so new sections arrive only when
+   the template is published again. When the live page's `running-coach-version` meta (read the
+   page with the `Artifact` tool) differs from the one in `assets/season-plan.html`, or is
+   missing, publish the template again to the same URL: a copy with `<title>` set to the plan's
+   title, no `capabilities` (they carry over). The data stays in its database. Say it in one
+   line ("the plan page has the new Today card").
 
 5. Keep it alive (each of these is optional; the page hides a section without data):
    - **This week**: when a week is planned in detail, `update` its `weeks/<monday>` document with
@@ -172,9 +188,12 @@ Keep one visible view of it.
    - **Aerobic fitness**: `analyze_session.py <data_file> --json --title "..."` for long and
      steady runs → rows for the `sessions` collection (EF, decoupling, km, date).
    - **Key sessions**: the week documents carry `key_sessions` from the roadmap, so the batch
-     export puts them on the page. The page shows the next sessions with the milestones by
-     default (also "milestones" and "all"), grouped by phase, with target pace, HR cap, the
-     result and its verdict, and an "adjusted" mark that leads to the change log.
+     export puts them on the page. "Next" shows only this week and the next (with the next
+     milestone after them), "done" the sessions run (newest first, with the result and its
+     verdict), "whole plan" everything by phase; with target pace, HR cap and an "adjusted" mark
+     that leads to the change log. Under the list, each A/B race has its road: its milestones on a
+     time line with their result and the next one marked, ending at the race with its forecast;
+     the race's prediction card shows "milestones 1 of 5 · next …".
    - **Durability**: the `sessions` rows of runs over 90 min carry `durability` (efficiency lost in
      the last quarter, `analysis.md` "Durability on long runs"); the page charts it.
    - **Pain and illness**: `health_log.py read notes.json --json` → its `rows` to the `health`
@@ -191,11 +210,23 @@ Keep one visible view of it.
    - `scripts/page_docs.py rows.json --collection trends --id date --out-dir docs` turns any of
      these lists into document files plus the `ArtifactData` batch writes, like the plan export.
 
-The page shows the races, this week's sessions, the next race countdown, race predictions
-(each race's forecast and its trend, current form), the volume chart
-(planned bars by phase, actual line, today marker), readiness (HRV 7-day mean in the runner's
-band, coloured by verdict), aerobic fitness (EF of steady runs, coloured by decoupling), the week
-table and the change log. It is in the runner's
+The page puts first what the runner checks day to day, then the details:
+0. **Today**: today's session with its targets (the key session's pace and HR cap, else the easy
+   cap), what this morning's readiness means for it (the brief's `advice` on its `trends` row, else
+   the general rule for the verdict; an older check-in is labelled with its date), active pain or
+   illness, and tomorrow in one line. On a rest day: why (a deload week) and tomorrow.
+1. **Where we are**: the current phase (week x of y, until when), the season strip with "you are
+   here", what the phase is for and what to focus on (built-in text per phase, plus the next
+   deload), its goal from the plan (weekly volume and long run now → at its peak, the milestone at
+   its end) and the phase after it. A coach's own word on a phase goes in `plan/meta`
+   `phase_notes` (`{"base": "a longer base this year after last spring's break"}`), shown as one
+   more point.
+2. **Today and this week**: readiness (verdict, why, HRV 7-day mean in the runner's band and its
+   trend) next to the week's days, with one line for next week's key sessions.
+3. **Races**: per race still ahead, its forecast card and under it its road of milestones.
+4. Then key sessions (next two weeks, done, whole plan), the volume chart (planned bars by
+   phase, actual line, today marker), aerobic fitness (EF coloured by decoupling, durability) next
+   to current form, block reports, training zones, the week table and the change log. It is in the runner's
 language when `lang` is `sk` or `en`; for other languages the labels stay English, while the
 week rows (key sessions, notes) are in the runner's language.
 
@@ -237,8 +268,10 @@ Review mode (`SKILL.md`) is the weekly checkpoint. With the plan it also:
    long run's `analyze_session.py --json` row to `sessions`.
 2. Compares the week with its row: volume ±15 %, the key sessions (`actuals --sessions`, §2b), the
    long run. Milestone results are also results for `forecast.py` (`kind: "effort"`).
-   Re-runs `forecast.py` and adds its rows to `predictions`; a race goal that left the range is
-   part of the review's decisions.
+   A milestone run this week gets its `actual.check` in plan.json (`held` / `partly` / `faded`,
+   `analysis.md` "Milestones move the middle"); `forecast.py` reads it from the plan. Re-runs `forecast.py` (with this week's
+   `weekly_tss`) and adds its rows to `predictions`; a race goal that left the range is part of
+   the review's decisions.
    Training zones: in the first review of each month, and whenever the week brought a race, a
    test or sessions that say the zones are off, run `zones.py suggest` (`methodology.md`
    "Keeping the zones current"); a proposed change waits for the runner's yes.

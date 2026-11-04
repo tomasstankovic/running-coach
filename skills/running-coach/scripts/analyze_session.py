@@ -25,7 +25,8 @@ Compare the reps with the planned paces yourself (the workout description): Trai
 Steady runs get aerobic decoupling (TrainingPeaks' Pa:Hr, plus our own from the time series after
 a 10-minute warm-up, on grade-adjusted pace), efficiency factor (NGP speed in m/min per beat),
 heart-rate drift, and time above the easy HR cap. Unstructured runs (no workout on the watch) are
-always read as steady.
+always read as steady. A marathon (35-45 km) also gets its pace to km 30 and after it: the fade, for
+forecast.py's history ("steady_pace").
 
 Thresholds are in the constants below and the reasoning in references/analysis.md.
 """
@@ -39,6 +40,7 @@ MIN_STEADY_MIN = 60                              # decoupling means little on sh
 WARMUP_SKIP_S = 600
 DURABILITY_MIN_S = 5400          # durability only for runs of 90+ min
 DURABILITY_OK, DURABILITY_HIGH = 3.0, 6.0   # % efficiency lost late in the run (practice, cf. [S23])
+FADE_KM, FADE_RUN_KM = 30, (35, 45)  # a marathon's pace to km 30 vs. after it
 REP_CV_EVEN, REP_CV_UNEVEN = 2.0, 4.0            # % pace CV across reps (practice-based)
 REP_FADE = 3.0                                   # % slower last rep vs first = fading
 REP_FASTER = 2.0                                 # % faster last rep vs first = pushed the end
@@ -225,6 +227,21 @@ def durability(series, skip=WARMUP_SKIP_S):
             statistics.mean(q[2] for q in late), pace(early), pace(late))
 
 
+def race_fade(laps):
+    """(pace to km 30, pace after it, % slower after) from the laps of a 35-45 km run; None otherwise."""
+    pts, d, t = [], 0.0, 0.0
+    for l in laps:
+        dist, secs = l.get("TotalDistance") or 0, l.get("TotalTimerTime") or 0
+        if dist > 0 and secs > 0:
+            pts.append((d, t, dist, secs))
+            d, t = d + dist, t + secs
+    if not FADE_RUN_KM[0] <= d <= FADE_RUN_KM[1]:
+        return None
+    at = next(t0 + (FADE_KM - d0) / dist * secs for d0, t0, dist, secs in pts if d0 + dist >= FADE_KM)
+    before, after = at / FADE_KM, (t - at) / (d - FADE_KM)
+    return before, after, (after / before - 1) * 100
+
+
 def describe(group):
     dist = statistics.mean(r["dist"] for r in group)
     secs = statistics.mean(r["time"] for r in group)
@@ -342,6 +359,11 @@ def analyze_steady(total, laps, series, args):
             else "large fade late: a marathon limiter"
         print(f"{verdict} durability: efficiency {drop:+.1f} % lost in the last quarter vs. early "
               f"({fmt_pace(p1)}/km at {h1:.0f} bpm -> {fmt_pace(p2)}/km at {h2:.0f} bpm; {what})")
+    fade = race_fade(laps)
+    if fade:
+        before, after, pct = fade
+        print(f"{'OK' if pct < 3 else 'NOTE'} pace to km {FADE_KM} {fmt_pace(before)}/km, after it {fmt_pace(after)}/km "
+              f"({pct:+.1f} %)" + (f": a fade; for forecast.py history \"steady_pace\": \"{fmt_pace(before)}\"" if pct >= 3 else ""))
     if (own or tp_dec) and gain / max(dist, 1) >= 10:
         print("note: hilly route; NGP corrects pace for gradient, but descents and heat still distort drift")
     if args.easy_cap and series:
@@ -374,6 +396,9 @@ def summary_row(path, args):
                    durability=round(dura[0], 1) if dura else None,
                    decoupling=round(own[0], 1) if own else total.get("Pa:Hr"),
                    avg_hr=hr, gain_per_km=round((total.get("El. Gain") or 0) / max(row["km"], 1)))
+        fade = race_fade(laps)
+        if fade:
+            row.update(steady_pace=round(fade[0]), fade_pct=round(fade[2], 1))
     return row
 
 

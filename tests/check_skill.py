@@ -51,6 +51,12 @@ plugin = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text())
 market = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text())
 check(bool(re.match(r"^\d+\.\d+\.\d+$", plugin.get("version", ""))), f"plugin version {plugin.get('version')} is semver")
 check(plugin.get("name") == name, "plugin name matches the skill name")
+tpl = re.search(r'<meta name="running-coach-version" content="([^"]+)">',
+                (SKILL / "assets" / "season-plan.html").read_text())
+check(bool(tpl) and tpl.group(1) == plugin["version"],
+      f"page template version {tpl.group(1) if tpl else None} matches plugin version {plugin['version']}")
+check(f"\n## {plugin['version']}\n" in (SKILL / "references" / "whats-new.md").read_text(),
+      f"whats-new.md has a section for {plugin['version']}")
 check(any(p.get("name") == plugin["name"] for p in market.get("plugins", [])), "marketplace lists the plugin")
 
 for script in sorted((SKILL / "scripts").glob("*.py")):

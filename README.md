@@ -49,7 +49,8 @@ No TrainingPeaks or Strava needed to start; connect them later for check-ins and
 **Contents:** [Who it's for](#who-its-for) · [What it does](#what-it-does) ·
 [A season with the coach](#a-season-with-the-coach) · [Install](#install) ·
 [Connect your data](#connect-your-data) · [Privacy and safety](#privacy-and-safety) ·
-[FAQ](#faq) · [What's inside](#whats-inside) · [Development](#development)
+[FAQ](#faq) · [The research behind it](#the-research-behind-it) · [What's inside](#whats-inside) ·
+[Development](#development)
 
 ## Who it's for
 
@@ -155,8 +156,8 @@ It replies in your language (tested in English and Slovak).
   from scripts, so they're the same every week.
 - **Grounded in research.** Load limits from a 5,200-runner injury study, HRV-guided training,
   evidence-based tapers, strength, fuelling and heat guidance; each rule carries its source and
-  how strong the evidence is ([sources](skills/running-coach/references/sources.md)).
-- **Tested.** Behaviour tests for every script, and 19 eval cases of real coaching conversations
+  how strong the evidence is ([the research behind it](#the-research-behind-it)).
+- **Tested.** Behaviour tests for every script, and 31 eval cases of real coaching conversations
   run against Claude with and without the skill ([results](#with-and-without-the-plugin)).
 
 ### With and without the plugin
@@ -174,6 +175,16 @@ would expect: the eval cases for the 0.15 features, run with `claude plugin eval
 | "My stomach turns on gels in races" | 75 % | 100 % | a log after each long run that becomes the race-day rate |
 | "Hard at the end" of a 26 km long run | 100 % | 100 % | nothing: plain Claude reads this one well too |
 
+Faster runners (tag `performance`, 4 November 2026, 2 runs per case; the skill was improved
+twice on these cases before this run):
+
+| Question | Without | With | What plain Claude missed |
+|---|---:|---:|---|
+| Sub-2:45 marathon from 2:51 and a 1:20 half, "should I do double threshold?" | 50 % | 100 % | what the half predicts and the half needed for 2:45; volume steps; marathon pace in the long runs |
+| Sub-3 marathon from 3:08 at 60 km a week | 88 % | 100 % | a gradual volume build |
+| Sub-1:20 half from 1:22:30 and a 17:05 5k | 88 % | 100 % | a dress rehearsal before the taper |
+| Sub-1:30 half on 5 hours a week | 100 % | 100 % | nothing: plain Claude does this one well too |
+
 A small set, so read it as a direction, not a benchmark. Run it yourself:
 [Development](#development).
 
@@ -182,6 +193,33 @@ A small set, so read it as a direction, not a benchmark. Run it yourself:
 More in **[examples](docs/examples.md)**: a week stopped by the load check, an interval session
 read rep by rep, a morning check-in, a marathon prediction. What changed when:
 **[changelog](CHANGELOG.md)**.
+
+## The research behind it
+
+Every rule in the skill carries its source and how strong the evidence is: **strong**
+(meta-analyses, large cohorts, consistent trials), **moderate** (smaller or mixed studies,
+consensus statements) or **practice** (coaching convention without direct trials). Where the
+evidence for amateurs is missing, for example Norwegian-singles sub-threshold weeks, training to
+a runner's "type", or the ideal share of the long run, the coach says so instead of selling it as
+science. The studies that matter most:
+
+| Topic | What the coach does with it | Behind it |
+|---|---|---|
+| Load and injury | no single run more than 10 % longer than the longest of the last 30 days; the weekly 10 % rule isn't the limit | 5,205 runners, 588,071 runs (Frandsen et al. 2025); RCT of a 10 % plan, 532 novices (Buist et al.) |
+| Intensity | a pyramidal week by default; a threshold-leaning mix gave the same gains in 17 % less time | network meta-analysis, 348 athletes (Rosenblat et al. 2025); RCT in recreational runners (Festa et al. 2020) |
+| Volume | about 4 min off a marathon per extra 10 km a week; faster marathoners mostly run more easy | 151,813 marathons (Muniz-Pumares et al. 2025); 2,303 runners (Vickers & Vertosick 2016); Tanda 2011 |
+| Readiness | train by your own HRV band, not by a fixed plan | RCT: 10 km +6.2 % vs +2.9 % on a fixed plan (Nuuttila et al. 2022) |
+| Busy weeks | 2 runs a week with some intensity, never easy-only | review of the minimal dose (Spiering et al. 2021); runner trials (Houmard 1990, McConell 1993) |
+| Taper | ~2 weeks, −41–60 % volume, intensity kept | meta-analysis (Bosquet et al. 2007); 158,117 marathoners (Smyth & Lawlor 2021) |
+| Durability and pacing | late-race fade read from heart-rate drift; even pacing | 82,303 marathoners (Smyth et al. 2022); ~1.7 million results: 28 % of men hit the wall (Smyth 2018, 2021) |
+| Strength | heavy lifting + plyometrics, 2 × 20–30 min a week | meta-analyses: running economy 2–8 % better (Blagrove et al. 2018; Llanos-Lagos et al. 2024) |
+| Predictions | Riegel's formula corrected by weekly volume for the marathon | Vickers & Vertosick 2016; Tanda 2011 |
+| Fuelling and heat | 30–90 g of carbohydrate an hour by duration; slower goals in the heat | ACSM position stand (Thomas et al. 2016); Ely et al. 2007 |
+| Pain | easy running with pain up to ~3/10 that settles by the next morning | RCT, Achilles tendinopathy (Silbernagel et al. 2007) |
+
+All 63 sources, with DOIs and the rule each one supports:
+**[sources.md](skills/running-coach/references/sources.md)**. Nothing here replaces a doctor or a
+physio; the coach refers you when the signs call for it.
 
 ## A season with the coach
 
@@ -332,7 +370,9 @@ coach does, and it's honest about goals. It can't watch you run, and it doesn't 
 or doctor.
 
 **How do I get new versions?** Plugins update when a new version is published here; the
-claude.ai ZIP needs to be uploaded again. See the [changelog](CHANGELOG.md).
+claude.ai ZIP needs to be uploaded again. In the first conversation after an update the coach
+says what it has learned that matters for you, checks your plan against the new rules (it
+proposes changes and makes them only after your yes) and refreshes your plan page. See the [changelog](CHANGELOG.md).
 
 ## What's inside
 
@@ -341,7 +381,7 @@ skills/running-coach/
 ├── SKILL.md                    modes and the core workflow
 ├── assets/
 │   └── season-plan.html        the season plan page (published once, then updated in place)
-├── evals/                      19 eval cases (claude plugin eval) on fictional runners
+├── evals/                      31 eval cases (claude plugin eval) on fictional runners
 ├── references/
 │   ├── onboarding.md           questionnaire, history assessment, athlete profile
 │   ├── week.md                 planning a week: role, draft, load check, format, saving

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: time-budget-3h-10k
+expected_outcome: |
+  The runner has 3 hours a week on Tue/Thu/Sun and wants a 10 km under 45:00 in 12 weeks from 47:30. The coach plans from the time budget: 3 runs (Sunday a long easy run of about 60-80 min, Tuesday and Thursday one threshold or sub-threshold session and one long-interval session of 2-5 min reps, or one quality and one easy for a runner without a base), never two hard days in a row, total about 3 h, strides, and a short heavy strength session (about 20 min) once a week. It says the goal needs about 5 % and is a stretch but possible, and that at 10 km quality matters more than added easy volume, so an extra hour would go to quality or strength. It does not add a fourth running day. Slovak.
+context:
+  scaffold_script: place-files.sh

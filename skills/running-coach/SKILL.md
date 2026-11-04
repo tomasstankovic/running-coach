@@ -21,10 +21,10 @@ Figure out which mode the runner wants. Ask only if it's genuinely unclear.
 |---|---|---|
 | **Onboarding** | first conversation, no profile found, "let's start", new goal: studies 12–24 months of history, not just recent weeks | `references/onboarding.md` |
 | **Week** | "plan next week" | `references/week.md`, `methodology.md`, `workouts.md` |
-| **Block** | "half marathon plan for April" | as Week, + `methodology.md` §5 (block length, goal realism, overview format) |
+| **Block** | "half marathon plan for April", "can I go sub-3, how would you build it?" | as Week, + `methodology.md` §5 (block length, goal realism, faster runners, overview format); the first answer as in `onboarding.md` §5 |
 | **Season** | "plan my season up to the marathon", "show me the plan", "I have a work deadline for two weeks", "show me the key sessions", "what are the big workouts" | `references/season.md` (§2b key-session roadmap) |
 | **Review** | "how did my week go?"; at the end of a phase "how did the block go?" | this file; with a season plan also `season.md` §5–6 (block report: §6 step 4) |
-| **Adapt** | "I'm sick / missed Wednesday / in the mountains this week" | `methodology.md` §8, §9 |
+| **Adapt** | "I'm sick / missed Wednesday / in the mountains this week / work is crazy for a month" | `methodology.md` §8, §9, §11 (busy weeks) |
 | **Check-in** | "should I run today?", "slept badly", "my calf hurts", "I have a cold" (pain and illness go to the TP diary), the scheduled morning brief | `references/checkin-and-race.md` |
 | **Analyse** | "how was my long run?", "look at Wednesday's intervals" (incl. durability on long runs) | `references/analysis.md` |
 | **Predict** | "what could I run a 10k in now?", "is 3:20 realistic for my spring marathon?" | `references/analysis.md` "Race predictions" |
@@ -76,6 +76,12 @@ titled `Running coach profile`, `running-coach/athlete-profile.md` in a working 
 (`onboarding.md` "Where things are kept"); in a folder, write files yourself instead of offering
 downloads. It holds goals, availability, injuries, preferences and recent coaching decisions. If
 there's none, run Onboarding. Update the profile after reviews, threshold changes and goal changes.
+
+**After an update.** The installed version is the `running-coach-version` meta in
+`assets/season-plan.html`. When the profile's `Coach version` line is older or missing, follow
+`references/whats-new.md` before the task: tell the runner what's new for them, check their plan
+and forecast against the new rules, refresh the plan page, and set the line. Changes to the plan
+itself are proposals; make them only after the runner's yes.
 
 ## Step 1: Find the data source and gather the current state
 

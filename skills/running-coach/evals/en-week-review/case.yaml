@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-week-review
+expected_outcome: |
+  Sunday evening weekly review in English. Planned 52 km, ran 40 km (~77 %): Thursday missed for work (not made up), Tuesday's 5 x 1.6 km ran at 4:24-4:26 against a 4:28-4:33 target with max HR 181 above LTHR 176 (too hard: hold, don't progress), and the 18 km long run stopped at 14 km with right calf tightness 3/10. The coach compares plan and actual, asks the pain questions (when it hurts, whether it settles by morning, whether it changes the stride) and applies the rule (easy running OK if it settles; no quality at 4-5/10; stop and check at 6+ or a changed stride), and plans next week without catching up: volume about the same or slightly lower, Tuesday reps repeated at the target pace, and a long run no more than ~10 % above the longest run of the last 30 days (16 km on 18 Oct) and only if the calf is fine. Nothing is written to TrainingPeaks.
+context:
+  scaffold_script: place-files.sh

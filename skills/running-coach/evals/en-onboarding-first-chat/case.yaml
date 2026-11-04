@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: en-onboarding-first-chat
+expected_outcome: |
+  A new runner introduces themselves and asks where to start. The coach goes into onboarding: it gives a short first read of what they said (e.g. a half around 1:40-1:44 is a sensible range from a 46:10 10k) and asks the missing essentials in one compact list: the goal race (date, target), how many runs and hours a week they can really give and the longest slot, where their data live (TrainingPeaks, Strava or none) and units, injuries or health issues, and terrain. It doesn't write a full training plan before those answers, and it says it will save a profile only with the runner's agreement. English.

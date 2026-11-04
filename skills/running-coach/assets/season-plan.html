@@ -1,4 +1,5 @@
 <title>Season Plan</title>
+<meta name="running-coach-version" content="0.16.0">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap">
@@ -47,10 +48,33 @@ header { display: grid; gap: 12px; }
   border-radius: 4px; padding: 0 6px; font-size: .85rem; }
 .prio.A { background: var(--race); } .prio.B { background: var(--build); }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
-.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; min-width: 0; }
-.stat .big { font-family: var(--display); font-size: 2rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.stat .sub { font-size: .85rem; color: var(--muted); }
+.phase { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px 28px; border-left: 4px solid var(--base); }
+@media (max-width: 720px) { .phase { grid-template-columns: 1fr; } }
+.phase .pbig { font-family: var(--display); font-size: 2.1rem; font-weight: 700; line-height: 1.05; margin: 4px 0 2px; }
+.phase .pbig span { display: inline-block; font-family: var(--body); font-size: .92rem; font-weight: 500; color: var(--muted); margin-left: 10px; }
+.pstrip { display: flex; gap: 3px; margin: 10px 2px 4px; }
+.pstrip i { height: 10px; border-radius: 3px; min-width: 4px; } .pstrip i.on { outline: 2px solid var(--fg); outline-offset: 2px; }
+.plbls { display: flex; gap: 3px; font-size: .72rem; color: var(--muted); margin: 0 2px; }
+.plbls span { overflow: hidden; white-space: nowrap; min-width: 4px; }
+.phase .about { margin: 12px 0 4px; }
+.phase .focus { margin: 4px 0 0; padding-left: 18px; font-size: .92rem; } .phase .focus li { margin: 3px 0; }
+.phase .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .9rem; margin-top: 6px; } .phase .kv b { font-weight: 600; }
+.phase .pnext { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); font-size: .88rem; color: var(--muted); }
+.phase .pnext b { color: var(--fg); }
+.racecol { display: grid; gap: 12px; align-content: start; }
+.today { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px 24px; box-shadow: inset 4px 0 0 var(--accent); padding: 16px 18px; }
+@media (max-width: 720px) { .today { grid-template-columns: 1fr; } .today .tverdict { border-left: 0; padding-left: 0; } }
+.today .tbig { font-family: var(--display); font-size: 2.1rem; font-weight: 700; line-height: 1.05; margin: 4px 0; }
+.today .tline + .tline { margin-top: 4px; }
+.today .tgt { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 4px; font-size: .95rem; }
+.today .tgt span { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+.today .tgt b { font-family: var(--display); font-size: 1.25rem; font-weight: 600; }
+.today .tverdict { border-left: 1px solid var(--line); padding-left: 20px; display: grid; gap: 6px; align-content: start; }
+.today .tadv { font-weight: 600; } .today .twhy { font-size: .85rem; color: var(--muted); }
+.today .tnote { font-size: .9rem; border-radius: 8px; padding: 6px 10px; background: var(--bg); border: 1px solid var(--line); margin-top: 8px; }
+.today .tnote.reduce, .today .tnote.stop { background: var(--accent-soft); border-color: transparent; } .today .tnote.stop { color: var(--race); font-weight: 600; }
+.today .tnext { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 10px; font-size: .9rem; color: var(--muted); }
+.today .tnext b { color: var(--fg); }
 
 section { display: grid; gap: 12px; min-width: 0; }
 .chart { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 8px 8px; overflow-x: auto; }
@@ -105,6 +129,7 @@ footer { font-size: .8rem; color: var(--muted); }
 .ks .ph:first-child { padding-top: 0; }
 .ks .it { display: grid; grid-template-columns: 74px 18px 1fr; gap: 4px 10px; padding: 9px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
 .ks .it:last-child { border-bottom: 0; }
+.ks .none { padding: 9px 0; color: var(--muted); font-size: .9rem; }
 .ks .it.past .tt { color: var(--muted); }
 .ks .it.ms .tt { font-weight: 600; }
 .ks .d { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -141,10 +166,47 @@ footer { font-size: .8rem; color: var(--muted); }
 .facts { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .facts b { color: var(--fg); font-weight: 600; }
 .ok { color: var(--good); }
-.pred { display: grid; gap: 4px; }
+.pred { display: grid; gap: 4px; align-content: start; }
 .pred .big { font-family: var(--display); font-size: 2rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .pred .sub { font-size: .85rem; color: var(--muted); }
 .pred svg { margin-top: 6px; }
+.pred .lbl { font-size: .85rem; color: var(--muted); margin-top: 2px; }
+.pbar { position: relative; height: 62px; margin: 8px 0 4px; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.pbar .trk { position: absolute; left: 0; right: 0; top: 26px; height: 10px; border-radius: 5px; background: var(--line); }
+.pbar .band { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: var(--build); opacity: .45; }
+.pbar .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--build); }
+.pbar .gl { position: absolute; top: 18px; height: 26px; border-left: 2px dashed var(--warn); margin-left: -1px; }
+.pbar .nw { position: absolute; top: 25px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+.pbar .tx { position: absolute; white-space: nowrap; transform: translateX(-50%); }
+.pbar .tx.l { transform: translateX(-8px); } .pbar .tx.r { transform: translateX(calc(-100% + 8px)); }
+.pbar .tx.g { top: 0; color: var(--warn); font-weight: 600; } .pbar .tx.n { top: 44px; color: var(--muted); }
+.pred .msline { margin-top: 6px; } .pred .msline a { color: var(--build); font-weight: 600; text-decoration: none; }
+.ks .it.today { box-shadow: inset 3px 0 0 var(--accent); margin-left: -14px; padding-left: 11px; }
+.ks .it.today .d { color: var(--accent); font-weight: 600; }
+.ks .nextms { padding: 10px 0 0; border-top: 1px solid var(--line); font-size: .85rem; color: var(--muted); }
+.ks .nextms b { color: var(--fg); font-weight: 600; }
+.road { display: grid; gap: 6px; align-content: start; }
+.road h3 { font-family: var(--display); font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; flex-wrap: wrap;
+  justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.road h3 span { font-family: var(--body); font-size: .85rem; color: var(--muted); font-weight: 500; }
+.prog { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.prog i { display: block; height: 100%; background: var(--good); }
+.tl { list-style: none; margin: 4px 0 0; padding: 0; position: relative; }
+.tl::before { content: ""; position: absolute; left: 8px; top: 14px; bottom: 14px; width: 2px; background: var(--line); }
+.tl li { position: relative; display: grid; grid-template-columns: 18px 70px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 0; font-size: .9rem; }
+.tl .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: grid;
+  place-items: center; font-size: .68rem; font-weight: 700; line-height: 1; position: relative; top: 3px; color: var(--surface); }
+.tl .d { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tl .k { display: block; font-size: .78rem; color: var(--muted); }
+.tl .r { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+.tl li.held .dot { background: var(--good); border-color: var(--good); } .tl li.held .r { color: var(--good); }
+.tl li.partly .dot { background: var(--warn); border-color: var(--warn); } .tl li.partly .r { color: var(--warn); }
+.tl li.faded .dot { background: var(--race); border-color: var(--race); } .tl li.faded .r { color: var(--race); }
+.tl li.missed .dot { background: var(--muted); border-color: var(--muted); }
+.tl li.next .dot { border-color: var(--accent); } .tl li.next .n { font-weight: 600; } .tl li.next .r { color: var(--accent); font-weight: 600; }
+.tl li.goal .dot { background: var(--race); border-color: var(--race); }
+.tl li.goal .n { font-family: var(--display); font-weight: 700; font-size: 1rem; } .tl li.goal .r { color: var(--fg); font-weight: 600; }
+.roadcap { font-size: .82rem; color: var(--muted); }
 .gap.ok { color: var(--good); } .gap.warn { color: var(--warn); } .gap.off { color: var(--race); }
 table.form { min-width: 0; font-size: .9rem; }
 table.form td, table.form th { padding: 6px 8px; }
@@ -165,16 +227,74 @@ table.form td, table.form th { padding: 6px 8px; }
 
   <div id="content" hidden>
     <div class="wrap" style="padding:0">
-      <div class="stats" id="stats"></div>
+      <!-- What matters day to day first: where the season stands, today and this week, the races
+           with their roads; then the details: key sessions, load and form, blocks, zones, history. -->
+      <section id="todaySection" hidden>
+        <div class="panel today" id="today"></div>
+      </section>
 
-      <section id="weekSection" hidden>
-        <h2 id="hWeek">This week</h2>
-        <div class="panel"><ul class="days" id="days"></ul><div class="weeksum" id="weekSum"></div></div>
+      <section id="phaseSection" hidden>
+        <h2 id="hPhase">Where we are</h2>
+        <div class="panel phase" id="phase"></div>
+      </section>
+
+      <div class="two" id="todayRow" hidden>
+        <section id="readySection" hidden>
+          <h2 id="hReady">Readiness</h2>
+          <div class="panel ready">
+            <div class="rhead"><span class="chip" id="readyChip"></span><span class="muted" id="readyDate"></span></div>
+            <div class="advice" id="readyAdvice"></div>
+            <ul class="why" id="readyWhy"></ul>
+            <div class="health" id="readyHealth"></div>
+            <svg id="readyBar" role="img"></svg>
+            <div class="facts" id="readyFacts"></div>
+            <svg id="readyChart" role="img" aria-label="7-day HRV against the normal band"></svg>
+            <div class="cap" id="readyCap"></div></div>
+        </section>
+        <section id="weekSection" hidden>
+          <h2 id="hWeek">This week</h2>
+          <div class="panel"><ul class="days" id="days"></ul><div class="weeksum" id="weekSum"></div>
+            <div class="cap" id="nextWeek"></div></div>
+        </section>
+      </div>
+
+      <section id="raceSection" hidden>
+        <h2 id="hRaces">Races</h2>
+        <div class="two" id="raceCols"></div>
+        <div class="roadcap" id="roadCap"></div>
       </section>
 
       <section id="keySection" hidden>
         <div class="ks-head"><h2 id="hKey">Key sessions</h2><div class="seg" id="ksSeg" role="group"></div></div>
         <div class="panel"><ul class="ks" id="ksList"></ul><div class="cap" id="ksCap"></div></div>
+      </section>
+
+      <section>
+        <h2 id="hChart">Volume by week</h2>
+        <div class="chart"><svg id="chart" role="img" aria-label="Planned and actual weekly volume"></svg></div>
+        <div class="legend" id="legend"></div>
+      </section>
+
+      <div class="two" id="fitRow" hidden>
+        <section id="efSection" hidden>
+          <h2 id="hEf">Aerobic fitness</h2>
+          <div class="panel"><svg id="efChart" role="img" aria-label="Efficiency factor of steady runs"></svg>
+            <div class="cap" id="efCap"></div>
+            <svg id="durChart" role="img" aria-label="Durability of long runs" style="margin-top:10px"></svg>
+            <div class="cap" id="durCap"></div></div>
+        </section>
+        <section id="formSection" hidden>
+          <h2 id="hForm">Current form</h2>
+          <div class="panel" id="formPanel">
+            <table class="form"><thead><tr id="formHead"></tr></thead><tbody id="formBody"></tbody></table>
+            <div class="cap" id="predCap"></div>
+          </div>
+        </section>
+      </div>
+
+      <section id="blockSection" hidden>
+        <h2 id="hBlocks">Blocks</h2>
+        <div class="two" id="blocks"></div>
       </section>
 
       <section id="zoneSection" hidden>
@@ -190,49 +310,6 @@ table.form td, table.form th { padding: 6px 8px; }
           <div id="zHistBox" hidden><div class="eyebrow" id="zHistT"></div><ul class="zhist" id="zHist"></ul></div>
           <div class="cap" id="zCap"></div>
         </div>
-      </section>
-
-      <section id="predSection" hidden>
-        <h2 id="hPred">Race predictions</h2>
-        <div class="two" id="predRaces"></div>
-        <div class="panel" id="formPanel" hidden>
-          <div class="eyebrow" id="hForm">Current form</div>
-          <table class="form"><thead><tr id="formHead"></tr></thead><tbody id="formBody"></tbody></table>
-          <div class="cap" id="predCap"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2 id="hChart">Volume by week</h2>
-        <div class="chart"><svg id="chart" role="img" aria-label="Planned and actual weekly volume"></svg></div>
-        <div class="legend" id="legend"></div>
-      </section>
-
-      <div class="two" id="trendRow" hidden>
-        <section id="readySection" hidden>
-          <h2 id="hReady">Readiness</h2>
-          <div class="panel ready">
-            <div class="rhead"><span class="chip" id="readyChip"></span><span class="muted" id="readyDate"></span></div>
-            <div class="advice" id="readyAdvice"></div>
-            <ul class="why" id="readyWhy"></ul>
-            <div class="health" id="readyHealth"></div>
-            <svg id="readyBar" role="img"></svg>
-            <div class="facts" id="readyFacts"></div>
-            <svg id="readyChart" role="img" aria-label="7-day HRV against the normal band"></svg>
-            <div class="cap" id="readyCap"></div></div>
-        </section>
-        <section id="efSection" hidden>
-          <h2 id="hEf">Aerobic fitness</h2>
-          <div class="panel"><svg id="efChart" role="img" aria-label="Efficiency factor of steady runs"></svg>
-            <div class="cap" id="efCap"></div>
-            <svg id="durChart" role="img" aria-label="Durability of long runs" style="margin-top:10px"></svg>
-            <div class="cap" id="durCap"></div></div>
-        </section>
-      </div>
-
-      <section id="blockSection" hidden>
-        <h2 id="hBlocks">Blocks</h2>
-        <div class="two" id="blocks"></div>
       </section>
 
       <section>
@@ -263,6 +340,33 @@ const T = {
     planned: "planned", actual: "actual", long: "long run", updated: "Updated",
     cols: ["#", "Week", "Phase", "Plan", "Actual", "Long", "Key session"],
     phase: { base: "base", build: "build", specific: "specific", taper: "taper", race: "race", recovery: "recovery" },
+    todayHead: d => `Today · ${d}`, keyTag: "key session", lblPace: "pace", lblHr: "heart rate", lblKm: "in all", upTo: h => `up to ${h}`,
+    readyToday: "Readiness this morning", readyLast: d => `Last check-in ${d}`, tomorrow: "Tomorrow", doneToday: "✓ done",
+    deloadWhy: "A deload week: fewer kilometres, so the body absorbs the training.",
+    where: "Where we are", races: "Races", buildWeek: "build week",
+    phaseN: (i, n, end) => `Phase ${i} of ${n} · until ${end}`, weekOf: (i, n) => `week ${i} of ${n}`,
+    thisWk: (v, role) => `this week ${v}${role ? ", " + role : ""}`, whatFor: "What this phase is for:",
+    goalHead: "Phase goal", goalKm: "per week", goalLong: "long run", goalEnd: "at the end",
+    nextHead: (p, d) => `Next: ${p} from ${d}`, nextVol: (v, l) => `; volume up to ${v}, long run up to ${l} km.`,
+    deloadNext: (a, b) => `next deload ${a}–${b}: fewer kilometres, so the body absorbs the training`,
+    nextWeekLine: (role, list) => `Next week${role ? ` (${role})` : ""}: ${list}`,
+    phaseAbout: {
+      base: "building the aerobic engine and resilient legs, so the harder work later doesn't break you. Volume grows step by step, the long run gets longer, most runs are easy.",
+      build: "raising the threshold and pace endurance: longer threshold reps, race pace of the shorter distances, some VO2. Volume nears its peak and the long runs get longest.",
+      specific: "training looks like the race: race pace in the long runs and intervals, dress rehearsals. You test the pace, fuelling, kit and your head.",
+      taper: "volume drops by 20–40 %, intensity stays: the body recovers and fitness peaks. Nothing new.",
+      race: "race week: a short sharpening session, rest, the race plan.",
+      recovery: "easy and without quality until the legs are fresh: the body repairs what the race took." },
+    phaseFocus: {
+      base: ["most runs easy; consistency matters more than pace", "short quality: threshold in shorter reps, hills, fartlek, strides"],
+      build: ["two quality sessions a week, easy days between them", "the long run grows, part of it at race pace", "sleep and food decide how much of it you absorb"],
+      specific: ["race pace on tired legs", "fuel and drink as on race day", "protect the key runs, keep the rest easy"],
+      taper: ["shorter runs with a few reps at race pace", "sleep, carbohydrate, nothing new", "feeling sluggish for a few days is normal"],
+      race: ["carbohydrate loading in the last 2–3 days", "a short shakeout the day before", "stick to the pacing plan"],
+      recovery: ["easy runs or rest only", "quality again when the legs and the head want it"] },
+    phaseNext: { base: "aerobic base, volume and the long run grow", build: "threshold and race pace, longer long runs",
+      specific: "race pace, dress rehearsals, fuelling", taper: "fewer kilometres, the sharpness stays", race: "race week",
+      recovery: "easy running after the race" },
     role: { deload: "deload", busy: "busy week", "race-B": "B race", taper: "taper", race: "race", recovery: "recovery", build: "" },
     of: "of", pastWeeks: "weeks with data",
     week: "This week", ready: "Readiness", ef: "Aerobic fitness",
@@ -280,7 +384,14 @@ const T = {
     barLabel: "HRV 7-day mean against your normal band",
     readyCap: "Band = your normal range (mean ± 0.5 SD of the 4–8 weeks before). Below it your body hasn't recovered yet; one low night alone doesn't count.",
     readyTrend: "HRV 7-day mean over the last weeks, grey band = your normal range, dot colour = that day's verdict",
-    key: "Key sessions", ksViews: { next: "Next", ms: "Milestones", all: "All" },
+    key: "Key sessions", ksViews: { next: "Next", done: "Done", all: "Whole plan" },
+    ksNone: { next: "Nothing planned for the next two weeks.", done: "No key session run yet.", all: "" },
+    wkThis: "This week", wkNext: "Next week",
+    nextMs: (d, title, w) => [`Next milestone: `, title, ` · ${d}` + (w > 0 ? `, in ${w} ${w === 1 ? "week" : "weeks"}` : "")],
+    roadTo: r => `${r.km > 40 ? "Road to the marathon" : Math.abs(r.km - 21.1) < 0.3 ? "Road to the half" : `Road to ${r.name}`} · ${r.d}`,
+    roadCount: (d, n) => `${d} of ${n} milestones`,
+    roadCap: "A milestone held moves the race forecast toward its fast end, a missed or faded one toward the slow end (for a marathon, by the fade of the last one).",
+    fuel: "race fuelling, 60–90 g/h", nextLbl: "next",
     ksCap: thr => `An estimate: it changes with how the sessions go, and every change is in the log below.${thr ? ` Paces from threshold ${thr}/km.` : ""}`,
     vd: { on: "✓ on target", over: "↑ better", under: "↓ under target", missed: "– missed" },
     adjusted: "adjusted", hrTo: h => `HR up to ${h}`, milestone: "milestone",
@@ -292,13 +403,15 @@ const T = {
     vd2: { on: "on target", over: "better", under: "under", missed: "missed" },
     durCap: d => `Durability: efficiency lost in the last quarter of runs over 90 min (lower = holds better)` + (d != null ? ` · last ${d} %` : ""),
     health: { pain: "Pain", illness: "Illness", stop: "stop, get it checked", reduce: "no quality, shorter", easy: "easy is OK" }, zCap: "Your own zones (TrainingPeaks, your watch). Checked every month and after races or tests; changes only with your yes, then in TrainingPeaks and on the watch too.",
-    pred: "Race predictions", form: "Current form", likely: "likely", range: "range",
+    pred: "Race predictions", form: "Current form",
     formCols: ["Distance", "Likely", "Range", "Pace"], half: "Half marathon", marathon: "Marathon",
-    goal: g => `goal ${g}`, inRange: "inside the range", stretch: p => `${p} % faster than the fast end: a stretch`,
-    outOf: p => `${p} % faster than the fast end: out of reach for now`, safe: "slower than the range: safe",
+    projHead: "On race day, if the plan happens", nowHead: "If you raced today", likelyRange: (a, b) => `most likely ${a}–${b}`,
+    goalMark: g => `goal ${g}`, nowMark: v => `today ${v}`, goalLead: g => `Goal ${g}`,
+    rel: { inside: "is inside that range", faster: d => `is ${d} faster than the best case`, slower: "is slower than the whole range" },
+    judge: { ok: "realistic", stretch: "a stretch", out: "out of reach for now", safe: "safe" },
+    ckIcon: { held: "✓", partly: "◐", faded: "✕", missed: "–", planned: "" },
+    ckRes: { held: "held", partly: "partly", faded: "faded", missed: "missed", planned: "to come" },
     predCap: d => `As of ${d}. Updated in every weekly review: new races, tests and the plan's volume move it.`,
-    proj: "if the plan happens", today: "today's form",
-    projStretch: p => `${p} % faster than the projection: a stretch`, projOut: p => `${p} % faster than the projection: out of reach for now`,
     trendCap: "Likely time over the weeks (higher = faster), band = range, dashed = goal" },
   sk: { loading: "Načítavam plán…", emptyT: "Plán ešte nie je uložený",
     emptyX: "Týždne sa tu objavia, keď tréner uloží plán sezóny.",
@@ -308,6 +421,33 @@ const T = {
     planned: "plán", actual: "skutočnosť", long: "dlhý beh", updated: "Aktualizované",
     cols: ["#", "Týždeň", "Fáza", "Plán", "Skutočnosť", "Dlhý", "Kľúčový tréning"],
     phase: { base: "základ", build: "budovanie", specific: "špecifická", taper: "ladenie", race: "závod", recovery: "regenerácia" },
+    todayHead: d => `Dnes · ${d}`, keyTag: "kľúčový tréning", lblPace: "tempo", lblHr: "tep", lblKm: "spolu", upTo: h => `do ${h}`,
+    readyToday: "Pripravenosť ráno", readyLast: d => `Posledný check-in ${d}`, tomorrow: "Zajtra", doneToday: "✓ hotové",
+    deloadWhy: "Odľahčovací týždeň: menej kilometrov, nech telo tréning vstrebe.",
+    where: "Kde sme", races: "Preteky", buildWeek: "rastový",
+    phaseN: (i, n, end) => `Fáza ${i} z ${n} · do ${end}`, weekOf: (i, n) => `${i}. týždeň z ${n}`,
+    thisWk: (v, role) => `tento týždeň ${v}${role ? ", " + role : ""}`, whatFor: "Na čo je táto fáza:",
+    goalHead: "Cieľ fázy", goalKm: "týždenne", goalLong: "dlhý beh", goalEnd: "na konci",
+    nextHead: (p, d) => `Ďalej: ${p} od ${d}`, nextVol: (v, l) => `; objem do ${v}, dlhý beh do ${l} km.`,
+    deloadNext: (a, b) => `najbližšie odľahčenie ${a}–${b}: menej kilometrov, nech telo tréning vstrebe`,
+    nextWeekLine: (role, list) => `Budúci týždeň${role ? ` (${role})` : ""}: ${list}`,
+    phaseAbout: {
+      base: "buduješ aeróbny motor a odolnosť nôh, aby si neskôr zvládol tvrdšiu prácu bez zranenia. Objem rastie postupne, dlhý beh sa predlžuje, väčšina behov je ľahká.",
+      build: "zdvíhaš prah a tempovú vytrvalosť: dlhšie úseky na prahu, tempo kratších pretekov, trochu VO2. Objem sa blíži k vrcholu a dlhé behy sú najdlhšie.",
+      specific: "tréning vyzerá ako preteky: tempo pretekov v dlhých behoch a úsekoch, generálky. Overuješ tempo, výživu, výstroj aj hlavu.",
+      taper: "objem klesá o 20–40 %, intenzita zostáva: telo sa zregeneruje a forma vyvrcholí. Nič nové.",
+      race: "týždeň pretekov: krátke ostrenie, oddych, plán pretekov.",
+      recovery: "ľahko a bez kvality, kým nohy nie sú čerstvé: telo dobieha, čo mu preteky zobrali." },
+    phaseFocus: {
+      base: ["väčšina behov ľahko; pravidelnosť je dôležitejšia než tempo", "kvalita krátka: prah po kratších úsekoch, kopce, fartlek, rovinky"],
+      build: ["dve kvality týždenne, medzi nimi ľahké dni", "dlhý beh rastie, časť z neho v tempe pretekov", "spánok a jedlo rozhodujú, koľko z toho vstrebeš"],
+      specific: ["tempo pretekov na unavených nohách", "výživa a pitie ako na pretekoch", "kľúčové behy chráň, ostatné ľahko"],
+      taper: ["kratšie behy, pár úsekov v tempe pretekov", "spánok, sacharidy, nič nové", "pár dní sa môžeš cítiť ťažkopádne: to je normálne"],
+      race: ["posledné 2–3 dni dopĺňaj sacharidy", "deň pred pretekmi krátky rozklus", "drž sa plánu tempa"],
+      recovery: ["len ľahké behy alebo voľno", "kvalita, až keď ju chcú nohy aj hlava"] },
+    phaseNext: { base: "aeróbny základ, rastie objem aj dlhý beh", build: "prah a tempo pretekov, dlhšie dlhé behy",
+      specific: "tempo pretekov, generálky, výživa", taper: "menej kilometrov, ostrosť zostáva", race: "týždeň pretekov",
+      recovery: "ľahké behy po pretekoch" },
     role: { deload: "odľahčenie", busy: "vyťažený týždeň", "race-B": "B závod", taper: "ladenie", race: "závod", recovery: "regenerácia", build: "" },
     of: "z", pastWeeks: "týždňov s dátami",
     week: "Tento týždeň", ready: "Pripravenosť", ef: "Aerobná forma",
@@ -325,7 +465,14 @@ const T = {
     barLabel: "HRV 7-dňový priemer voči tvojmu bežnému pásmu",
     readyCap: "Pásmo = tvoj bežný rozsah (priemer ± 0,5 SD za 4–8 týždňov predtým). Pod ním telo ešte nie je zregenerované; jedna slabšia noc sama nerozhoduje.",
     readyTrend: "HRV 7-dňový priemer za posledné týždne, sivý pás = tvoj bežný rozsah, farba bodu = verdikt v ten deň",
-    key: "Kľúčové tréningy", ksViews: { next: "Najbližšie", ms: "Míľniky", all: "Všetky" },
+    key: "Kľúčové tréningy", ksViews: { next: "Najbližšie", done: "Odbehnuté", all: "Celý plán" },
+    ksNone: { next: "Na najbližšie dva týždne nie je nič naplánované.", done: "Zatiaľ nie je odbehnutý žiadny kľúčový tréning.", all: "" },
+    wkThis: "Tento týždeň", wkNext: "Budúci týždeň",
+    nextMs: (d, title, w) => [`Ďalší míľnik: `, title, ` · ${d}` + (w > 0 ? `, o ${w} ${w === 1 ? "týždeň" : w < 5 ? "týždne" : "týždňov"}` : "")],
+    roadTo: r => `${r.km > 40 ? "Cesta k maratónu" : Math.abs(r.km - 21.1) < 0.3 ? "Cesta k polmaratónu" : `Cesta k pretekom ${r.name}`} · ${r.d}`,
+    roadCount: (d, n) => `${d} z ${n} míľnikov`,
+    roadCap: "Zvládnutý míľnik posúva predpoveď k rýchlemu koncu, vynechaný či nevydarený k pomalému (pri maratóne podľa útlmu z posledného maratónu).",
+    fuel: "výživa ako na pretekoch, 60–90 g/h", nextLbl: "ďalší",
     ksCap: thr => `Odhad: mení sa podľa toho, ako tréningy vychádzajú, a každá zmena je v logu nižšie.${thr ? ` Tempá z prahu ${thr}/km.` : ""}`,
     vd: { on: "✓ v cieli", over: "↑ lepšie", under: "↓ pod cieľom", missed: "– vynechané" },
     adjusted: "upravené", hrTo: h => `tep do ${h}`, milestone: "míľnik",
@@ -337,13 +484,15 @@ const T = {
     vd2: { on: "v cieli", over: "lepšie", under: "pod cieľom", missed: "vynechané" },
     durCap: d => `Výdrž: pokles efektivity v poslednej štvrtine behov nad 90 min (nižšie = lepšie)` + (d != null ? ` · posledný ${d} %` : ""),
     health: { pain: "Bolesť", illness: "Choroba", stop: "prestaň, daj si to skontrolovať", reduce: "bez kvality, kratšie", easy: "ľahko je OK" }, zCap: "Tvoje vlastné zóny (TrainingPeaks, hodinky). Kontrolujú sa raz za mesiac a po pretekoch či teste; menia sa len s tvojím súhlasom, potom aj v TrainingPeaks a v hodinkách.",
-    pred: "Predikcie", form: "Aktuálna forma", likely: "najpravdepodobnejšie", range: "rozpätie",
+    pred: "Predikcie", form: "Aktuálna forma",
     formCols: ["Trať", "Odhad", "Rozpätie", "Tempo"], half: "Polmaratón", marathon: "Maratón",
-    goal: g => `cieľ ${g}`, inRange: "v rozpätí", stretch: p => `o ${p} % rýchlejší než rýchly koniec: náročný cieľ`,
-    outOf: p => `o ${p} % rýchlejší než rýchly koniec: zatiaľ mimo dosahu`, safe: "pomalší než rozpätie: bezpečný",
+    projHead: "Na štarte, ak splníš plán", nowHead: "Keby si bežal dnes", likelyRange: (a, b) => `najpravdepodobnejšie ${a} – ${b}`,
+    goalMark: g => `cieľ ${g}`, nowMark: v => `dnes ${v}`, goalLead: g => `Cieľ ${g}`,
+    rel: { inside: "je v tomto rozpätí", faster: d => `je o ${d} rýchlejší než najlepší scenár`, slower: "je pomalší než celé rozpätie" },
+    judge: { ok: "reálny", stretch: "náročný", out: "zatiaľ mimo dosahu", safe: "bezpečný" },
+    ckIcon: { held: "✓", partly: "◐", faded: "✕", missed: "–", planned: "" },
+    ckRes: { held: "zvládnutý", partly: "čiastočne", faded: "nevyšiel", missed: "vynechaný", planned: "čaká" },
     predCap: d => `Stav k ${d}. Aktualizuje sa pri každom týždennom hodnotení: nové závody, testy a objem z plánu ho posúvajú.`,
-    proj: "ak sa plán splní", today: "dnešná forma",
-    projStretch: p => `o ${p} % rýchlejší než projekcia: náročný cieľ`, projOut: p => `o ${p} % rýchlejší než projekcia: zatiaľ mimo dosahu`,
     trendCap: "Odhad času v priebehu týždňov (vyššie = rýchlejšie), pás = rozpätie, čiarkovane = cieľ" },
 };
 const PHASES = ["base", "build", "specific", "taper", "race", "recovery"];
@@ -386,30 +535,24 @@ function render() {
   (m.races || []).slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach(r => {
     const c = el("span", { class: "race" });
     c.append(el("span", { class: `prio ${r.priority}` }, r.priority), el("b", {}, r.name),
-      el("span", { class: "muted" }, `${fmtDate(r.date, { day: "numeric", month: "numeric", year: "numeric" })}${r.distance_km ? " · " + r.distance_km + " km" : ""}`));
+      el("span", { class: "muted" }, `${fmtDate(r.date, { day: "numeric", month: "numeric", year: "numeric" })}` +
+        (r.date >= today ? ` · ${t.weeksTo(Math.round((new Date(mondayISO(r.date)) - new Date(today)) / 6048e5))}` : "")));
     races.append(c);
   });
 
-  // stats
   const cur = weeks.find(w => w.week_start === today);
-  const next = (m.races || []).filter(r => r.date >= today).sort((a, b) => a.date < b.date ? -1 : 1)[0];
-  const peak = weeks.reduce((a, w) => (w.km > a.km ? w : a), weeks[0]);
-  const past = weeks.filter(w => w.week_start < today && w.actual_km != null);
-  const doneKm = past.reduce((s, w) => s + (w.actual_km || 0), 0), doneMin = past.reduce((s, w) => s + (w.actual_minutes || 0), 0);
-  const stats = $("stats"); stats.replaceChildren();
-  const stat = (label, big, sub) => { const s = el("div", { class: "stat" }); s.append(el("div", { class: "eyebrow" }, label), el("div", { class: "big" }, big), el("div", { class: "sub" }, sub)); stats.append(s); };
-  if (cur) stat(t.thisWeek, vol(cur.km, cur.minutes), `${t.phase[cur.phase] || cur.phase}${t.role[cur.role] ? " · " + t.role[cur.role] : ""} · ${cur.key}`);
-  if (next) { const wks = Math.round((new Date(mondayISO(next.date)) - new Date(today)) / 6048e5); stat(t.nextRace, t.weeksTo(wks), `${next.priority} · ${next.name} · ${fmtDate(next.date)}`); }
-  stat(t.peak, vol(peak.km, peak.minutes), `${fmtDate(peak.week_start)} · ${t.long} ${peak.long_km} km`);
-  if (past.length) stat(t.done, vol(doneKm, doneMin), `${past.length} ${t.pastWeeks}`);
 
   drawChart(weeks, today, t);
-  renderWeek(cur, t);
+  renderToday(weeks, t);
+  renderPhase(weeks, today, t);
+  renderWeek(cur, t, weeks.find(w => w.week_start === addDays(today, 7)));
   renderKeySessions(weeks, t);
   renderZones(t);
   renderBlocks(t);
   renderTrends(t);
-  renderPredictions(t);
+  renderPredictions(t, weeks);
+  $("todayRow").hidden = $("readySection").hidden && $("weekSection").hidden;
+  $("fitRow").hidden = $("efSection").hidden && $("formSection").hidden;
 
   // legend
   const lg = $("legend"); lg.replaceChildren();
@@ -485,8 +628,12 @@ function drawChart(weeks, today, t) {
   actualPts.forEach(([cx, cy]) => svg.append(svgEl("circle", { cx, cy, r: 4, fill: "var(--fg)", stroke: "var(--surface)", "stroke-width": 1.5 })));
 }
 
-function renderWeek(cur, t) {
-  // Always the whole week, Monday to Sunday: a day without a session is a rest day.
+function renderWeek(cur, t, nextW) {
+  // Always the whole week, Monday to Sunday: a day without a session is a rest day. Under it, one
+  // line with next week's key sessions.
+  const nks = (nextW && nextW.key_sessions) || [];
+  $("nextWeek").textContent = nks.length ? t.nextWeekLine(t.role[nextW.role],
+    nks.map(s => `${fmtDate(s.date, { weekday: "short", day: "numeric", month: "numeric" })} ${s.title}`).join(" · ")) : "";
   const days = (cur && cur.days) || [];
   $("weekSection").hidden = !days.length;
   $("hWeek").textContent = t.week;
@@ -556,7 +703,6 @@ function renderTrends(t) {
   const tr = state.trends.filter(r => r.hrv7 != null).sort((a, b) => a.date < b.date ? -1 : 1).slice(-56);
   const se = state.sessions.filter(r => r.kind === "steady" && r.ef).sort((a, b) => a.date < b.date ? -1 : 1).slice(-20);
   $("readySection").hidden = !tr.length; $("efSection").hidden = !se.length;
-  $("trendRow").hidden = !tr.length && !se.length;
   $("hReady").textContent = t.ready; $("hEf").textContent = t.ef;
   const col = v => v === "RED" ? "var(--race)" : v === "AMBER" ? "var(--warn)" : "var(--good)";
   if (tr.length) renderReadiness(tr, t, col);
@@ -652,54 +798,226 @@ function renderBlocks(t) {
   }));
 }
 
-let ksView = (() => { try { return localStorage.getItem("ksView") || "next"; } catch (e) { return "next"; } })();
+let ksView = (() => { try { const v = localStorage.getItem("ksView"); return ["next", "done", "all"].includes(v) ? v : "next"; } catch (e) { return "next"; } })();
+const CHECK_OF = { on: "held", over: "held", under: "partly", missed: "missed" };
+const msResult = s => (s.actual && (s.actual.check || CHECK_OF[s.actual.verdict])) || "planned";
+const roadOf = (weeks, race) => weeks.flatMap(w => w.key_sessions || []).filter(s => s.milestone && s.race === race)
+  .sort((a, b) => a.date < b.date ? -1 : 1);
+
+function ksItem(s, t, todayIso) {
+  const li = el("li", { class: ["it", s.milestone && "ms", s.date < todayIso && "past", s.date === todayIso && "today"].filter(Boolean).join(" ") });
+  const mk = el("span", { class: "mk" });
+  if (s.milestone) { mk.textContent = "★"; mk.setAttribute("title", t.milestone); mk.setAttribute("aria-label", t.milestone); }
+  else { const d = el("i", { class: "sw" }); d.style.background = phaseColor(s.phase); mk.append(d); }
+  const tt = el("span", { class: "tt" }, s.title);
+  if (s.status === "adjusted") {
+    const a = el("a", { class: "adj", href: "#logSection", title: s.note || "" }, t.adjusted);
+    a.onclick = e => { e.preventDefault(); $("logSection").scrollIntoView({ behavior: "smooth" }); $("logSection").focus({ preventScroll: true }); };
+    tt.append(a);
+  }
+  li.append(el("span", { class: "d" }, fmtDate(s.date, { weekday: "short", day: "numeric", month: "numeric" })), mk, tt);
+  const tg = s.target || {}, parts = [];
+  if (tg.pace) parts.push(`${tg.pace}/km`);
+  if (tg.hr_max) parts.push(t.hrTo(tg.hr_max));
+  if (s.fuel) parts.push(t.fuel);
+  if (parts.length) li.append(el("span", { class: "tg" }, parts.join(" · ")));
+  if (s.actual) {
+    const ac = el("span", { class: "ac" }), v = s.actual.verdict;
+    ac.append(el("span", { class: `vd ${v}` }, t.vd[v] || v));
+    if (s.actual.summary) ac.append(el("span", {}, s.actual.summary));
+    li.append(ac);
+  }
+  return li;
+}
+
 function renderKeySessions(weeks, t) {
-  // The roadmap: next sessions and the milestones by default, grouped by phase; done ones show
-  // what was run and the verdict, adjusted ones link to the change log.
+  // "Next" is only what is ahead this week and the next, with the next milestone after it; "Done"
+  // is what was run, newest first, with the verdict; "Whole plan" the roadmap by phase. Each A/B
+  // race's milestones are its road under the race's forecast (roadPanel).
   const all = weeks.flatMap(w => (w.key_sessions || []).map(s => ({ ...s, phase: w.phase }))).sort((a, b) => a.date < b.date ? -1 : 1);
   $("keySection").hidden = !all.length;
   if (!all.length) return;
   $("hKey").textContent = t.key;
-  const todayIso = localISO(), next = all.filter(s => s.date >= todayIso).slice(0, 6);
-  const recent = s => s.date < todayIso && s.date >= addDays(todayIso, -7);   // last week's results stay in view
-  const pick = { next: all.filter(s => s.milestone || next.includes(s) || recent(s)), ms: all.filter(s => s.milestone), all }[ksView] || all;
+  const todayIso = localISO(), mon = mondayISO(new Date()), last = addDays(mon, 13);
   const seg = $("ksSeg"); seg.replaceChildren(...Object.entries(t.ksViews).map(([k, label]) => {
     const b = el("button", { type: "button", "aria-pressed": String(k === ksView) }, label);
     b.onclick = () => { ksView = k; try { localStorage.setItem("ksView", k); } catch (e) {} renderKeySessions(weeks, t); };
     return b;
   }));
   const list = $("ksList"); list.replaceChildren();
-  let phase = null;
-  pick.forEach(s => {
-    if (s.phase !== phase) {
-      phase = s.phase;
-      const h = el("li", { class: "ph" }), sw = el("i", { class: "sw" }); sw.style.background = phaseColor(phase);
-      h.append(sw, t.phase[phase] || phase); list.append(h);
+  if (ksView === "next") {
+    const ahead = all.filter(s => s.date >= todayIso && s.date <= last);
+    [[mon, t.wkThis], [addDays(mon, 7), t.wkNext]].forEach(([m, label]) => {
+      const items = ahead.filter(s => s.date >= m && s.date <= addDays(m, 6));
+      if (!items.length) return;
+      const w = weeks.find(x => x.week_start === m), role = w && t.role[w.role];
+      list.append(el("li", { class: "ph" }, `${label} · ${fmtDate(m)}–${fmtDate(addDays(m, 6))}${role ? " · " + role : ""}`));
+      items.forEach(s => list.append(ksItem(s, t, todayIso)));
+    });
+    if (!ahead.length) list.append(el("li", { class: "none" }, t.ksNone.next));
+    const nm = all.find(s => s.milestone && s.date > last);
+    if (nm) {
+      const wks = Math.round((new Date(mondayISO(new Date(nm.date + "T12:00:00"))) - new Date(mon)) / 6048e5);
+      const [lead, title, rest] = t.nextMs(fmtDate(nm.date), nm.title, wks), li = el("li", { class: "nextms" });
+      li.append(lead, el("b", {}, title), rest);
+      list.append(li);
     }
-    const li = el("li", { class: ["it", s.milestone && "ms", s.date < todayIso && "past"].filter(Boolean).join(" ") });
-    const mk = el("span", { class: "mk" });
-    if (s.milestone) { mk.textContent = "★"; mk.setAttribute("title", t.milestone); mk.setAttribute("aria-label", t.milestone); }
-    else { const d = el("i", { class: "sw" }); d.style.background = phaseColor(s.phase); mk.append(d); }
-    const tt = el("span", { class: "tt" }, s.title);
-    if (s.status === "adjusted") {
-      const a = el("a", { class: "adj", href: "#logSection", title: s.note || "" }, t.adjusted);
-      a.onclick = e => { e.preventDefault(); $("logSection").scrollIntoView({ behavior: "smooth" }); $("logSection").focus({ preventScroll: true }); };
-      tt.append(a);
-    }
-    li.append(el("span", { class: "d" }, fmtDate(s.date, { weekday: "short", day: "numeric", month: "numeric" })), mk, tt);
-    const tg = s.target || {}, parts = [];
-    if (tg.pace) parts.push(`${tg.pace}/km`);
-    if (tg.hr_max) parts.push(t.hrTo(tg.hr_max));
-    if (parts.length) li.append(el("span", { class: "tg" }, parts.join(" · ")));
-    if (s.actual) {
-      const ac = el("span", { class: "ac" }), v = s.actual.verdict;
-      ac.append(el("span", { class: `vd ${v}` }, t.vd[v] || v));
-      if (s.actual.summary) ac.append(el("span", {}, s.actual.summary));
-      li.append(ac);
-    }
-    list.append(li);
-  });
+  } else {
+    const pick = ksView === "done" ? all.filter(s => s.date < todayIso).reverse() : all;
+    if (!pick.length && t.ksNone[ksView]) list.append(el("li", { class: "none" }, t.ksNone[ksView]));
+    let phase = null;
+    pick.forEach(s => {
+      if (s.phase !== phase) {
+        phase = s.phase;
+        const h = el("li", { class: "ph" }), sw = el("i", { class: "sw" }); sw.style.background = phaseColor(phase);
+        h.append(sw, t.phase[phase] || phase); list.append(h);
+      }
+      list.append(ksItem(s, t, todayIso));
+    });
+  }
   $("ksCap").textContent = t.ksCap(state.meta && state.meta.threshold_pace);
+}
+
+function roadPanel(weeks, r, t, todayIso) {
+  // A race's milestones on a time line with their result, the next one marked, and the race at the
+  // end with its latest forecast; null when the race has none.
+  const road = roadOf(weeks, r.date);
+  if (!road.length) return null;
+  const res = road.map(msResult), done = res.filter(x => x !== "planned").length;
+  const nextIdx = road.findIndex((s, i) => res[i] === "planned" && s.date >= todayIso);
+  const p = el("div", { class: "panel road", id: `road-${r.date}` }), h = el("h3");
+  h.append(t.roadTo({ km: +r.distance_km || 0, name: r.name, d: fmtDate(r.date) }), el("span", {}, t.roadCount(done, road.length)));
+  const prog = el("div", { class: "prog" }), fill = el("i"); fill.style.width = `${Math.round(done / road.length * 100)}%`; prog.append(fill);
+  const ul = el("ul", { class: "tl" });
+  road.forEach((s, i) => {
+    const li = el("li", { class: i === nextIdx ? "next" : res[i] }), n = el("span", { class: "n" }, s.title);
+    if (s.fuel) n.append(el("span", { class: "k" }, t.fuel));
+    li.append(el("span", { class: "dot", "aria-hidden": "true" }, t.ckIcon[res[i]] || ""),
+      el("span", { class: "d" }, fmtDate(s.date, { weekday: "short", day: "numeric", month: "numeric" })), n,
+      el("span", { class: "r" }, i === nextIdx ? t.nextLbl : t.ckRes[res[i]] || res[i]));
+    ul.append(li);
+  });
+  const pr = (state.predictions || []).filter(x => x.kind === "race" && x.race_date === r.date).sort((a, b) => a.date < b.date ? -1 : 1).pop();
+  const end = el("li", { class: "goal" });
+  end.append(el("span", { class: "dot" }, r.priority), el("span", { class: "d" }, fmtDate(r.date, { weekday: "short", day: "numeric", month: "numeric" })),
+    el("span", { class: "n" }, r.name), el("span", { class: "r" }, pr ? fmtT(pr.proj_mid != null ? pr.proj_mid : pr.mid) : ""));
+  ul.append(end);
+  p.append(h, prog, ul);
+  return p;
+}
+
+function renderPhase(weeks, today, t) {
+  // Where the season stands: the phase this week is in, what it is for and what to focus on, its
+  // goal from the plan (volume, long run, the milestone at its end), and the phase after it.
+  const groups = [];
+  weeks.forEach(w => { const g = groups[groups.length - 1]; if (g && g.phase === w.phase) g.weeks.push(w); else groups.push({ phase: w.phase, weeks: [w] }); });
+  const gi = groups.findIndex(g => g.weeks.some(w => w.week_start === today));
+  $("phaseSection").hidden = gi < 0;
+  if (gi < 0) return;
+  $("hPhase").textContent = t.where;
+  const g = groups[gi], wi = g.weeks.findIndex(w => w.week_start === today), cur = g.weeks[wi];
+  const counted = groups.filter(x => x.phase !== "race"), name = p => t.phase[p] || p;
+  const box = $("phase"); box.replaceChildren(); box.style.borderLeftColor = phaseColor(g.phase);
+  const left = el("div"), right = el("div");
+  left.append(el("div", { class: "eyebrow" }, t.phaseN(counted.indexOf(g) + 1, counted.length, fmtDate(addDays(g.weeks[g.weeks.length - 1].week_start, 6)))));
+  const title = name(g.phase), big = el("div", { class: "pbig" }, title[0].toUpperCase() + title.slice(1));
+  big.append(el("span", {}, `${t.weekOf(wi + 1, g.weeks.length)} · ${t.thisWk(vol(cur.km, cur.minutes), t.role[cur.role] || t.buildWeek)}`));
+  const strip = el("div", { class: "pstrip", "aria-hidden": "true" }), lbls = el("div", { class: "plbls", "aria-hidden": "true" });
+  groups.forEach((x, i) => {
+    const seg = el("i", i === gi ? { class: "on" } : {}); seg.style.flex = x.weeks.length; seg.style.background = phaseColor(x.phase); strip.append(seg);
+    const lb = el("span", {}, x.weeks.length >= 3 ? name(x.phase) : ""); lb.style.flex = x.weeks.length; lbls.append(lb);
+  });
+  const about = el("p", { class: "about" }); about.append(el("b", {}, t.whatFor), " ", t.phaseAbout[g.phase] || "");
+  left.append(big, strip, lbls, about);
+  const focus = (t.phaseFocus[g.phase] || []).slice();
+  const dl = g.weeks.find(w => w.week_start > today && w.role === "deload");
+  if (dl) focus.push(t.deloadNext(fmtDate(dl.week_start), fmtDate(addDays(dl.week_start, 6))));
+  const note = state.meta && state.meta.phase_notes && state.meta.phase_notes[g.phase];   // the coach's own word on this phase
+  if (note) focus.push(note);
+  if (focus.length) { const ul = el("ul", { class: "focus" }); focus.forEach(f => ul.append(el("li", {}, f))); left.append(ul); }
+  const top = g.weeks.reduce((a, w) => w.km > a.km ? w : a, g.weeks[0]), longest = Math.max(...g.weeks.map(w => w.long_km || 0));
+  const kv = el("div", { class: "kv" }), row = (k, v) => kv.append(el("span", {}, k), el("b", {}, v));
+  row(t.goalKm, `${vol(cur.km, cur.minutes)} → ${vol(top.km, top.minutes)}`);
+  row(t.goalLong, `${cur.long_km} → ${longest} km`);
+  const ms = g.weeks.flatMap(w => w.key_sessions || []).filter(s => s.milestone && s.date >= localISO()).sort((a, b) => a.date < b.date ? -1 : 1).pop();
+  if (ms) row(t.goalEnd, `${ms.title} · ${fmtDate(ms.date)}`);
+  right.append(el("div", { class: "eyebrow" }, t.goalHead), kv);
+  const nx = groups[gi + 1];
+  if (nx) {
+    const ntop = nx.weeks.reduce((a, w) => w.km > a.km ? w : a, nx.weeks[0]), n = el("div", { class: "pnext" });
+    n.append(el("b", {}, t.nextHead(name(nx.phase), fmtDate(nx.weeks[0].week_start))), el("br"),
+      (t.phaseNext[nx.phase] || "") + (nx.phase === "race" ? "." : t.nextVol(vol(ntop.km, ntop.minutes), Math.max(...nx.weeks.map(w => w.long_km || 0)))));
+    right.append(n);
+  }
+  box.append(left, right);
+}
+
+function activeHealth() {
+  // Active pain and illness from the diary (TrainingPeaks notes): the last report per body part or
+  // episode in the last 30 days, unless resolved, with its rule (stop / reduce / easy).
+  const recent = state.health.filter(h => h.date >= addDays(localISO(), -30)).sort((a, b) => a.date < b.date ? -1 : 1);
+  const lastOf = {};
+  recent.forEach(h => { lastOf[h.type === "pain" ? `p:${(h.part || "").toLowerCase()}` : "illness"] = h; });
+  return Object.values(lastOf).filter(h => h.status !== "resolved")
+    .map(h => ({ h, lv: h.type === "pain" ? (h.score >= 6 ? "stop" : h.score > 3 ? "reduce" : "easy") : (h.fever ? "stop" : "easy") }));
+}
+
+function renderToday(weeks, t) {
+  // The first thing on the page: today's session with its targets, what this morning's readiness
+  // means for it (the brief's own advice when it wrote one, else the general rule for the verdict),
+  // active pain or illness, and tomorrow in one line.
+  const todayIso = localISO(), mon = mondayISO(new Date());
+  const w = weeks.find(x => x.week_start === mon);
+  $("todaySection").hidden = !w;
+  if (!w) return;
+  const isRest = d => d.rest || d.kind === "rest";
+  const dayOf = iso => { const wk = weeks.find(x => x.week_start === mondayISO(new Date(iso + "T12:00:00"))); return ((wk && wk.days) || []).filter(d => d.date === iso && !isRest(d)); };
+  const keyOf = iso => weeks.flatMap(x => x.key_sessions || []).find(s => s.date === iso);
+  const items = dayOf(todayIso), ks = keyOf(todayIso);
+  const zone = state.zones.find(z => z.id === "current"), easyCap = zone && zone.easy_hr_cap;
+  const tr = state.trends.filter(r => r.verdict).sort((a, b) => a.date < b.date ? -1 : 1), r = tr[tr.length - 1];
+  const fresh = r && r.date === todayIso, col = v => v === "RED" ? "var(--race)" : v === "AMBER" ? "var(--warn)" : "var(--good)";
+  const box = $("today"); box.replaceChildren();
+  box.style.boxShadow = `inset 4px 0 0 ${fresh ? col(r.verdict) : "var(--accent)"}`;
+  const left = el("div");
+  left.append(el("div", { class: "eyebrow" }, t.todayHead(fmtDate(todayIso, { weekday: "long", day: "numeric", month: "numeric" })) +
+    (ks ? ` · ${ks.milestone ? `★ ${t.milestone}` : t.keyTag}` : "")));
+  if (!items.length && !ks) {
+    left.append(el("div", { class: "tbig" }, t.rest));
+    if (w.role === "deload") left.append(el("div", { class: "twhy" }, t.deloadWhy));
+  } else {
+    (items.length ? items : [{ title: ks.title }]).forEach(d => {
+      const line = el("div", { class: "tbig tline" }, d.title || "");
+      if (d.done) line.append(" ", el("span", { class: "ok", style: "font-size:1rem;font-family:var(--body)" }, t.doneToday));
+      left.append(line);
+    });
+    const tg = (ks && ks.target) || {}, km = items.reduce((a, d) => a + (d.km || 0), 0) || tg.km, tgt = el("div", { class: "tgt" });
+    const cell = (k, v) => { const c = el("div"); c.append(el("span", {}, k), el("b", {}, v)); tgt.append(c); };
+    if (tg.pace) cell(t.lblPace, `${tg.pace}/km`);
+    const hr = tg.hr_max || (!ks && easyCap);
+    if (hr) cell(t.lblHr, t.upTo(hr));
+    if (km) cell(t.lblKm, `${fmtN(km, km % 1 ? 1 : 0)} km`);
+    if (tgt.children.length) left.append(tgt);
+  }
+  activeHealth().forEach(({ h, lv }) => left.append(el("div", { class: `tnote ${lv}` },
+    `${t.health[h.type] || h.type}: ${h.type === "pain" ? `${h.part} ${h.score}/10` : h.symptoms || ""} (${fmtDate(h.date)}) · ${t.health[lv]}`)));
+  box.append(left);
+  if (r) {
+    const right = el("div", { class: "tverdict" }), v = r.verdict in t.verdict ? r.verdict : "GREEN";
+    const chip = el("span", { class: "chip" }), dot = el("i", { "aria-hidden": "true" }, { GREEN: "✓", AMBER: "!", RED: "×" }[v]);
+    dot.style.background = col(v); chip.append(dot, t.verdict[v]);
+    right.append(el("div", { class: "eyebrow" }, fresh ? t.readyToday : t.readyLast(fmtDate(r.date))), chip,
+      el("div", { class: "tadv" }, (fresh && r.advice) || t.advice[v]));
+    const why = [r.hrv7 != null && `${t.mean7} ${fmtN(r.hrv7, 1)}` + (r.band_lo != null ? ` (${t.band} ${fmtN(r.band_lo, 1)}–${fmtN(r.band_hi, 1)})` : ""),
+      r.rhr != null && `${t.facts.rhr} ${fmtN(r.rhr)}`, r.sleep_h != null && `${t.facts.sleep} ${fmtN(r.sleep_h, 1)} h`].filter(Boolean).join(" · ");
+    if (why) right.append(el("div", { class: "twhy" }, why));
+    box.append(right);
+  }
+  const tomorrow = addDays(todayIso, 1), nItems = dayOf(tomorrow), nks = keyOf(tomorrow), next = el("div", { class: "tnext" });
+  const ntg = (nks && nks.target) || {}, nhr = ntg.hr_max || (!nks && nItems.length && easyCap);
+  next.append(`${t.tomorrow}: `, el("b", {}, nItems.length ? nItems.map(d => d.title).join(" + ") : nks ? nks.title : t.rest),
+    [ntg.pace && `${ntg.pace}/km`, nhr && t.hrTo(nhr)].filter(Boolean).map(x => ` · ${x}`).join(""));
+  box.append(next);
 }
 
 function renderReadiness(tr, t, col) {
@@ -710,13 +1028,8 @@ function renderReadiness(tr, t, col) {
   dot.style.background = col(v); chip.replaceChildren(dot, t.verdict[v]);
   $("readyDate").textContent = fmtDate(l.date, { weekday: "long", day: "numeric", month: "numeric" });
   $("readyAdvice").textContent = t.advice[v];
-  // active pain and illness from the diary (TrainingPeaks notes), last report per body part / episode
-  const recent = state.health.filter(h => h.date >= addDays(localISO(), -30)).sort((a, b) => a.date < b.date ? -1 : 1);
-  const lastOf = {};
-  recent.forEach(h => { lastOf[h.type === "pain" ? `p:${(h.part || "").toLowerCase()}` : "illness"] = h; });
-  const active = Object.values(lastOf).filter(h => h.status !== "resolved");
-  $("readyHealth").replaceChildren(...active.map(h => {
-    const d = el("div"), lv = h.type === "pain" ? (h.score >= 6 ? "stop" : h.score > 3 ? "reduce" : "easy") : (h.fever ? "stop" : "easy");
+  $("readyHealth").replaceChildren(...activeHealth().map(({ h, lv }) => {
+    const d = el("div");
     d.append(el("span", { class: "lv" }, `${t.health[h.type] || h.type}: ${h.type === "pain" ? `${h.part} ${h.score}/10` : h.symptoms || ""}`),
       ` · ${t.health[lv]} (${fmtDate(h.date)})`);
     return d;
@@ -759,49 +1072,81 @@ function renderReadiness(tr, t, col) {
   $("readyCap").textContent = t.readyCap + (trend ? " " + t.readyTrend + "." : "");
 }
 
-function renderPredictions(t) {
+function predBar(t, lo, mid, hi, now, goal) {
+  const vals = [lo, hi, now, goal].filter(v => v != null);
+  const a = Math.min(...vals), b = Math.max(...vals), pad = Math.max((b - a) * .08, 20);
+  const x = v => (v - a + pad) / (b - a + 2 * pad) * 100;
+  const at = v => ({ style: `left:${x(v).toFixed(1)}%` });
+  const tx = (v, cls, text) => { const p = x(v); return el("span", { class: `tx ${cls}${p < 15 ? " l" : p > 85 ? " r" : ""}`, style: `left:${p.toFixed(1)}%` }, text); };
+  const bar = el("div", { class: "pbar", "aria-hidden": "true" }), trk = el("div", { class: "trk" });
+  trk.append(el("i", { class: "band", style: `left:${x(lo).toFixed(1)}%;width:${(x(hi) - x(lo)).toFixed(1)}%` }), el("i", { class: "tick", ...at(mid) }));
+  bar.append(trk);
+  if (goal) bar.append(el("i", { class: "gl", ...at(goal) }), tx(goal, "g", t.goalMark(fmtT(goal))));
+  if (now != null) bar.append(el("i", { class: "nw", ...at(now) }), tx(now, "n", t.nowMark(fmtT(now))));
+  return bar;
+}
+
+function renderPredictions(t, weeks) {
+  // One column per race still ahead: its forecast card, and its road of milestones under it.
   const rows = state.predictions || [], todayIso = localISO();
-  const dist = km => Math.abs(km - 21.0975) < 0.2 ? t.half : Math.abs(km - 42.195) < 0.3 ? t.marathon : `${+km.toFixed(2)} km`;
   const groups = {};
   rows.filter(r => r.kind === "race" && r.race_date >= todayIso).forEach(r => { (groups[`${r.race_date}|${r.km}`] ||= []).push(r); });
   const now = rows.filter(r => r.kind === "now"), lastNow = now.reduce((a, r) => r.date > a ? r.date : a, "");
   const form = now.filter(r => r.date === lastNow).sort((a, b) => a.km - b.km);
-  $("predSection").hidden = !Object.keys(groups).length && !form.length;
-  $("hPred").textContent = t.pred; $("hForm").textContent = t.form;
-  const box = $("predRaces"); box.replaceChildren();
-  Object.values(groups).sort((a, b) => a[0].race_date < b[0].race_date ? -1 : 1).forEach(g => {
-    g.sort((a, b) => a.date < b.date ? -1 : 1);
-    const l = g[g.length - 1], p = el("div", { class: "panel pred" });
-    // With a projection ("if the plan happens") it is the headline; today's form stays visible below it.
-    const pj = l.proj_mid != null, lo = pj ? l.proj_low : l.low, mid = pj ? l.proj_mid : l.mid, hi = pj ? l.proj_high : l.high;
-    p.append(el("div", { class: "eyebrow" }, `${l.name} · ${fmtDate(l.race_date, { day: "numeric", month: "numeric", year: "numeric" })} · ${dist(l.km)}`),
-      el("div", { class: "big" }, fmtT(mid)),
-      el("div", { class: "sub" }, `${pj ? t.proj : t.likely} · ${t.range} ${fmtT(lo)}–${fmtT(hi)}`));
-    if (pj) p.append(el("div", { class: "sub" }, `${t.today} ${fmtT(l.mid)} · ${t.range} ${fmtT(l.low)}–${fmtT(l.high)}`));
-    if (l.goal) {
-      const gap = ((lo - l.goal) / lo * 100).toFixed(1);
-      const [cls, txt] = l.goal >= lo && l.goal <= hi ? ["ok", t.inRange] : l.goal > hi ? ["ok", t.safe]
-        : gap <= 3 ? ["warn", pj ? t.projStretch(gap) : t.stretch(gap)] : ["off", pj ? t.projOut(gap) : t.outOf(gap)];
-      const d = el("div", { class: "sub" }); d.append(`${t.goal(fmtT(l.goal))} · `, el("span", { class: `gap ${cls}` }, txt)); p.append(d);
-    }
-    if (g.length > 1) {
-      const svg = svgEl("svg", { role: "img", "aria-label": t.trendCap });
-      p.append(svg, el("div", { class: "cap" }, t.trendCap));
-      miniChart(svg, g.map(r => r.proj_mid != null ? { x: new Date(r.date + "T12:00:00"), y: r.proj_mid, lo: r.proj_low, hi: r.proj_high }
-        : { x: new Date(r.date + "T12:00:00"), y: r.mid, lo: r.low, hi: r.high }),
-        { line: true, invert: true, ref: l.goal || null, padL: 56, fmt: v => fmtT(v) });
-    }
-    box.append(p);
+  $("hRaces").textContent = t.races; $("hForm").textContent = t.form;
+  const box = $("raceCols"); box.replaceChildren();
+  const metaRaces = ((state.meta && state.meta.races) || []).filter(r => r.date >= todayIso);
+  const dates = [...new Set(metaRaces.map(r => r.date).concat(Object.values(groups).map(g => g[0].race_date)))].sort();
+  let roads = 0;
+  dates.forEach(d => {
+    const col = el("div", { class: "racecol" }), g = Object.values(groups).find(x => x[0].race_date === d);
+    const r = metaRaces.find(x => x.date === d);
+    if (g) col.append(predCard(g, t, form));
+    const road = r && roadPanel(weeks, r, t, todayIso);
+    if (road) { col.append(road); roads++; }
+    if (col.children.length) box.append(col);
   });
-  $("formPanel").hidden = !form.length;
+  $("raceSection").hidden = !box.children.length;
+  $("roadCap").textContent = roads ? t.roadCap : "";
+  $("formSection").hidden = !form.length;
   $("formHead").replaceChildren(...t.formCols.map((c, i) => el("th", i ? { style: "text-align:right" } : {}, c)));
   $("formBody").replaceChildren(...form.map(r => {
     const tr = el("tr");
-    tr.append(el("td", {}, dist(r.km)), el("td", { class: "n" }, fmtT(r.mid)), el("td", { class: "n" }, `${fmtT(r.low)}–${fmtT(r.high)}`),
+    tr.append(el("td", {}, dist(r.km, t)), el("td", { class: "n" }, fmtT(r.mid)), el("td", { class: "n" }, `${fmtT(r.low)}–${fmtT(r.high)}`),
       el("td", { class: "n" }, `${fmtT(r.mid / r.km)}/km`));
     return tr;
   }));
   $("predCap").textContent = lastNow ? t.predCap(fmtDate(lastNow, { day: "numeric", month: "numeric", year: "numeric" })) : "";
+}
+
+function dist(km, t) { return Math.abs(km - 21.0975) < 0.2 ? t.half : Math.abs(km - 42.195) < 0.3 ? t.marathon : `${+km.toFixed(2)} km`; }
+
+function predCard(g, t, form) {
+  g.sort((a, b) => a.date < b.date ? -1 : 1);
+  const l = g[g.length - 1], p = el("div", { class: "panel pred" });
+  // One headline time with one range: the race-day projection when there is one, else today's form.
+  // Today's form and the goal are marks on the same time line (faster to the left), not more ranges.
+  const pj = l.proj_mid != null, lo = pj ? l.proj_low : l.low, mid = pj ? l.proj_mid : l.mid, hi = pj ? l.proj_high : l.high;
+  p.append(el("div", { class: "eyebrow" }, `${l.name} · ${fmtDate(l.race_date, { day: "numeric", month: "numeric", year: "numeric" })} · ${dist(l.km, t)}`),
+    el("div", { class: "lbl" }, pj ? t.projHead : t.nowHead),
+    el("div", { class: "big" }, fmtT(mid)),
+    el("div", { class: "sub" }, t.likelyRange(fmtT(lo), fmtT(hi))),
+    predBar(t, lo, mid, hi, pj ? (form.find(r => Math.abs(r.km - l.km) < 0.3) || l).mid : null, l.goal));
+  if (l.goal) {
+    const gap = (lo - l.goal) / lo * 100, secs = lo - l.goal;
+    const by = secs < 90 ? `${Math.round(secs)} s` : `${Math.round(secs / 60)} min`;
+    const [cls, rel, judge] = l.goal >= lo && l.goal <= hi ? ["ok", t.rel.inside, t.judge.ok] : l.goal > hi ? ["ok", t.rel.slower, t.judge.safe]
+      : gap <= 3 ? ["warn", t.rel.faster(by), t.judge.stretch] : ["off", t.rel.faster(by), t.judge.out];
+    const d = el("div", { class: "sub" }); d.append(`${t.goalLead(fmtT(l.goal))} ${rel}: `, el("span", { class: `gap ${cls}` }, judge)); p.append(d);
+  }
+  if (g.length > 1) {
+    const svg = svgEl("svg", { role: "img", "aria-label": t.trendCap });
+    p.append(svg, el("div", { class: "cap" }, t.trendCap));
+    miniChart(svg, g.map(r => r.proj_mid != null ? { x: new Date(r.date + "T12:00:00"), y: r.proj_mid, lo: r.proj_low, hi: r.proj_high }
+      : { x: new Date(r.date + "T12:00:00"), y: r.mid, lo: r.low, hi: r.high }),
+      { line: true, invert: true, ref: l.goal || null, padL: 56, fmt: v => fmtT(v) });
+  }
+  return p;
 }
 
 async function start() {

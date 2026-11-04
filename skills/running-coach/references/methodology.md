@@ -15,6 +15,7 @@ leaving them flat), adapt and say why.
 8. Missed sessions, illness, return after a break
 9. Units and terrain
 10. Age, energy and health flags
+11. A fixed time budget
 
 ---
 
@@ -169,6 +170,25 @@ The goal is realistic when it's within ~2–3 % of the prediction for a block of
 the runner can build the needed volume. 5–8 % needs a long block and things going right. More
 than that needs an intermediate goal. A checkpoint race or test halfway through the block
 re-anchors the target.
+
+**Faster runners** (half ≤ ~1:25, marathon ≤ ~3:00; practice built on the rules above). The
+same plan with more volume, so most of the risk sits in the volume:
+- Peak volume from the runner's own best block and the goal table (`onboarding.md` §4); ≤ 10 %
+  steps with a deload every 3rd–4th week, said in the plan. Past ~6 runs a week the extra km
+  come as easy doubles (30–40 min), never as more quality.
+- Two quality sessions plus the long run; a third only as sub-threshold. Double threshold (two
+  sessions in one day) comes from elite runners on 150+ km and has no amateur trials: offer at
+  most Norwegian singles, labelled as practice [S28] (§11).
+- The specific phase carries the block (`workouts.md` "Race-specific"). Half: half-marathon-pace
+  blocks from 3 × 3 km to 2 × 6 km or 10 km continuous, long runs 22–26 km. Marathon: long runs
+  30–35 km with 14–20 km at marathon pace, a continuous 18–23 km at marathon pace 3–4 weeks out,
+  and a medium-long midweek run.
+- Name the limiter from two results of different length (`paces.py predict` both ways). The
+  short one predicts faster than the long one ran: speed is there, so threshold and race-pace
+  volume and longer long runs. The other way round: one session of 3–5 min reps at 5k–10k pace
+  in the build, the rest as above.
+- Gains per block shrink at this level (often 1–3 %): give a range, a check point race, and the
+  fallback pace that still runs evenly.
 
 **Block overview format** (one row per week):
 
@@ -344,6 +364,21 @@ in build and peak, and put race-pace segments on flat ground. Flat home, hilly o
 hills (uphill reps, hilly long runs), downhill running and step-downs in strength, and grow weekly
 vertical gradually (+10 % like volume). For trail goals, plan volume in hours plus vertical metres.
 
+**Trail and mountain races** (coaching practice; there are no trials of trail preparation):
+- Estimate the race time first (a road-equivalent pace slowed for the climbing, or the runner's
+  earlier trail results) and plan long runs by time on feet toward ~60–75 % of it.
+- No hills at home: treadmill at 8–15 % incline, stairs or a stair machine, bridges, ramps and
+  multi-storey car parks as repeats; a weekend trip to real hills every 2–4 weeks for the long
+  run, back-to-back weekend runs (Sat + Sun) closer to the race.
+- Power-hike the steep climbs in training as in the race (walking is faster than running above
+  roughly 15–20 % on most courses for amateurs); practise downhills progressively, with eccentric
+  strength (step-downs, slow lunges) twice a week (`strength.md`).
+- Fuel and drink for the race's real duration: carbohydrate 30–60 g/h, more for 4 h+ if the gut is
+  trained ([S36, S37], "Fuelling practice" in `workouts.md`); drinking about 0.4–0.8 l an hour
+  from what they carry (to thirst, more and with sodium in heat) [S36]. Say both, with the vest or
+  bottles and refill points, and rehearse them on the long runs in race kit (poles if allowed,
+  shoes).
+
 **Temporary change** ("this week I'm in the mountains", "running on the beach on holiday"):
 re-plan the rest of the week in time and HR, swap pace intervals for uphill reps or fartlek by
 effort, and say in the review that slow paces were the terrain, not fitness. Note it in the
@@ -386,3 +421,72 @@ Losing periods is never a normal effect of training.
 **Menstrual cycle.** Evidence doesn't support planning training by cycle phase: effects on
 performance are trivial and inconsistent [S45]. Logging the cycle is optional; adjust only for the
 runner's own symptoms.
+
+## 11. A fixed time budget
+
+Most runners can give a fixed number of hours, not "whatever it takes". Plan from that budget
+(onboarding asks for it: hours a week and the longest slot) and say what an extra hour would buy.
+What decides the result, in this order:
+
+1. **Enough easy volume for the distance.** For the half and the marathon, weekly volume is the
+   strongest training predictor of race time: about 4 minutes off a marathon per extra 10 km a
+   week (about an hour of easy running) at 30–50 km/week, about 3 minutes at 100 km/week, so
+   returns shrink only slowly. A marathon needs about 40 km/week as a minimum; long runs beyond
+   ~35 km add nothing [S25, S26, S56]. These are cross-sectional associations (fitter runners
+   also choose to run more), so quote them as "about", not as a promise. For 5k and 10k there are
+   no dose-response data: once ~3 runs a week are in place, quality matters more [S25].
+2. **Two quality sessions a week, with the intensity protected.** A pyramidal week is fine: a
+   threshold-leaning mix matched a polarized one in recreational runners with ~17 % less training
+   time [S10, S13]. The default quality is threshold or sub-threshold: cheap to recover from, and
+   tempo running goes with faster 5k/10k times [S25]. For 5k/10k add one long-interval session
+   (reps of 2–5 min at ~3–5k pace, at least 15 min of work in total), which beats 30-second sprints
+   [S54]. One VO2 session a week did little in one small study; two worked; a third added
+   nothing [S55].
+3. **Strength 2 × 20–30 min heavy** for 8–14 weeks, then once a week to keep it (`strength.md`)
+   [S29–S31, S62]. Under ~4 h a week with a marathon goal, it never replaces the long run or the
+   easy volume.
+4. **The free gains:** even pacing (28 % of men and 17 % of women hit the wall, mostly after a
+   fast start [S63]), race fuelling [S36, S37], at least 7 h of sleep before key sessions (acute
+   sleep loss costs ~7–8 % [S64]), and heat acclimation before a hot race [S40].
+
+**Allocation by budget** (practice, built on the rules above; no study tests the boundaries):
+
+| Weekly time | Runs | Long run | Quality | Strength · strides | Fits |
+|---|---|---|---|---|---|
+| ≤ 3 h | 3 | 60–80 min (~35–40 %) | 1: threshold or sub-threshold (5k/10k: alternate with long intervals). With a solid base and a 5k/10k goal: 2, the long run easy | 1 × 20 min · 1× | 5k/10k well; a half is feasible; a marathon only to finish: say so |
+| 3–5 h | 4 | 75–110 min (~30–35 %) | 2: 5k/10k long intervals + sub-threshold; half/marathon sub-threshold + intervals every 1–2 weeks or a second sub-threshold | 1–2 × · 1–2× | 5k to half well; a marathon is possible |
+| 5–7 h | 5 | 90–150 min (~25–30 %) | 2, plus race pace inside the long run for half/marathon in the last 6–8 weeks | 2 × · 2× | all distances |
+| 7+ h | 5–7 (doubles optional) | up to 2.5–3 h for a marathon (≤ 25–30 %) | 2–3, a third only as sub-threshold | 2 × · 2× | all distances |
+
+**Where extra time goes.** Half and marathon: easy running first, and a longer long run until
+the distance's need is met. 5k/10k: quality and strength. More runs help only by adding minutes:
+at the same total time, frequency doesn't matter, and the long run is never split [S56]. Put a
+number on it from the runner's own model: `forecast.py` with a higher `weekly_km` (or the plan's
+weeks) shows what +1 h a week would change.
+
+**Busy weeks (2–6 weeks).** The plan fits the time the runner says they have: the week table
+holds only what fits, and nothing beyond it. Keep at least 2 runs a week with at least 1 hard
+session, cut volume by up to two-thirds, and never go easy-only: two runs a week with some
+intensity hold fitness for weeks, while a 4-week easy-only cut kept VO2max but made 9 of 10
+runners slower over 5 km [S57, S58]. With a marathon goal, the longest slot stays an easy long run
+every week. If the 30-day longest-run rule (§4) will then rebuild the long run too slowly for the
+race, say so under the plan as a question ("could one weekend take 1:45? without it the long run
+rebuilds from ~12 km"), never as a row of the plan. Say "most of your fitness stays", never "you
+won't lose any"; say what will show it afterwards (the first long run, a test or a race) and when
+the goal is looked at again, and save the arrangement to the profile only after the runner's
+yes. The way back: 1–2 weeks at ~75–85 % of the earlier
+volume with the quality kept, then the plan; nothing is made up (practice). After a full stop, a
+few % of VO2max goes in 2–4 weeks and ~7–16 % by 3–8 weeks [S59]; rebuild per §8.
+
+**Cheaper volume.** Run-commutes and doubles count as easy volume (no studies; keep them away
+from the day before a key session). Cross-training (bike, elliptical, deep-water running) can
+replace easy runs, or carry fitness through 4–6 weeks of injury; keep the long run and one quality
+run on foot. The trials are short and small, and there is no "1 h on the bike = X min running"
+[S60].
+
+**Not proven for amateurs: offer as practice, and say so.** Norwegian-singles sub-threshold weeks
+(cap at 2 sub-threshold sessions with ≤ 3 runs) [S28]; choosing a block's emphasis from the race
+profile (a personal fatigue exponent from two or more recent races: median 1.12; ≤ ~1.09 leans to
+speed, ≥ ~1.14 to endurance and durability) [S61]; an optimal long-run share; training
+durability. What is tested is adjusting the plan to daily readiness (§7): 10 km improved 6.2 %
+against 2.9 % on a fixed plan [S19, S20].

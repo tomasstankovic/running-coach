@@ -290,6 +290,18 @@ class AnalyzeSession(TempDir):
         lap("Cooldown", 1.5, 540, 132, 140)
         return {"totals": {}, "lapData": laps, "data": []}
 
+    def test_marathon_fade_after_km_30(self):
+        # a fictional marathon: 30 km at 4:40, then 12.2 km at 5:10 (auto-laps, no workout steps)
+        laps = [{"TotalDistance": 1.0, "TotalTimerTime": 280 if k < 30 else 310, "AverageHeartRate": 152}
+                for k in range(42)] + [{"TotalDistance": 0.195, "TotalTimerTime": 60, "AverageHeartRate": 155}]
+        data = {"totals": {"Distance": 42.195, "Duration": sum(l["TotalTimerTime"] for l in laps)}, "lapData": laps, "data": []}
+        out = run("analyze_session.py", self.write("m.json", data)).stdout
+        self.assertIn("pace to km 30 4:40/km", out)
+        self.assertIn('"steady_pace": "4:40"', out)
+        row = json.loads(run("analyze_session.py", self.write("m.json", data), "--json").stdout)
+        self.assertEqual(row["steady_pace"], 280)
+        self.assertGreater(row["fade_pct"], 9)
+
     def test_intervals_report_evenness_and_hr(self):
         out = run("analyze_session.py", self.write("a.json", self.laps()), "--lthr", 174,
                   "--threshold-pace", "4:10").stdout
@@ -477,6 +489,90 @@ class Forecast(TempDir):
         self.assertIn("plan TSS x 1.40", out)
         self.assertIn("-> 42 on race day", out)   # 210 TSS a week x 1.4 / 7 days, not 30
 
+    def test_projection_without_weekly_tss_keeps_the_plans_tss(self):
+        # CTL x 7 lags behind the load in a build: it must not shrink the plan
+        out = run("forecast.py", self.write("f.json", self.inp(plan=self.plan(60, 350), history=self.history(), ctl=25))).stdout
+        self.assertIn("no weekly_tss", out)
+        self.assertNotIn("plan TSS x", out)
+        self.assertIn("-> 50 on race day", out)   # 350 / 7 = 50 a day, reached over ~25 weeks
+
+    def marathon_rows(self, steady=None, checks=None):
+        history = [dict(h) for h in self.history()]
+        if steady:
+            history[1]["steady_pace"] = steady
+        data = self.inp(plan=self.plan(60, 330), history=history, ctl=35, weekly_tss=230,
+                        **({"checks": checks} if checks else {}))
+        return self.rows(data)["2026-11-01_2027-04-25_42.195"]
+
+    def test_a_faded_marathon_widens_the_projection_and_starts_at_half_the_fade(self):
+        plain, faded = self.marathon_rows(), self.marathon_rows(steady="4:45")   # 3:28 run, 4:45/km to km 30
+        self.assertLess(faded["proj_mid"], plain["proj_mid"])
+        self.assertLess(faded["proj_low"], plain["proj_low"])                      # fast end: no fade
+        self.assertAlmostEqual(faded["proj_high"], plain["proj_high"], delta=60)   # slow end: the fade comes back
+        none_yet = self.marathon_rows(steady="4:45", checks=[{"race": "2027-04-25", "date": "2027-03-07", "name": "30 km",
+                                                              "result": "planned"}])
+        self.assertEqual(none_yet["proj_mid"], faded["proj_mid"])
+
+    def test_marathon_checks_move_the_middle(self):
+        checks = lambda *r: [{"race": "2027-04-25", "date": f"2027-03-{7 + 7 * i:02d}", "name": f"long run {i}", "result": x}
+                             for i, x in enumerate(r)]
+        start = self.marathon_rows(steady="4:45", checks=checks("planned", "planned", "planned", "planned"))
+        held = self.marathon_rows(steady="4:45", checks=checks("held", "held", "planned", "planned"))
+        all_held = self.marathon_rows(steady="4:45", checks=checks("held", "held", "held", "held"))
+        faded = self.marathon_rows(steady="4:45", checks=checks("faded", "planned", "planned", "planned"))
+        self.assertLess(held["proj_mid"], start["proj_mid"])
+        self.assertLess(all_held["proj_mid"], held["proj_mid"])
+        self.assertGreater(faded["proj_mid"], start["proj_mid"])
+        self.assertLessEqual(all_held["proj_low"], all_held["proj_mid"])
+
+    def test_milestones_come_from_the_plan(self):
+        # the plan's milestones of the marathon are its checks; a verdict on target counts as held
+        def rows(actual):
+            weeks = [{"week_start": (date(2026, 11, 2) + timedelta(weeks=i)).isoformat(), "km": 60, "tss": 330,
+                      "key_sessions": []} for i in range(26)]
+            for i, d in enumerate(("2027-02-14", "2027-03-07", "2027-03-21", "2027-04-04")):
+                week = next(w for w in weeks if w["week_start"] <= d < (date.fromisoformat(w["week_start"]) + timedelta(days=7)).isoformat())
+                week["key_sessions"].append({"id": f"m{i}", "date": d, "slot": "long", "type": "mp_long", "title": f"long run {i}",
+                                             "milestone": True, "race": "2027-04-25", "actual": actual if i < 2 else None})
+            spec = {"races": [{"name": "Spring M", "date": "2027-04-25", "distance_km": 42.195, "priority": "A"}]}
+            history = [dict(h) for h in self.history()]
+            history[1]["steady_pace"] = "4:45"
+            plan = str(self.write("plan.json", {"spec": spec, "weeks": weeks}))
+            return self.rows(self.inp(plan=plan, history=history, ctl=35, weekly_tss=230))["2026-11-01_2027-04-25_42.195"]
+        planned, held = rows(None), rows({"verdict": "on"})
+        self.assertLess(held["proj_mid"], planned["proj_mid"])
+        self.assertGreater(rows({"verdict": "on", "check": "faded"})["proj_mid"], planned["proj_mid"])   # the review's check wins
+
+    def test_race_pace_checks_move_the_half_and_the_marathon_built_on_it(self):
+        races = [{"name": "Spring HM", "date": "2027-03-21", "distance_km": 21.0975, "goal": "1:38:00"},
+                 {"name": "Spring M", "date": "2027-04-25", "distance_km": 42.195, "goal": "3:25:00"}]
+        def rows(*results):
+            checks = [{"race": "2027-03-21", "date": f"2027-02-{5 + 7 * i:02d}", "name": f"HM pace {i}", "result": r}
+                      for i, r in enumerate(results)]
+            history = [{"date": "2026-02-15", "km": 21.0975, "time": "1:44:00", "weekly_km": 45, "ctl": 40},
+                       {"date": "2026-03-28", "km": 21.0975, "time": "1:38:00", "weekly_km": 60, "ctl": 52}]
+            data = self.inp(plan=self.plan(60, 330), history=history, ctl=35, weekly_tss=230, races=races, checks=checks)
+            r = self.rows(data)
+            return r["2026-11-01_2027-03-21_21.0975"], r["2026-11-01_2027-04-25_42.195"]
+        (h0, m0), (h1, m1), (h2, m2) = rows("planned", "planned"), rows("held", "held"), rows("faded", "faded")
+        self.assertLess(h1["proj_mid"], h0["proj_mid"])
+        self.assertGreater(h2["proj_mid"], h0["proj_mid"])
+        self.assertLess(m1["proj_mid"], m0["proj_mid"])     # the marathon is built on the half
+
+    def test_projection_credits_a_runner_faster_at_a_lower_ctl(self):
+        # last spring 1:36 at CTL 40 and 1:32 at CTL 50; today already 1:34 at CTL 30
+        history = [{"date": "2026-02-15", "km": 21.0975, "time": "1:36:00", "weekly_km": 45, "ctl": 40},
+                   {"date": "2026-03-28", "km": 21.0975, "time": "1:32:00", "weekly_km": 60, "ctl": 50}]
+        races = [{"name": "Spring HM", "date": "2027-04-03", "distance_km": 21.0975, "goal": "1:30:00"}]
+        data = self.inp(results=[{"date": "2026-10-25", "km": 21.0975, "time": "1:34:00", "kind": "race"}],
+                        plan=self.plan(60, 350), history=history, ctl=30, weekly_tss=240, weekly_km=40, races=races)
+        row = self.rows(data)["2026-11-01_2027-04-03_21.0975"]
+        out = run("forecast.py", self.write("f.json", data)).stdout
+        self.assertIn("per CTL point (with today's level / earlier races alone)", out)
+        self.assertLess(row["proj_mid"], 5520)                 # back at CTL ~50: faster than the 1:32 run there
+        self.assertLessEqual(row["proj_low"], row["proj_mid"])
+        self.assertLessEqual(row["proj_mid"], row["proj_high"])
+
 
 class KeySessions(TempDir):
     """season_plan.py roadmap / actuals --sessions / retarget on a fictional marathon season."""
@@ -507,7 +603,14 @@ class KeySessions(TempDir):
     def test_marathon_milestones(self):
         _, plan, _ = self.plan()
         ms = [s for s in self.sessions(plan) if s["milestone"]]
-        self.assertTrue(6 <= len(ms) <= 10, len(ms))
+        half = [s for s in ms if s["race"] == "2027-03-21"]
+        mara = [s for s in ms if s["race"] == "2027-04-25"]
+        self.assertEqual(len(half) + len(mara), len(ms))             # every milestone is on a race's road
+        self.assertTrue(4 <= len(half) <= 6 and 4 <= len(mara) <= 6, (len(half), len(mara)))
+        self.assertFalse(any(s["type"] == "race" for s in ms))       # a race is the end of its road
+        self.assertTrue(any(s["type"] in ("test", "hm_pace") for s in half))
+        self.assertTrue(all(s["slot"] == "long" for s in mara))
+        self.assertEqual(sum(1 for s in mara if s.get("fuel")), 1)
         cont = next(s for s in ms if s["type"] == "mp")
         days_out = (date(2027, 4, 25) - date.fromisoformat(cont["date"])).days
         self.assertTrue(14 <= days_out <= 28, cont["date"])
@@ -516,7 +619,6 @@ class KeySessions(TempDir):
         week_before = (date.fromisoformat(cont["date"]) - timedelta(days=7)).isoformat()
         self.assertNotIn(week_before[:10], [s["date"] for s in self.sessions(plan) if s["type"] in ("mp", "mp_long")])
         self.assertTrue(any(s["type"] == "test" for s in ms))
-        self.assertTrue(any(s["type"] == "race" and "Half" in s["title"] for s in ms))
 
     def test_goal_beyond_the_threshold_is_capped_and_reported(self):
         spec = json.loads(json.dumps(self.SPEC))
