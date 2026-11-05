@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-ask-missing-threshold
+expected_outcome: |
+  Missing input: the runner asks for tempo paces but there is no race result, time trial or threshold anywhere. The coach does not invent a threshold or run paces.py on a made-up number. It asks for a recent race or offers a simple test (e.g. a 5k parkrun or a 30-minute time trial) to set the paces, and meanwhile explains how to run tempo by effort or breathing. English.
+context:
+  scaffold_script: place-files.sh

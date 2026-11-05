@@ -1,0 +1,6 @@
+{
+  "01-runs-analysis": "script",
+  "02-reports-evenness": "answer",
+  "03-threshold-stale": "answer",
+  "04-next-time": "answer"
+}

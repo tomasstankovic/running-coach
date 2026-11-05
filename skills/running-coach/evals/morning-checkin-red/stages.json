@@ -1,0 +1,6 @@
+{
+  "01-runs-readiness": "script",
+  "02-no-intervals-today": "answer",
+  "03-names-hrv-trend": "answer",
+  "04-asks-context": "answer"
+}

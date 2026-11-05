@@ -157,7 +157,7 @@ It replies in your language (tested in English and Slovak).
 - **Grounded in research.** Load limits from a 5,200-runner injury study, HRV-guided training,
   evidence-based tapers, strength, fuelling and heat guidance; each rule carries its source and
   how strong the evidence is ([the research behind it](#the-research-behind-it)).
-- **Tested.** Behaviour tests for every script, and 39 eval cases of real coaching conversations
+- **Tested.** Behaviour tests for every script, and 43 eval cases of real coaching conversations
   in English and Slovak, run against Claude with and without the skill
   ([results](#with-and-without-the-plugin)).
 
@@ -385,7 +385,7 @@ skills/running-coach/
 ├── SKILL.md                    modes and the core workflow
 ├── assets/
 │   └── season-plan.html        the season plan page (published once, then updated in place)
-├── evals/                      39 eval cases (claude plugin eval) on fictional runners, en + sk
+├── evals/                      43 eval cases (claude plugin eval) on fictional runners, en + sk
 ├── references/
 │   ├── onboarding.md           questionnaire, history assessment, athlete profile
 │   ├── week.md                 planning a week: role, draft, load check, format, saving
@@ -442,6 +442,15 @@ trend, the readiness verdict, the longest allowed run) keep those numbers in `ex
 beside their `files/`. `tests/test_eval_fixtures.py` runs the script on the case's files and
 checks them, so a changed script or fixture fails in CI instead of quietly making the graders
 wrong. The model under test never sees the file.
+
+Each case's `stages.json` says what every grader tests: `route` (the right mode and reference
+for the question), `script` (the numbers come from the skill's script), `answer` (what the runner
+reads) or `conduct` (asks before writing, asks for missing or conflicting input). After a run,
+`python3 tests/eval_stages.py result.json --cases` prints the pass rate per stage and arm, so a
+change shows where it helped rather than only moving the total. The `routing` tag runs the near
+misses: the same files with a question for a different mode (`en-route-long-run`,
+`en-route-week`), a question with no data to answer it (`en-ask-missing-threshold`) and a
+request that contradicts the profile (`en-ask-contradiction`).
 
 **Releasing:** add an entry to `CHANGELOG.md` and bump `version` in `.claude-plugin/plugin.json`
 (semver) with every change you want users to receive; installed copies update only when the

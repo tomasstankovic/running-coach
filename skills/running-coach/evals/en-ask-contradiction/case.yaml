@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-ask-contradiction
+expected_outcome: |
+  Contradictory input: the request (6 runs, about 65 km, a 22 km long run next week) conflicts with the profile (3 runs and about 3 hours a week, about 30 km, longest run 14 km in the last 30 days). The coach names the conflict and asks whether the availability has changed instead of silently following one of them, and does not plan a jump to 65 km or a 22 km run: the longest run is capped at about 15.4 km (14 km + 10 %) and weekly volume grows gradually. English.
+context:
+  scaffold_script: place-files.sh

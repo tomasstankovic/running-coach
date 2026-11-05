@@ -59,6 +59,14 @@ check(f"\n## {plugin['version']}\n" in (SKILL / "references" / "whats-new.md").r
       f"whats-new.md has a section for {plugin['version']}")
 check(any(p.get("name") == plugin["name"] for p in market.get("plugins", [])), "marketplace lists the plugin")
 
+STAGES = {"route", "script", "answer", "conduct"}
+for case in sorted(p.parent for p in (SKILL / "evals").glob("*/graders")):
+    graders = {g.stem for g in (case / "graders").glob("*.md")}
+    stages_file = case / "stages.json"
+    stages = json.loads(stages_file.read_text()) if stages_file.exists() else {}
+    check(set(stages) == graders and set(stages.values()) <= STAGES,
+          f"{case.name}/stages.json gives every grader a stage ({', '.join(sorted(STAGES))})")
+
 for script in sorted((SKILL / "scripts").glob("*.py")):
     try:
         compile(script.read_text(), str(script), "exec")
