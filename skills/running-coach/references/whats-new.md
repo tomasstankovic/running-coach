@@ -44,3 +44,12 @@ Checks:
 - Volume against the goal: the peak km against the goal table (`onboarding.md` §4). When the
   runner wants more than the forecast gives, show what a higher peak would buy (`forecast.py`
   with the higher `weekly_km`) as an option, with the extra time it costs.
+
+## 0.16.1
+
+What changed for the runner:
+- At the end of a block ("how did the base block go?"), the review is built on `block_report.py`
+  and names the key sessions as counts: on target, missed, under target, with the reason for
+  the misses (`SKILL.md` "End of a block").
+
+Checks: none; nothing in the plan, goals or predictions changes.

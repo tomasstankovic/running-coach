@@ -1,0 +1,12 @@
+{
+ "issues": [],
+ "rows": [
+  {
+   "date": "2026-12-14",
+   "type": "illness",
+   "title": "Illness: cold, fever",
+   "level": "stop",
+   "active": false
+  }
+ ]
+}

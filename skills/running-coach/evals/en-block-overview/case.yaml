@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-block-overview
+expected_outcome: |
+  The coach runs block_report.py on plan.json for the base phase with sessions.json (and health.json) and reports: 11 weeks 9 Nov 2026 - 24 Jan 2027, 414 km = 82 % of the planned 502 km, longest run 20 km; key sessions 24 on target, 6 missed (the Christmas weeks) and 1 under target; the threshold test on 19 Jan on target; efficiency 1.18 -> 1.24 and durability 5.4 % -> 4.2 % (better); one illness. Takeaways: plan the next block from what was actually run, repeat the threshold and hill steps that were missed before moving on. It asks before changing the plan. English.
+context:
+  scaffold_script: place-files.sh

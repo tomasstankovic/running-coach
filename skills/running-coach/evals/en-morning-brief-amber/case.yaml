@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-morning-brief-amber
+expected_outcome: |
+  The coach runs readiness.py on metrics.json (verdict AMBER: the HRV 7-day mean is below the normal band, so no quality today) and health_log.py read on notes.json (right Achilles 2/10 after a run: easy running is fine, watch it). The brief is 3-5 lines in English: the amber verdict, today's 3x 2 km tempo swapped for an easy run of about 40-50 min under HR 145, the Achilles to watch, and when the tempo moves (e.g. in 1-2 days if HRV is back in the band). Then ONE notification line under 180 characters. The TP calendar is not changed.
+context:
+  scaffold_script: place-files.sh

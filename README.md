@@ -157,36 +157,40 @@ It replies in your language (tested in English and Slovak).
 - **Grounded in research.** Load limits from a 5,200-runner injury study, HRV-guided training,
   evidence-based tapers, strength, fuelling and heat guidance; each rule carries its source and
   how strong the evidence is ([the research behind it](#the-research-behind-it)).
-- **Tested.** Behaviour tests for every script, and 31 eval cases of real coaching conversations
-  run against Claude with and without the skill ([results](#with-and-without-the-plugin)).
+- **Tested.** Behaviour tests for every script, and 39 eval cases of real coaching conversations
+  in English and Slovak, run against Claude with and without the skill
+  ([results](#with-and-without-the-plugin)).
 
 ### With and without the plugin
 
-The same question asked of Claude with the plugin and without it, scored against what a coach
-would expect: the eval cases for the 0.15 features, run with `claude plugin eval` on 2 November
-2026, fictional runners, 1–2 runs per case.
+The same question asked of Claude without the plugin and with it, in English and in Slovak (the
+same runner, data and checks, translated), scored against what a coach would expect. Run with
+`claude plugin eval` on 5 November 2026 (version 0.16.0), fictional runners, 2 runs per case in
+each arm; each cell is *without → with*.
 
-| Question | Without | With | What plain Claude missed |
+| Question | English | Slovak | What plain Claude missed |
 |---|---:|---:|---|
-| Race plan for a hilly half at 21 °C, goal 1:35 | 25 % | 100 % | the goal moved for the heat, fuelling that adds up to 45 g/h, carb loading |
-| "My base block is over, how did it go?" | 50 % | 100 % | which key sessions were missed and why, what that means for the next block |
-| Morning brief on a low-HRV day | 50 % | 100 % | swapping the tempo for an easy run; the one-line phone notification |
-| Calf pain up from 2/10 to 5/10 in ten days | 67 % | 100 % | asking before writing to the TrainingPeaks diary |
-| "My stomach turns on gels in races" | 75 % | 100 % | a log after each long run that becomes the race-day rate |
-| "Hard at the end" of a 26 km long run | 100 % | 100 % | nothing: plain Claude reads this one well too |
+| Race plan for a hilly half at 21 °C, goal 1:35 | 25 → 88 % | 12 → 100 % | the goal moved for the heat, fuelling that adds up to 45 g/h, carb loading |
+| "My base block is over, how did it go?" | 50 → 88 % | 62 → 88 % | how many key sessions were on target, missed or under; what to do about the missed steps |
+| Morning brief on a low-HRV day | 80 → 90 % | 60 → 100 % | the one-line phone notification; sometimes the swap of the tempo for an easy run |
+| Calf pain up from 2/10 to 5/10 in ten days | 83 → 100 % | 67 → 83 % | asking before writing to the TrainingPeaks diary |
+| "My stomach turns on gels in races" | 50 → 75 % | 62 → 100 % | glucose + fructose above 60 g/h; a log after each long run that becomes the race-day rate |
+| "Hard at the end" of a 26 km long run | 83 → 100 % | 67 → 100 % | the ~9 % fade in the last quarter, linked to the wall at km 32 |
 
-Faster runners (tag `performance`, 4 November 2026, 2 runs per case; the skill was improved
-twice on these cases before this run):
+Faster runners (tag `performance`; the skill was improved twice on these cases before this run):
 
-| Question | Without | With | What plain Claude missed |
+| Question | English | Slovak | What plain Claude missed |
 |---|---:|---:|---|
-| Sub-2:45 marathon from 2:51 and a 1:20 half, "should I do double threshold?" | 50 % | 100 % | what the half predicts and the half needed for 2:45; volume steps; marathon pace in the long runs |
-| Sub-3 marathon from 3:08 at 60 km a week | 88 % | 100 % | a gradual volume build |
-| Sub-1:20 half from 1:22:30 and a 17:05 5k | 88 % | 100 % | a dress rehearsal before the taper |
-| Sub-1:30 half on 5 hours a week | 100 % | 100 % | nothing: plain Claude does this one well too |
+| Sub-2:45 marathon from 2:51 and a 1:20 half, "should I do double threshold?" | 75 → 100 % | – | volume steps; long marathon-pace segments and a tune-up race |
+| Sub-3 marathon from 3:08 at 60 km a week | 100 → 100 % | 100 → 88 % | nothing: plain Claude does this one well too |
+| Sub-1:20 half from 1:22:30 and a 17:05 5k | 100 → 100 % | – | nothing: plain Claude does this one well too |
+| Sub-1:30 half on 5 hours a week | 67 → 100 % | 100 → 100 % | in English, two quality sessions moving to half-marathon-pace blocks |
 
-A small set, so read it as a direction, not a benchmark. Run it yourself:
-[Development](#development).
+On the eight questions asked in both languages, plain Claude scored 67 % in English and 66 % in
+Slovak, and Claude with the plugin 93 % and 95 %. The block review row is from a re-run after a
+fix to the skill (the coach now runs the block report instead of counting by hand). A small set:
+one judge's vote moves a case by 10–25 points, so read it as a direction, not a benchmark. Run it
+yourself: [Development](#development).
 
 <p align="center"><img src="docs/img/plan-page.jpg" width="720" alt="Season plan page: phases, planned and actual weekly volume, races"></p>
 
@@ -381,7 +385,7 @@ skills/running-coach/
 ├── SKILL.md                    modes and the core workflow
 ├── assets/
 │   └── season-plan.html        the season plan page (published once, then updated in place)
-├── evals/                      31 eval cases (claude plugin eval) on fictional runners
+├── evals/                      39 eval cases (claude plugin eval) on fictional runners, en + sk
 ├── references/
 │   ├── onboarding.md           questionnaire, history assessment, athlete profile
 │   ├── week.md                 planning a week: role, draft, load check, format, saving
@@ -423,11 +427,15 @@ tests of every script on fictional data).
 
 For coaching behaviour, run the eval cases from `skills/running-coach`. They are real, billed
 model runs; by default each case also runs once without the skill, so the report shows what the
-skill adds. `--tag v015` or `--case <name>` runs a subset:
+skill adds. `--tag v015` or `--case <name>` runs a subset; `--tag en` or `--tag sk` one
+language, and `--tag readme` the cases behind the tables above, in both languages:
 
 ```bash
 claude plugin eval . --scaffold --allow-tools Bash Write Edit --runs 1
 ```
+
+The English `en-*` copies of the Slovak README cases are generated: after changing one of those
+Slovak cases, run `python3 tests/make_en_evals.py` so both languages stay the same test.
 
 **Releasing:** add an entry to `CHANGELOG.md` and bump `version` in `.claude-plugin/plugin.json`
 (semver) with every change you want users to receive; installed copies update only when the

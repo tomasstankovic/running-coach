@@ -279,8 +279,10 @@ Review mode (`SKILL.md`) is the weekly checkpoint. With the plan it also:
    next row.
 4. Reads the pain and illness diary (`health_log.py read`), and in the last week of a phase writes
    the block report (`block_report.py --phase ...` with the page's rows: sessions, predictions,
-   zones, trends, health): what the block brought and what the next one changes. Show it to the
-   runner in the review and add it to the page.
+   zones, trends, health): what the block brought and what the next one changes. Run the script
+   rather than counting from plan.json by hand, and keep its key-session counts (on target,
+   missed, under target) in the answer (`SKILL.md` "End of a block"). Show it to the runner in
+   the review and add it to the page.
 
 **Scheduled review.** If the `create_scheduled_task` tool is available (Claude desktop app), offer
 once to schedule the review, e.g. Sunday 19:00 (`cronExpression` `0 19 * * 0`). The prompt must be

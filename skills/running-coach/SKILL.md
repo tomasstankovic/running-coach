@@ -190,6 +190,15 @@ and illness diary (`health_log.py read`), and in the last week of a phase add th
 same pace"; "easy runs were above 150 bpm, so slow down, don't lengthen"). Add them to the
 profile's decision log and carry them into next week's descriptions.
 
+**End of a block** ("how did the base block go?", the last week of a phase): run
+`scripts/block_report.py plan.json --phase <phase>` first, with the rows you have (`--sessions`,
+`--health`, `--predictions`, `--zones`, `--trends`), and build the answer on its output; don't
+add up the weeks or count the sessions yourself. The answer names: volume against the plan and
+why it differs, the key sessions as counts (on target, missed, under target) with the reason for
+the misses, the milestones and their results, the aerobic trend (efficiency, durability), pain
+and illness, and what the next block changes, from its takeaways. Changes to the plan wait for
+the runner's yes (`season.md` §5).
+
 ## Adapt mode
 
 Re-plan only the remaining days. A missed quality session is dropped, not crammed in, and never
