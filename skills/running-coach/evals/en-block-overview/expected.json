@@ -1,0 +1,25 @@
+{
+  "why": "The graders expect ~414 of ~502 km (82 %) over 11 weeks and key sessions 24 on target, 6 missed, 1 under target.",
+  "script": "block_report.py",
+  "args": [
+    "plan.json",
+    "--phase",
+    "base",
+    "--sessions",
+    "sessions.json",
+    "--health",
+    "health.json",
+    "--json"
+  ],
+  "json": {
+    "weeks": 11,
+    "planned_km": 502,
+    "actual_km": 414,
+    "pct": 82,
+    "verdicts": {
+      "on": 24,
+      "missed": 6,
+      "under": 1
+    }
+  }
+}

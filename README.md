@@ -437,6 +437,12 @@ claude plugin eval . --scaffold --allow-tools Bash Write Edit --runs 1
 The English `en-*` copies of the Slovak README cases are generated: after changing one of those
 Slovak cases, run `python3 tests/make_en_evals.py` so both languages stay the same test.
 
+Cases whose graders rely on numbers from a script (block volume and key-session counts, the pain
+trend, the readiness verdict, the longest allowed run) keep those numbers in `expected.json`
+beside their `files/`. `tests/test_eval_fixtures.py` runs the script on the case's files and
+checks them, so a changed script or fixture fails in CI instead of quietly making the graders
+wrong. The model under test never sees the file.
+
 **Releasing:** add an entry to `CHANGELOG.md` and bump `version` in `.claude-plugin/plugin.json`
 (semver) with every change you want users to receive; installed copies update only when the
 version changes. Push to `main`, tag the version, and attach `running-coach.zip` (the skill

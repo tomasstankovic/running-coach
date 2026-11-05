@@ -1,0 +1,17 @@
+{
+  "why": "The graders expect an amber verdict because the HRV 7-day mean is below the normal band.",
+  "script": "readiness.py",
+  "args": [
+    "metrics.json",
+    "--date",
+    "2026-11-02",
+    "--json"
+  ],
+  "json": {
+    "verdict": "AMBER",
+    "reasons": [
+      "hrv_low"
+    ],
+    "hrv_state": "below"
+  }
+}

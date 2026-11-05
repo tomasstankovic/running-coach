@@ -1,0 +1,37 @@
+{
+  "why": "The graders expect the Sunday long run capped at about 16.5 km (30-day longest 15 km + 10 %), not 18 km.",
+  "script": "check_week.py",
+  "input": {
+    "week_role": "build",
+    "today": "2026-11-01",
+    "history": "@history.json",
+    "plan": [
+      {
+        "date": "2026-11-03",
+        "km": 8,
+        "minutes": 45,
+        "type": "easy"
+      },
+      {
+        "date": "2026-11-05",
+        "km": 9,
+        "minutes": 50,
+        "type": "tempo"
+      },
+      {
+        "date": "2026-11-08",
+        "km": 18,
+        "minutes": 110,
+        "type": "long"
+      }
+    ]
+  },
+  "args": [
+    "_input.json"
+  ],
+  "exit": 1,
+  "text": [
+    "Longest allowed run (30-day longest + 10 %, before this week's runs): 16.5 km",
+    "FAIL  2026-11-08: 18 km is 20 % longer than the longest run of the last 30 days (15 km)"
+  ]
+}

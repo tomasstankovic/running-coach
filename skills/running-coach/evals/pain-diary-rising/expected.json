@@ -1,0 +1,26 @@
+{
+  "why": "The graders expect the calf trend 2 -> 3 -> 4 before today's 5/10 and a stop-running verdict.",
+  "script": "health_log.py",
+  "args": [
+    "read",
+    "notes.json",
+    "--today",
+    "2026-11-02",
+    "--json"
+  ],
+  "json": {
+    "issues": [
+      {
+        "type": "pain",
+        "trend": [
+          2,
+          3,
+          4
+        ],
+        "score": 4,
+        "level": "stop",
+        "active": true
+      }
+    ]
+  }
+}
