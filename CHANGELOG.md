@@ -3,6 +3,15 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.16.2
+
+- **Readiness sees more than last night.** `readiness.py` flags sleep debt (3 of the last 4
+  nights under 6 h) even when last night and HRV look fine, and takes `--stress 1-5`, the
+  runner's rating of load outside running (travel, work, heat, family; 4–5 is a flag). The
+  check-in passes what the runner says about travel or a heavy week into the script. Suggested
+  on Reddit: a green HRV after four bad nights and a long flight should not clear a tempo
+  session. New eval `en-checkin-travel-sleep-debt` is that case.
+
 ## 0.16.1
 
 - **Evals in English too.** English copies of the eight Slovak cases behind the README tables

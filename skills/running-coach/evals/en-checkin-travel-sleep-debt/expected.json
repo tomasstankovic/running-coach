@@ -1,0 +1,11 @@
+{
+  "why": "Last night and HRV look normal; the verdict is amber only because of the sleep debt, and the travel adds a second flag.",
+  "script": "readiness.py",
+  "args": ["metrics.json", "--date", "2026-11-12", "--stress", "4", "--json"],
+  "json": {
+    "verdict": "AMBER",
+    "reasons": ["sleep_debt", "life_stress"],
+    "hrv_state": "inside",
+    "sleep_h": 7.1
+  }
+}

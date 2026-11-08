@@ -230,6 +230,11 @@ marathon, a strict three-week taper (consecutive lighter weeks right before the 
   low night matters only together with another sign (resting HR up, poor sleep, illness,
   soreness). Needs 3+ weeks of data. HRV-guided training gives a small benefit, mainly fewer
   runners who don't respond, often with fewer hard sessions [S17–S20]. `readiness.py` applies it.
+- **Sleep and life stress**: one short night is a minor flag; 3 of the last 4 nights under 6 h is
+  sleep debt and holds quality even when HRV has recovered, because HRV can look normal again
+  before the runner is. Load outside running (travel, work, heat, family; 1–5, 4+ is a flag) is
+  the runner's rating, not a device number, and it counts as much as the numbers
+  (`readiness.py --stress`).
 - **Rep pacing**: reps getting faster than prescribed means the zones may be stale (check the
   threshold). Fading reps or HR running away means too hard, or a fatigued athlete.
 

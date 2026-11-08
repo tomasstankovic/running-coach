@@ -47,7 +47,7 @@ library; `weather.py` is the one that goes online (Open-Meteo, by coordinates).
 | `paces.py` | zones, pace ↔ % threshold, threshold from a race, equivalent times, splits | Step 2 |
 | `zones.py` | the "Training zones" table, proposals to update them, personal easy cap | `methodology.md` "Keeping the zones current" |
 | `check_week.py` | load checks on a planned week, longest allowed run | `week.md` §3 |
-| `readiness.py` | HRV, resting HR and sleep vs. the runner's baseline | `checkin-and-race.md` |
+| `readiness.py` | HRV, resting HR, sleep and sleep debt vs. the runner's baseline; life stress (`--stress`) | `checkin-and-race.md` |
 | `health_log.py` | pain and illness diary as TP notes: write and read back | `checkin-and-race.md` |
 | `analyze_session.py` | reps, decoupling, efficiency, durability of one run | `analysis.md` |
 | `forecast.py` | current form and a race-day forecast per race | `analysis.md` "Race predictions" |

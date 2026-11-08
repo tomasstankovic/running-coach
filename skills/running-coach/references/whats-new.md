@@ -53,3 +53,12 @@ What changed for the runner:
   the misses (`SKILL.md` "End of a block").
 
 Checks: none; nothing in the plan, goals or predictions changes.
+
+## 0.16.2
+
+What changed for the runner:
+- The morning check-in counts several short nights in a row (3 of the last 4 under 6 h) even
+  when HRV is back to normal, and takes their own 1–5 rating of load outside running (travel,
+  work, heat, family). A normal HRV after a hard trip no longer clears a quality session.
+
+Checks: none; nothing in the plan, goals or predictions changes.

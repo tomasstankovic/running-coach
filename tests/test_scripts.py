@@ -221,6 +221,27 @@ class Readiness(TempDir):
         self.assertEqual(trend[-1]["hrv_state"], "below")
         self.assertIn("hrv_low_4d", trend[-1]["reasons"])
 
+    def test_sleep_debt_counts_after_a_good_night(self):
+        rows = self.series()
+        for r, h in zip(rows[-4:], [5.4, 5.2, 5.6, 7.4]):
+            r["sleep_h"] = h
+        a = json.loads(run("readiness.py", self.write("m.json", rows), "--json").stdout)
+        self.assertEqual((a["verdict"], a["reasons"]), ("AMBER", ["sleep_debt"]))
+
+    def test_two_short_nights_are_not_debt(self):
+        rows = self.series()
+        for r, h in zip(rows[-4:], [5.4, 7.2, 5.6, 7.4]):
+            r["sleep_h"] = h
+        a = json.loads(run("readiness.py", self.write("m.json", rows), "--json").stdout)
+        self.assertEqual(a["verdict"], "GREEN")
+
+    def test_life_stress_four_or_more_is_a_flag(self):
+        path = self.write("m.json", self.series())
+        calm = json.loads(run("readiness.py", path, "--stress", 3, "--json").stdout)
+        heavy = json.loads(run("readiness.py", path, "--stress", 4, "--json").stdout)
+        self.assertEqual((calm["verdict"], calm["stress"]), ("GREEN", 3))
+        self.assertEqual((heavy["verdict"], heavy["reasons"]), ("AMBER", ["life_stress"]))
+
     def test_short_history_is_not_judged(self):
         out = run("readiness.py", self.write("m.json", self.series()[:15])).stdout
         self.assertIn("not judged", out)

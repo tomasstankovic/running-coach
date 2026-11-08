@@ -1,5 +1,5 @@
 <title>Season Plan</title>
-<meta name="running-coach-version" content="0.16.1">
+<meta name="running-coach-version" content="0.16.2">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap">
@@ -376,7 +376,8 @@ const T = {
       RED: "Rest or very easy; if it lasts, cut volume ~25 % for 3–4 days." },
     reasons: { hrv_low_4d: "HRV 7-day mean below your band for 4+ days", hrv_low: "HRV 7-day mean below your normal band",
       hrv_night_low: "last night's HRV well below normal", rhr_spike: "resting HR 8+ beats above normal today",
-      rhr_high: "resting HR raised over the last week", sleep_short: "short sleep (under 6 h)", sleep_very_short: "very short sleep (under 5 h)" },
+      rhr_high: "resting HR raised over the last week", sleep_short: "short sleep (under 6 h)", sleep_very_short: "very short sleep (under 5 h)",
+      sleep_debt: "3 of the last 4 nights under 6 h", life_stress: "heavy load outside running" },
     allNormal: "everything within your normal range",
     rest: "Rest", strength: "strength", total: (v, n) => `Total ${v} · ${n} ${n === 1 ? "session" : "sessions"}`, doneN: (d, n) => `${d} of ${n} done`,
     band: "your band", mean7: "7-day mean", night: "last night",
@@ -457,7 +458,8 @@ const T = {
       RED: "Voľno alebo veľmi ľahko; ak to trvá, uber ~25 % objemu na 3–4 dni." },
     reasons: { hrv_low_4d: "HRV (7-dňový priemer) je pod tvojím pásmom už 4+ dni", hrv_low: "HRV (7-dňový priemer) je pod tvojím bežným pásmom",
       hrv_night_low: "HRV z poslednej noci je výrazne nižšie než bežne", rhr_spike: "pokojový tep je dnes o 8+ úderov vyšší",
-      rhr_high: "pokojový tep je posledný týždeň zvýšený", sleep_short: "krátky spánok (pod 6 h)", sleep_very_short: "veľmi krátky spánok (pod 5 h)" },
+      rhr_high: "pokojový tep je posledný týždeň zvýšený", sleep_short: "krátky spánok (pod 6 h)", sleep_very_short: "veľmi krátky spánok (pod 5 h)",
+      sleep_debt: "3 z posledných 4 nocí pod 6 h", life_stress: "veľká záťaž mimo behu" },
     allNormal: "všetko v tvojom bežnom rozsahu",
     rest: "Voľno", strength: "sila", total: (v, n) => `Spolu ${v} · ${n} ${n === 1 ? "tréning" : n < 5 ? "tréningy" : "tréningov"}`, doneN: (d, n) => `hotové ${d} z ${n}`,
     band: "tvoje pásmo", mean7: "7-dňový priemer", night: "posledná noc",

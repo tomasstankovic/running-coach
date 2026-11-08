@@ -12,10 +12,15 @@ runner reporting how they feel before a session.
    python scripts/readiness.py metrics.json
    ```
    It compares the 7-day HRV trend, resting HR and sleep with the runner's own baseline
-   (`methodology.md` §7) and prints green / amber / red with the reasons. Without metrics, skip
-   this and rely on how they feel.
+   (`methodology.md` §7) and prints green / amber / red with the reasons. Several short nights
+   count even when last night was fine (`sleep_debt`). Without metrics, skip this and rely on
+   how they feel.
 3. **Subjective**: ask at most three quick things if not already said: sleep, legs (fresh /
-   normal / heavy / sore), mood and stress, any pain or illness symptoms. With TP, also read the
+   normal / heavy / sore), mood and stress, any pain or illness symptoms. Load outside running
+   goes into the script as `--stress 1-5` (the runner's word, or your reading of what they
+   said): long travel or a time-zone change in the last 2 days, a heavy work week, a heat wave,
+   a sick child at night count as 4–5. Re-run `readiness.py` with it; a normal HRV this morning
+   does not cancel it. With TP, also read the
    diary: `tp_list_notes` for the last 30 days → `scripts/health_log.py read` (active pain or
    illness and what it means, "Pain and illness diary" below).
 4. **Decide** (subjective beats objective when they disagree strongly, e.g. green numbers but

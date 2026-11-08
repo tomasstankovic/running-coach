@@ -2,7 +2,7 @@
 """Daily readiness from HRV, resting HR and sleep, compared with the runner's own baseline.
 
 Usage:
-  readiness.py metrics.json [--date 2026-10-31]
+  readiness.py metrics.json [--date 2026-10-31] [--stress 1-5]
 
 metrics.json is either the raw tp_get_metrics output (pass 35-60 days), or a simple list:
   [{"date": "2026-10-30", "hrv": 46, "rhr": 50, "sleep_h": 7.6}, ...]
@@ -15,10 +15,14 @@ counts only together with another sign. At least 21 baseline days are needed bef
 
 Output: text (default), --brief (one line for a morning message), --json, or --trend DAYS
 (JSON rows for the plan page's readiness chart; "reasons" are flag codes the page translates:
-hrv_low_4d, hrv_low, hrv_night_low, rhr_spike, rhr_high, sleep_short, sleep_very_short).
+hrv_low_4d, hrv_low, hrv_night_low, rhr_spike, rhr_high, sleep_short, sleep_very_short, sleep_debt,
+life_stress).
 
 Resting HR: the 7-day mean above baseline + 1 SD is a flag; a single day +8 bpm or more is a flag
-(practice-based). Sleep under 6 h (or 5 h) is a flag. Prints GREEN / AMBER / RED with reasons.
+(practice-based). Sleep under 6 h (or 5 h) is a flag. Sleep debt: 3 or more of the last 4 nights
+under 6 h is a flag even when last night was fine, so a recovered HRV does not hide several bad
+nights. --stress is the runner's own 1-5 rating of load outside running (work, travel, heat,
+family; 1 = calm, 5 = very heavy); 4 or 5 is a flag. Prints GREEN / AMBER / RED with reasons.
 """
 import argparse
 import json
@@ -51,7 +55,7 @@ def load(path):
     return [days[k] for k in sorted(days)]
 
 
-def assess(rows, target):
+def assess(rows, target, stress=None):
     """Verdict, flags and the numbers behind them for one day."""
     today = next((r for r in rows if r["date"] == target), None)
     if today is None:
@@ -135,6 +139,16 @@ def assess(rows, target):
         elif today["sleep_h"] < 6:
             flag("amber", "sleep_short", "short sleep")
 
+    nights = window("sleep_h", target, 4)
+    short_nights = sum(1 for h in nights if h < 6)
+    if short_nights >= 3:
+        flag("amber", "sleep_debt", f"{short_nights} of the last {len(nights)} nights under 6 h (sleep debt)")
+
+    if stress is not None:
+        notes.append(f"life stress {stress}/5 (runner's rating)")
+        if stress >= 4:
+            flag("amber", "life_stress", f"heavy load outside running ({stress}/5): work, travel, heat or family")
+
     if single_low and any(not m.startswith("HRV") for _, m in flags):
         flag("amber", "hrv_night_low", "HRV last night more than 1 SD below baseline (counts with the other signs)")
     elif single_low:
@@ -159,7 +173,7 @@ def assess(rows, target):
             "hrv7": round(math.exp(mean7), 1) if mean7 else None,
             "band_lo": round(band[0], 1) if band[0] else None, "band_hi": round(band[1], 1) if band[1] else None,
             "rhr": today.get("rhr"), "rhr7": round(rhr7, 1) if rhr7 else None,
-            "sleep_h": round(today["sleep_h"], 1) if today.get("sleep_h") else None}
+            "sleep_h": round(today["sleep_h"], 1) if today.get("sleep_h") else None, "stress": stress}
 
 
 def main():
@@ -168,6 +182,8 @@ def main():
     ap.add_argument("--date", help="day to assess (default: latest day in the file)")
     ap.add_argument("--brief", action="store_true", help="one line for a morning message")
     ap.add_argument("--json", action="store_true", help="machine-readable result")
+    ap.add_argument("--stress", type=int, choices=range(1, 6), metavar="1-5",
+                    help="the runner's rating of load outside running today (4-5 is a flag)")
     ap.add_argument("--trend", type=int, metavar="DAYS",
                     help="JSON rows for the last DAYS judged days (plan page trends)")
     args = ap.parse_args()
@@ -181,7 +197,7 @@ def main():
                                               "band_hi", "rhr", "rhr7", "sleep_h")} for a in out]))
         return
     target = args.date or rows[-1]["date"]
-    a = assess(rows, target)
+    a = assess(rows, target, args.stress)
     if a is None:
         sys.exit(f"no metrics for {target}")
     if args.json:

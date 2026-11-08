@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-checkin-travel-sleep-debt
+expected_outcome: |
+  Mark is back from four days of travel with long flights. He does not mention his sleep on the trip, but metrics.json shows four short nights (5.2-5.8 h); last night he slept 7.1 h and HRV is back inside his normal band, so the morning numbers alone look fine. The coach runs readiness.py on metrics.json: AMBER from sleep debt (3 of the last 4 nights under 6 h). The travel is load outside running, so it goes in as --stress 4 or 5 (AMBER, 2 flags) or is at least counted as a second sign. A normal HRV this morning does not clear the 3x 2 km tempo: it is swapped for an easy run (about 40-50 min under HR 145) or, at most, trimmed (fewer reps or the lower end of the pace range), and the tempo moves to a later day once he has slept normally for a night or two. The answer is short and in English; the TP calendar is not changed.
+context:
+  scaffold_script: place-files.sh
