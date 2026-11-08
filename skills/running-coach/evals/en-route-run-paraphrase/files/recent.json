@@ -1,0 +1,47 @@
+{
+ "week_start": "2026-10-26",
+ "planned_km": 62,
+ "actual_km": 52.7,
+ "sessions": [
+  {
+   "date": "2026-10-27",
+   "planned": "Threshold 3 x 2 km @ 4:12-4:18, 2 min jog",
+   "km_planned": 12,
+   "done": true,
+   "km": 12.1,
+   "laps": "2 km reps: 4:14, 4:15, 4:16 /km; HR max per rep 168, 170, 171"
+  },
+  {
+   "date": "2026-10-28",
+   "planned": "Easy 8 km, HR < 145",
+   "km_planned": 8,
+   "done": true,
+   "km": 8.0,
+   "avg_hr": 139
+  },
+  {
+   "date": "2026-10-29",
+   "planned": "Easy 10 km + 6 strides",
+   "km_planned": 10,
+   "done": false,
+   "note": "work trip"
+  },
+  {
+   "date": "2026-10-31",
+   "planned": "Easy 6 km",
+   "km_planned": 6,
+   "done": true,
+   "km": 6.0,
+   "avg_hr": 137
+  },
+  {
+   "date": "2026-11-01",
+   "planned": "Long run 26 km easy",
+   "km_planned": 26,
+   "done": true,
+   "km": 26.6,
+   "avg_hr": 146,
+   "note": "got hard in the last 5 km, details in analysis.json"
+  }
+ ]
+}

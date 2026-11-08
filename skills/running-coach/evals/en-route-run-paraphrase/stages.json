@@ -1,0 +1,6 @@
+{
+  "01-analyse-mode": "route",
+  "02-runs-analysis": "script",
+  "03-fade": "answer",
+  "04-stays-on-the-run": "answer"
+}

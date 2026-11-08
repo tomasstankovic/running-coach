@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-route-days-paraphrase
+expected_outcome: |
+  Paraphrase of en-route-week: the same data, but the prompt avoids the words "week" and "long run" (the runner asks how "the last seven days" went, the files are recent.json and analysis.json). Checks that routing follows the scope of the question, not a familiar phrase. Review mode: plan vs actual (62 km planned, 52.7 km run, about 85 %), the missed Thursday (work trip, not made up), Tuesday's threshold reps on target (4:14-4:16 vs 4:12-4:18), and Sunday's long run as one part of the period, including that it faded at the end. It does not answer with only an analysis of Sunday's run. Scope is inferred from the data, not asked: recent.json covers exactly the seven days since last Monday, so the coach should not ask which period is meant. English.
+context:
+  scaffold_script: place-files.sh

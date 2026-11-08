@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: en-route-run-paraphrase
+expected_outcome: |
+  Paraphrase of en-route-long-run: the same data, but the prompt avoids the words "long run" and "week" (the runner asks about "yesterday's run", the files are recent.json and analysis.json). Checks that routing follows the scope of the question, not a familiar phrase. Analyse mode: the coach reads references/analysis.md and runs analyze_session.py on analysis.json, and answers about this run: about 9 % of efficiency lost in the last quarter (5:15/km at 141 bpm -> 5:24/km at 152 bpm), a fade that matters for the marathon, with what builds durability. It does not turn the answer into a review of the whole seven days. Scope is inferred from the data, not asked: yesterday has exactly one session (analysis.json, the Sunday entry in recent.json), so the coach should not ask which run is meant. English.
+context:
+  scaffold_script: place-files.sh
