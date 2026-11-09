@@ -32,8 +32,7 @@ your sessions, and changes the plan when life happens. Paces, zones, load limits
 come from scripts, not guesses, and it never touches your calendar without your yes.
 
 <p align="center"><img src="docs/img/demo.png" width="100%" alt="Three answers from Running Coach: a morning brief that swaps a tempo run for an easy run on a low-HRV day, a race plan for a hilly half marathon adjusted for 21 °C with splits and fuelling, and an interval session read rep by rep that flags a stale threshold"></p>
-<p align="center"><sub>The plugin's own script output for a fictional runner: morning brief · race plan · session analysis<br>
-▶ <a href="docs/video/running-coach-demo.mp4">Watch the 50-second demo video</a></sub></p>
+<p align="center"><sub>The plugin's own script output for a fictional runner: morning brief · race plan · session analysis</sub></p>
 
 ### Try it in a minute
 
