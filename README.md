@@ -32,7 +32,8 @@ your sessions, and changes the plan when life happens. Paces, zones, load limits
 come from scripts, not guesses, and it never touches your calendar without your yes.
 
 <p align="center"><img src="docs/img/demo.png" width="100%" alt="Three answers from Running Coach: a morning brief that swaps a tempo run for an easy run on a low-HRV day, a race plan for a hilly half marathon adjusted for 21 °C with splits and fuelling, and an interval session read rep by rep that flags a stale threshold"></p>
-<p align="center"><sub>The plugin's own script output for a fictional runner: morning brief · race plan · session analysis</sub></p>
+<p align="center"><sub>The plugin's own script output for a fictional runner: morning brief · race plan · session analysis<br>
+▶ <a href="docs/video/running-coach-demo.mp4">Watch the 50-second demo video</a></sub></p>
 
 ### Try it in a minute
 
@@ -50,7 +51,7 @@ No TrainingPeaks or Strava needed to start; connect them later for check-ins and
 [A season with the coach](#a-season-with-the-coach) · [Install](#install) ·
 [Connect your data](#connect-your-data) · [Privacy and safety](#privacy-and-safety) ·
 [FAQ](#faq) · [The research behind it](#the-research-behind-it) · [What's inside](#whats-inside) ·
-[Development](#development)
+[Development](#development) · [Who made it](#who-made-it)
 
 ## Who it's for
 
@@ -460,6 +461,19 @@ of the old assumption. A case with a history file runs only with the plugin.
 (semver) with every change you want users to receive; installed copies update only when the
 version changes. Push to `main`, tag the version, and attach `running-coach.zip` (the skill
 folder without `evals/`) to the GitHub release.
+
+## Who made it
+
+I'm **Tomáš Stankovič**, a software engineer and runner based in Prague. I coach myself, from
+road races to multi-day runs across the mountains, and I built Running Coach because I wanted a
+coach that remembers my history, gives me honest numbers and puts the plan on my watch.
+
+- Code: [github.com/tomasstankovic](https://github.com/tomasstankovic)
+- Running: [Na trase](https://sport-blog-livid.vercel.app), my blog about multi-day runs and
+  mountain crossings (in Slovak)
+
+Found a bug, or did the coach get something wrong? [Open an issue](https://github.com/tomasstankovic/running-coach/issues).
+Ideas and stories of how it works for you are welcome too.
 
 ## License
 
