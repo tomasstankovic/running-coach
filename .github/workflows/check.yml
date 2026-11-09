@@ -14,3 +14,27 @@ jobs:
           python-version: "3.12"
       - run: python3 tests/check_skill.py
       - run: python3 -m unittest discover -s tests -v
+
+  # A push to main whose plugin.json version has no release yet gets one: tag v<version> on
+  # this commit, notes from that version's CHANGELOG section. Runs only after the checks pass.
+  release:
+    needs: skill
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release the plugin.json version if it is new
+        run: |
+          v=$(python3 -c 'import json; print(json.load(open(".claude-plugin/plugin.json"))["version"])')
+          if gh release view "v$v" >/dev/null 2>&1; then
+            echo "v$v is already released"; exit 0
+          fi
+          awk -v h="## $v" '$0==h{f=1;next} /^## /{f=0} f' CHANGELOG.md | sed -e '/./,$!d' > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::CHANGELOG.md has no '## $v' section"; exit 1
+          fi
+          gh release create "v$v" --target "$GITHUB_SHA" --title "v$v" --notes-file notes.md
