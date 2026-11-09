@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: week-days-from-conversation
+expected_outcome: |
+  Two-turn case from a real complaint. history.jsonl replays the first turn: the runner said that from this week their training days are Tuesday, Thursday, Saturday and Sunday, and asked about the last week, which history.json shows was run on Monday, Wednesday, Friday and Saturday (an exception the coach can't see the reason for). The profile has no weekly template. Now the runner asks for next week's plan. The coach plans on the days the runner named in the conversation (Tue, Thu, Sat, Sun), not on last week's days: no run on Monday, Wednesday or Friday, the long run on Sunday (or Saturday). The plan says the days come from what the runner said, the coach does not ask again for days it was already given, and check_week.py runs with those days. Slovak.
+context:
+  scaffold_script: place-files.sh
+  history_file: history.jsonl

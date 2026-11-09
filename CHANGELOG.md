@@ -12,7 +12,10 @@ All notable changes. Versions follow semver; installed copies update when the ve
   template; the coach asks every week whether the template holds, and a one-off week doesn't
   change the template. `check_week.py` takes `"days"` and FAILs a run on any other day (Slovak
   day names work too); without `"days"` it warns that the days were never confirmed. New eval
-  `week-days-not-copied`: template Tue/Thu/Sat/Sun, last week run on Mon/Wed/Fri/Sat.
+  `week-days-not-copied`: template Tue/Thu/Sat/Sun, last week run on Mon/Wed/Fri/Sat. And
+  `week-days-from-conversation`, the reported case in two turns: the runner names their days
+  in the first message, the profile has no template, and the plan is asked for in the second
+  (2 of 2 runs passed all graders).
 
 ## 0.16.2
 
