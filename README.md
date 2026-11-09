@@ -158,7 +158,7 @@ It replies in your language (tested in English and Slovak).
 - **Grounded in research.** Load limits from a 5,200-runner injury study, HRV-guided training,
   evidence-based tapers, strength, fuelling and heat guidance; each rule carries its source and
   how strong the evidence is ([the research behind it](#the-research-behind-it)).
-- **Tested.** Behaviour tests for every script, and 47 eval cases of real coaching conversations
+- **Tested.** Behaviour tests for every script, and 48 eval cases of real coaching conversations
   in English and Slovak, run against Claude with and without the skill
   ([results](#with-and-without-the-plugin)).
 
@@ -386,7 +386,7 @@ skills/running-coach/
 ├── SKILL.md                    modes and the core workflow
 ├── assets/
 │   └── season-plan.html        the season plan page (published once, then updated in place)
-├── evals/                      47 eval cases (claude plugin eval) on fictional runners, en + sk
+├── evals/                      48 eval cases (claude plugin eval) on fictional runners, en + sk
 ├── references/
 │   ├── onboarding.md           questionnaire, history assessment, athlete profile
 │   ├── week.md                 planning a week: role, draft, load check, format, saving

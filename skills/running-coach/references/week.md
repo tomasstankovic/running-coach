@@ -4,6 +4,28 @@ Week mode, and the detailed weeks of a Block or Season: decide the week's role, 
 `workouts.md`, check it with `check_week.py`, present it, and save it after the runner's yes.
 Read `SKILL.md` Steps 0–2 first (profile, data, zones); the paces come from there.
 
+## 0. Confirm the week's days (before anything else)
+
+The days come from the runner, never from the shape of last week. Last week's calendar shows what
+happened, and it may have been an exception (family, travel, illness); copying it is the mistake
+this step exists to prevent. In order of priority:
+
+1. **What the runner said in this conversation** about days ("this week I can do Tue, Thu, Sun",
+   "Wednesday is out"). It wins over everything else, including the template.
+2. **The weekly template** in the profile (`## Availability`, "Weekly template").
+3. Nothing in either: ask. Don't infer the days from past weeks.
+
+Unless the runner already named this week's days, put one line in the short question block of
+Step 1, every week, in their language: "Platí tento týždeň tvoj bežný rozvrh (Po voľno · Ut
+kvalita · … · Ne dlhý)? Niečo iné kvôli práci či rodine?" Ask before drafting, not after
+presenting a plan built on guessed days. If the runner doesn't answer that line, use the template
+and say so in the plan's header.
+
+A change for this week only stays out of the profile's template (note it under recent decisions
+if it matters later). When the runner says it's lasting ("from now on Wednesday instead of
+Thursday"), update the template after their yes. Pass the confirmed days to `check_week.py` as
+`"days"` (§3).
+
 ## 1. Decide the week's role
 
 Every week has one role: `base`, `build`, `peak`, `deload`, `taper`, `race` or `return`. Decide it
@@ -27,7 +49,9 @@ or the last session says so; say why. The principles that matter most:
   "10 km (~60 min)". Fit intensity to their terrain and to where quality can happen: pace on
   the flat, HR or effort on hills (`methodology.md` §9). If the profile has no `Units:` line yet,
   ask once.
-- Available days are a maximum, not a target.
+- Use only this week's confirmed days (§0). Available days are a maximum, not a target. When the
+  sessions don't fit them (e.g. only Sat + Sun free and both a quality session and a long run
+  due), say what you dropped or merged; don't add a day.
 - Respect earlier decisions, unless they rested on mislabelled zones. Then re-anchor and say so.
 - Add strength sessions only if the runner chose them (the profile says so, or ask once; see
   `strength.md`). Use their setting (gym, home, bodyweight), placement rules and phase dosage.
@@ -40,7 +64,8 @@ Write the plan and history to a JSON file and run:
 python scripts/check_week.py week.json
 ```
 
-History can be raw `tp_get_workouts` or Strava `list_activities` output. Give every plan item
+Include `"days"`: this week's confirmed running days from §0 (`["tue", "thu", "sat", "sun"]`).
+A run on another day is a FAIL. History can be raw `tp_get_workouts` or Strava `list_activities` output. Give every plan item
 both `minutes` and `km`, whatever the runner's unit, because the volume check compares time.
 Planned-but-skipped TP workouts are ignored automatically. Without per-run data, pass weekly
 totals as `history_weeks`; the docstring has the format. Give strength sessions
@@ -58,6 +83,7 @@ Use this format, in the runner's language:
 ## Week 3–9 Nov: build (week 2 of block)
 Status: CTL 28, ATL 34, TSB −6 · last week 52 km / 5 h 10 min · threshold 4:10/km, LTHR 174
 Longest allowed run: 15.4 km (30-day longest 14 km + 10 %)
+Days: Tue · Wed · Thu · Sat · Sun (your template)   ← or "(this week, as you said)"
 Why: <one or two sentences: what this week is for and what changed vs. last week>
 
 | Day | Session | Volume | Intensity | Purpose |

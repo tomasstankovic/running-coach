@@ -135,6 +135,19 @@ class CheckWeek(TempDir):
         _, out = self.check(plan, cautious=True)
         self.assertIn("OK    volume +12 %", out)
 
+    def test_run_off_the_agreed_days_fails(self):
+        code, out = self.check(self.plan(15), days=["tue", "wed", "sat", "sun"])  # plan has Fri
+        self.assertEqual(code, 1)
+        self.assertIn("run on fri 2026-11-06, which is not one of this week's training days", out)
+
+    def test_runs_on_agreed_days_pass_with_slovak_names(self):
+        _, out = self.check(self.plan(15), days=["Ut", "Streda", "Piatok", "Ne"])
+        self.assertIn("OK    all runs on this week's training days (tue, wed, fri, sun)", out)
+
+    def test_missing_days_warns(self):
+        _, out = self.check(self.plan(15))
+        self.assertIn("WARN  no \"days\" given", out)
+
     def test_back_to_back_hard_days_fail(self):
         plan = self.plan(15)
         plan[2] = {"date": "2026-11-05", "type": "intervals", "minutes": 50, "km": 9}

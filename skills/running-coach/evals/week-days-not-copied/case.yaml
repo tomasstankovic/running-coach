@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: week-days-not-copied
+expected_outcome: |
+  The profile's weekly template runs on Tue, Thu, Sat and Sun, and Mon, Wed and Fri are marked as no-running days. The last week in history.json (2–8 Nov) was run on Mon, Wed, Fri and Sat instead, an exception the coach can't see the reason for. The coach does not copy last week's days: it either asks whether the usual days hold this week before drafting, or plans on the template days (Tue quality, Thu easy, Sat easy, Sun long) and says the days come from the template. No run is planned on Mon, Wed or Fri. check_week.py runs with the confirmed days. Slovak.
+context:
+  scaffold_script: place-files.sh

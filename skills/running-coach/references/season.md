@@ -107,7 +107,9 @@ worked before or the winter.)
 - It's an estimate. Say so when you show it: the milestones, the next 4–6 sessions, and what you
   adapted for them and why, rather than the whole list.
 
-**Week mode** starts from the week's key sessions: they set the quality days and their targets.
+**Week mode** starts from the week's key sessions: they set the quality sessions and their targets,
+placed on this week's confirmed days (`week.md` §0); when the roadmap's day isn't free this week,
+move the session within the week and keep the hard-day rules.
 Deviate when readiness, illness, terrain or the last session says so, and say why.
 
 **Weekly review**: run `analyze_session.py --json` for the week's key sessions and pass the rows to

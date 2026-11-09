@@ -62,3 +62,14 @@ What changed for the runner:
   work, heat, family). A normal HRV after a hard trip no longer clears a quality session.
 
 Checks: none; nothing in the plan, goals or predictions changes.
+
+## 0.16.3
+
+What changed for the runner:
+- Before planning a week the coach checks the training days: what they said in the
+  conversation first, then their weekly template, and it asks whether the usual days hold this
+  week. It no longer copies the days from last week's calendar, which may have been an
+  exception (family, travel).
+
+Checks: the profile's `## Availability` has a `Weekly template` line (which day is what). If it
+doesn't, ask for it once and save it.

@@ -7,6 +7,7 @@ Input is one JSON file:
   "week_role": "build",            # base | build | peak | deload | taper | race | return
   "today": "2026-10-31",           # optional, defaults to today's date
   "cautious": false,               # novice, or injured in the last 12 months: +10 % weekly limit
+  "days": ["tue", "thu", "sat", "sun"],  # the days the runner confirmed for THIS week
   "history": [ ...workouts... ],   # last 4-8 weeks of workouts, raw tool output is fine
   "history_weeks": [ ... ],        # OR weekly totals when there is no per-run data
   "plan":    [ ...workouts... ]    # the week being planned (Mon-Sun)
@@ -29,6 +30,10 @@ intervals | hills | race | cross | strength. Optional "quality_minutes" is the t
 X/Z3 or harder (defaults to a rough estimate per type). Strength and cross-training don't count
 as running volume.
 
+"days" are the running days the runner agreed to for this week (their template, or this week's
+exception). A run on any other day is a FAIL; strength and cross-training are not checked.
+Without "days" the check WARNs, because the days were then never confirmed.
+
 Checks (references/methodology.md §4, references/sources.md):
   - every run vs the longest run of the previous 30 days: > +10 % is a FAIL (Frandsen 2025);
     prints the longest allowed run for the week; races are exempt but reported; runs done in
@@ -50,6 +55,9 @@ SESSION_TYPES = HARD_TYPES | {"easy", "recovery", "long", "strides", "rest", "cr
 NON_RUN_TYPES = {"rest", "cross", "strength"}
 TP_STATUS = {"completed", "planned"}
 # Rough share of a session spent at X/Z3 or harder when quality_minutes is missing.
+DAY_NAMES = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+DAY_ALIASES = {"po": "mon", "ut": "tue", "st": "wed", "str": "wed", "stv": "thu", "št": "thu",
+               "pi": "fri", "pia": "fri", "so": "sat", "ne": "sun"}
 DEFAULT_QUALITY_SHARE = {"tempo": 0.4, "threshold": 0.4, "intervals": 0.3, "hills": 0.2, "race": 0.8, "strides": 0.03}
 
 
@@ -97,6 +105,32 @@ def workout_date(w):
         if w.get(key):
             return date.fromisoformat(str(w[key])[:10])
     raise ValueError(f"workout without a date: {w}")
+
+
+def day_key(name):
+    """'Tue', 'tuesday', 'ut', 'štvrtok' -> 'tue'."""
+    n = str(name).strip().lower()
+    if n[:3] in DAY_NAMES:
+        return n[:3]
+    for alias in sorted(DAY_ALIASES, key=len, reverse=True):
+        if n.startswith(alias):
+            return DAY_ALIASES[alias]
+    raise ValueError(f"unknown day in \"days\": {name!r} (use mon, tue, ... sun)")
+
+
+def day_checks(data, runs, report):
+    if not data.get("days"):
+        report("WARN", "no \"days\" given: confirm this week's training days with the runner "
+                       "(their template, or what they said for this week) and pass them")
+        return
+    allowed = {day_key(d) for d in data["days"]}
+    order = ", ".join(d for d in DAY_NAMES if d in allowed)
+    off = sorted({workout_date(w) for w in runs if DAY_NAMES[workout_date(w).weekday()] not in allowed})
+    for d in off:
+        report("FAIL", f"run on {DAY_NAMES[d.weekday()]} {d}, which is not one of this week's "
+                       f"training days ({order}); move it or ask the runner")
+    if not off:
+        report("OK", f"all runs on this week's training days ({order})")
 
 
 def counts_as_done(w, today):
@@ -234,6 +268,9 @@ def main(path):
         print("Previous weeks: " + ", ".join(
             f"{p['start'].strftime('%d.%m')} {p['km']:.0f} km/{p['min']:.0f} min" for p in prior[-6:]))
     print()
+
+    # ---- training days -------------------------------------------------------
+    day_checks(data, runs, report)
 
     # ---- volume progression ----------------------------------------------
     if prior:

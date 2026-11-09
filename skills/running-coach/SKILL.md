@@ -109,7 +109,10 @@ where the useful signal is.
 The new plan starts the following Monday unless the runner asks otherwise.
 
 Then ask only what neither the data nor the profile tells you: how they feel, niggles, travel,
-and changes to availability. One short question block, then plan.
+and changes to availability. One short question block, then plan. **Before planning a week,
+confirm its training days** (`week.md` §0): what the runner said in this conversation first, then
+the profile's weekly template, and ask whether the template holds this week. Never take the days
+from last week's calendar; it may have been an exception.
 
 ## Step 2: Zones and threshold freshness
 

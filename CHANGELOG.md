@@ -3,6 +3,17 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.16.3
+
+- **The week is planned on the runner's days, not on last week's.** A runner agreed their days
+  at the start of the conversation, and the coach planned the week on the days of the previous
+  week instead, which had been shaped by a family event. Week planning now starts with
+  `week.md` §0: days the runner named in the conversation win, then the profile's weekly
+  template; the coach asks every week whether the template holds, and a one-off week doesn't
+  change the template. `check_week.py` takes `"days"` and FAILs a run on any other day (Slovak
+  day names work too); without `"days"` it warns that the days were never confirmed. New eval
+  `week-days-not-copied`: template Tue/Thu/Sat/Sun, last week run on Mon/Wed/Fri/Sat.
+
 ## 0.16.2
 
 - **Readiness sees more than last night.** `readiness.py` flags sleep debt (3 of the last 4

@@ -213,7 +213,8 @@ suits the long run. Then check the pattern, not just the count:
 - Long run on a day with limited time: move it, or accept a shorter long run and adjust the
   goal.
 Agree the weekly template (which day is what) and save it in the profile, so weekly planning
-starts from it.
+starts from it. Each week it is confirmed again (`week.md` §0); a week that was different
+because of family or travel doesn't change it.
 
 ## 5. Propose the plan shape
 
