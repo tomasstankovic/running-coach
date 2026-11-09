@@ -47,7 +47,7 @@ Plugins* ([all options](#install)). Then just ask: *"Plan my week: 4 runs, a 10k
 No TrainingPeaks or Strava needed to start; connect them later for check-ins and analysis.
 
 **Contents:** [Who it's for](#who-its-for) · [What it does](#what-it-does) ·
-[A season with the coach](#a-season-with-the-coach) · [Install](#install) ·
+[Usage](#usage-a-season-with-the-coach) · [Examples](#examples) · [Install](#install) ·
 [Connect your data](#connect-your-data) · [Privacy and safety](#privacy-and-safety) ·
 [FAQ](#faq) · [The research behind it](#the-research-behind-it) · [What's inside](#whats-inside) ·
 [Development](#development) · [Who made it](#who-made-it)
@@ -225,7 +225,7 @@ All 63 sources, with DOIs and the rule each one supports:
 **[sources.md](skills/running-coach/references/sources.md)**. Nothing here replaces a doctor or a
 physio; the coach refers you when the signs call for it.
 
-## A season with the coach
+## Usage: a season with the coach
 
 Just talk to it like a coach. There's no command to type: the skill loads by itself whenever you
 ask about your running, in any language ("Mám dnes behať?" works as well as "Should I run
@@ -276,6 +276,19 @@ For every question about my running (training, plans, races, predictions, HRV an
 illness, strength, TrainingPeaks data), load the running-coach skill first and follow it, even if
 I don't name it. Never write, change or delete anything in TrainingPeaks without my explicit yes.
 ```
+
+## Examples
+
+What you ask, what the coach's scripts find, and what you get back. The runner is fictional: a
+5-run-a-week half-marathoner with a 4:10/km threshold. Full script output for each is in
+**[examples](docs/examples.md)**.
+
+| You ask | The scripts find | The coach answers |
+|---|---|---|
+| "Plan my week." | The draft has a 17 km long run; the longest run of the last 30 days was 15 km, and load has risen three weeks in a row | A lighter week now, and the long run capped at 16.5 km, with the reason in one line |
+| "Should I run today?" | HRV 7-day mean 40 against a normal band of 53–56, resting HR up | 30 min very easy or rest, Thursday's intervals moved to next week, and a question about sleep, stress and illness |
+| "Look at today's intervals." | 5 × 1 km at 102 % of threshold speed, even pacing, HR not above LTHR | Next week one more rep at the same pace, and a threshold retest, since the zones may be too slow |
+| "What could I run a marathon in?" | A 10k in 48:30 gives 3:43 by Riegel, 4:02 with 40 km a week factored in | Plan from ~4:00 and revisit after the half-marathon tune-up |
 
 ## Install
 
