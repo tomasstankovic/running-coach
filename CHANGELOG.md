@@ -3,6 +3,19 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.17.0
+
+- **A session can mix kilometres and time.** `tp_structure.py` used to write every step in the
+  workout's one unit, so for a km runner a 75 s jog between 1 km reps became "300 m" on the
+  watch, and for a time runner the 1 km reps became "4:12". Now each step goes to
+  TrainingPeaks in the unit it is written in (`km`/`m` as distance, `seconds`/`minutes` as
+  time); the spec's `unit` only sets the workout's primary axis. `workouts.md` says how to pick
+  the unit per step: flat reps by distance, hill and trail reps by time, recoveries usually by
+  time (or 200 m on a track), warm-up and cool-down in the runner's unit. Strides are now steps
+  of the structure (a 15' warm-up is 12' easy + 3 × 20 s / 40 s jog, class `warmUp` so the
+  analysis doesn't read them as reps). Suggested from the author's own sessions,
+  which had the strides only in the text and the jogs turned into metres.
+
 ## 0.16.3
 
 - **The week is planned on the runner's days, not on last week's.** A runner agreed their days

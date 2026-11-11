@@ -340,7 +340,8 @@ threshold"); don't schedule it unannounced.
 **Units are the runner's choice.** Some think in kilometres ("10 km easy"), some in time ("60 min
 easy"). Ask in onboarding and keep it in the profile (`Units:`). Write every session in that unit,
 with the other one in brackets as a guide: "10 km (~60 min)" or "60 min (~10 km)". The watch
-shows the primary one (`scripts/tp_structure.py` builds both kinds for TP).
+shows the primary one. Inside a structured session, each step can still take its own unit: reps in
+km with a 75 s jog between them is fine (`workouts.md` "Structure format").
 
 Time is the more honest measure on hills and trails, because the effort of a kilometre depends on
 the ground. So suggest it there, but don't impose it. A runner who prefers km on a hilly easy run

@@ -112,6 +112,8 @@ that calendar.
    already planned there, ask whether to replace or keep it. Never touch completed workouts.
 2. Runs: write the session as a spec and run `scripts/tp_structure.py` with the runner's unit
    (`km` or `time`) and intensity metric (`pace`, or `hr` for hilly runs without a flat option).
+   Each step keeps its own unit, so reps can be in km and recoveries or strides in seconds
+   (`workouts.md` "Structure format").
    It returns a native `structured_workout`, a time-equivalent `structure`, `duration_minutes`
    and `distance_km`. Run `tp_validate_structure` on the `structure` to get the TSS, then
    `tp_create_workout` with sport `Run`, title, description, `structured_workout`,

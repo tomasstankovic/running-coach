@@ -42,8 +42,9 @@ training matters for the plan.
 
 `tp_create_workout` takes either a simplified `structure` (time steps only) or TP's native
 `structured_workout` (time *or* distance steps: `"unit": "meter"` with
-`"primaryLengthMetric": "distance"`). `scripts/tp_structure.py` builds the native one from a spec,
-in km or time, plus a time-equivalent `structure` for validation:
+`"primaryLengthMetric": "distance"`), and the native one can mix them step by step.
+`scripts/tp_structure.py` builds it from a spec, each step in the unit it is written in, plus a
+time-equivalent `structure` for validation:
 
 ```bash
 python scripts/tp_structure.py spec.json --out workout.json

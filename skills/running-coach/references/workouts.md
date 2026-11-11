@@ -21,18 +21,33 @@ rule for quality sessions ("ak sa cítiš rozbitý…, urob z toho ľahkých 8 k
 
 ## Structure format
 
-Write the session as a spec for `scripts/tp_structure.py` in the runner's unit. The script returns
-TP's native `structured_workout` (kilometre or time steps) plus the time-based `structure` below
-for `tp_validate_structure`. Example spec, km-based (the 2-minute jog is written as ~300 m):
+Write the session as a spec for `scripts/tp_structure.py`. Every step goes to TP in the unit it
+is written in (`km`/`m` as distance, `seconds`/`minutes` as time), so one session can mix them
+and the watch counts each step the way it was meant. The spec's `unit` (the runner's unit) only
+sets the primary axis in TP. The script also returns the time-based `structure` below for
+`tp_validate_structure`. Example spec, a km runner's cruise intervals:
 
 ```json
 {"threshold_pace": "4:10", "unit": "km", "metric": "pace", "steps": [
-  {"name": "Rozklus 2,5 km", "km": 2.5, "pct": [68, 76], "class": "warmUp", "pace": "6:00"},
-  {"repeat": 5, "steps": [
-    {"name": "1 km @ 4:00–4:05", "km": 1, "pct": [102, 104]},
-    {"name": "Klus 2 min", "seconds": 120, "pct": [55, 66], "class": "rest", "pace": "6:40"}]},
-  {"name": "Výklus 1,5 km", "km": 1.5, "pct": [62, 70], "class": "coolDown", "pace": "6:10"}]}
+  {"name": "Rozklus 12 min", "minutes": 12, "pct": [68, 76], "class": "warmUp", "pace": "6:00"},
+  {"repeat": 3, "steps": [
+    {"name": "Rovinka 20 s", "seconds": 20, "pct": [115, 125], "class": "warmUp"},
+    {"name": "Klus 40 s", "seconds": 40, "pct": [55, 66], "class": "warmUp", "pace": "6:40"}]},
+  {"repeat": 6, "steps": [
+    {"name": "1 km @ 4:10–4:15", "km": 1, "pct": [98, 100]},
+    {"name": "Klus 75 s", "seconds": 75, "pct": [55, 66], "class": "rest", "pace": "6:40"}]},
+  {"name": "Výklus 2 km", "km": 2, "pct": [62, 70], "class": "coolDown", "pace": "6:10"}]}
 ```
+
+**Pick the unit per step, by what the step is for:**
+- Reps on flat ground: distance (1 km, 400 m), what the runner can match against a pace.
+  Hill reps, trail and fartlek: time, because a kilometre there says little.
+- Recoveries: usually time (75 s klus, 2' klus, 30 s stoj); distance where it is natural, like
+  200 m or 400 m on a track. Choose whichever fits the session; mixing is fine.
+- Warm-up, cool-down, easy and long runs: the runner's unit from the profile.
+- Strides go into the structure, not only into the description: e.g. a 15' warm-up is
+  12' easy + 3 × (20 s rovinka / 40 s klus). Strides inside a warm-up get class `warmUp`, so the
+  session analysis doesn't count them as reps; in an "easy + strides" run they are `active`.
 
 Give easy steps a `pace` from the runner's real easy runs on their terrain, because the % midpoint
 is a flat-road estimate. With `"metric": "hr"` (hilly ground, no flat option) the targets are
@@ -54,8 +69,9 @@ like this:
 ```
 
 In it, distance reps are written as their expected duration at the target pace (1 km at
-4:12 ≈ 252 s). For a time-based runner that's what goes to TP. Either way, name the step with
-the distance or time and the pace ("1 km @ 4:10–4:15"), so the watch screen says what to do.
+4:12 ≈ 252 s); that only feeds the TSS estimate, TP gets the native steps. Name every step with
+its distance or time and the pace ("1 km @ 4:10–4:15", "Klus 75 s"), so the watch screen says
+what to do.
 
 ### Prescribing by running power
 
@@ -107,7 +123,7 @@ them that way.
 |---|---|---|---|
 | **Tempo 2× 10–15 min** | WU 15' · 2 × (10–15' @ 90–95 % / 3' klus) · CD 10' | 4:23–4:38 | "príjemne náročné", short sentence possible |
 | **Súvislé tempo 20–30 min** | WU 15' · 20–30' @ 92–96 % · CD 10' | 4:20–4:32 | only after 2× 15' is comfortable |
-| **Cruise intervaly 5–6× 1 km** | WU 15' + 3 rovinky · 5–6 × (1 km @ 98–100 % / 60–90 s klus) · CD 10' | 4:10–4:15 | progress: 5 → 6 → 7 reps, then 3 × 2 km |
+| **Cruise intervaly 5–6× 1 km** | WU 12' + 3 × (20 s rovinka / 40 s klus) · 5–6 × (1 km @ 98–100 % / 60–90 s klus) · CD 10' | 4:10–4:15 | progress: 5 → 6 → 7 reps, then 3 × 2 km |
 | **3× 2 km @ prah** | WU 15' · 3 × (2 km @ 97–99 % / 2' klus) · CD 10' | 4:12–4:18 | |
 | **Kopce tempo** | 4–6 × 3–4 min uphill by HR 165–174 / jog down | HR, not pace | trail-friendly threshold |
 

@@ -275,6 +275,33 @@ class TpStructure(unittest.TestCase):
         self.assertEqual(out["duration_minutes"], 54)
         self.assertEqual(sw["structure"][-1]["end"], 10500)
 
+    def test_steps_keep_their_own_unit(self):
+        spec = {"threshold_pace": "4:10", "unit": "km", "metric": "pace", "steps": [
+            {"name": "WU 12 min", "minutes": 12, "pct": [68, 76], "class": "warmUp", "pace": "6:00"},
+            {"repeat": 3, "steps": [{"name": "stride", "seconds": 20, "pct": [115, 125], "class": "warmUp"},
+                                    {"name": "jog", "seconds": 40, "pct": [55, 66], "class": "warmUp", "pace": "6:40"}]},
+            {"repeat": 6, "steps": [{"name": "1 km", "km": 1, "pct": [98, 100]},
+                                    {"name": "jog 75 s", "seconds": 75, "pct": [55, 66], "class": "rest", "pace": "6:40"}]},
+            {"name": "CD 2 km", "km": 2, "pct": [62, 70], "class": "coolDown", "pace": "6:10"}]}
+        out = tp_structure.build(spec)
+        sw = out["structured_workout"]
+        units = [[s["length"] for s in block["steps"]] for block in sw["structure"]]
+        self.assertEqual(units, [
+            [{"value": 720, "unit": "second"}],
+            [{"value": 20, "unit": "second"}, {"value": 40, "unit": "second"}],
+            [{"value": 1000, "unit": "meter"}, {"value": 75, "unit": "second"}],
+            [{"value": 2000, "unit": "meter"}]])
+        self.assertEqual(sw["primaryLengthMetric"], "distance")
+        self.assertEqual(out["duration_minutes"], 60)
+        self.assertEqual(out["distance_km"], 11.7)
+        self.assertEqual(sw["polyline"][-1][0], 1.0)
+        # a time-primary workout keeps the 1 km reps in metres too
+        spec["unit"] = "time"
+        sw = tp_structure.build(spec)["structured_workout"]
+        self.assertEqual(sw["structure"][2]["steps"][0]["length"], {"value": 1000, "unit": "meter"})
+        self.assertEqual(sw["primaryLengthMetric"], "duration")
+        self.assertEqual(sw["structure"][-1]["end"], 3608)
+
     def test_hr_workout_needs_pace_for_km(self):
         with self.assertRaises(ValueError):
             tp_structure.build({"unit": "km", "metric": "hr",

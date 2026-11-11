@@ -73,3 +73,14 @@ What changed for the runner:
 
 Checks: the profile's `## Availability` has a `Weekly template` line (which day is what). If it
 doesn't, ask for it once and save it.
+
+## 0.17.0
+
+What changed for the runner:
+- Sessions in TrainingPeaks can mix kilometres and time, step by step: 1 km reps with a 75 s
+  jog between them stay "1.00 km" and "1:15" on the watch, instead of the jog turning into
+  "300 m". Strides are steps of the structure too (12' easy + 3 × 20 s / 40 s jog), not only
+  a line in the description.
+
+Checks: none; nothing in the plan, goals or predictions changes. Sessions already in the
+calendar stay as they are; new ones are written the new way.
