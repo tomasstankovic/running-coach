@@ -472,7 +472,10 @@ of the old assumption. A case with a history file runs only with the plugin.
 **Releasing:** add an entry to `CHANGELOG.md` and bump `version` in `.claude-plugin/plugin.json`
 (semver) with every change you want users to receive; installed copies update only when the
 version changes. Push to `main`, tag the version, and attach `running-coach.zip` (the skill
-folder without `evals/`) to the GitHub release.
+folder without `evals/`) to the GitHub release. When a change comes from someone's report or
+suggestion, the entry says who and where, the way they asked to be credited ("Reported by
+@handle in #12", "Suggested on Reddit by u/name"), and the issue or thread gets a reply with
+the version that fixed it.
 
 ## Who made it
 
@@ -484,8 +487,11 @@ coach that remembers my history, gives me honest numbers and puts the plan on my
 - Running: [Na trase](https://sport-blog-livid.vercel.app), my blog about multi-day runs and
   mountain crossings (in Slovak)
 
-Found a bug, or did the coach get something wrong? [Open an issue](https://github.com/tomasstankovic/running-coach/issues).
-Ideas and stories of how it works for you are welcome too.
+Did the coach get something wrong? [Tell me](https://github.com/tomasstankovic/running-coach/issues/new?template=coaching-problem.yml):
+each report becomes a fix, and often a test case so the mistake doesn't come back. Questions,
+ideas and stories of how it works for you go to
+[Discussions](https://github.com/tomasstankovic/running-coach/discussions). The
+[CHANGELOG](CHANGELOG.md) names who suggested each change.
 
 ## License
 

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question
+    url: https://github.com/tomasstankovic/running-coach/discussions/categories/q-a
+    about: How to install, connect TrainingPeaks or Strava, or use a feature.
+  - name: Share how it works for you
+    url: https://github.com/tomasstankovic/running-coach/discussions/categories/show-and-tell
+    about: Your season, a race the coach helped you plan, a screenshot of your plan.

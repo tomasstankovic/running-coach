@@ -9,3 +9,5 @@ labels: idea
 **Why it would help**
 
 **Source** (for coaching rules: a study, position stand or recognised coaching text; link or DOI)
+
+**Credit** (the CHANGELOG names who suggested each change: your GitHub handle, a name, or "anonymous")

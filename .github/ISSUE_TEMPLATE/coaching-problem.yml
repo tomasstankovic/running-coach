@@ -1,0 +1,73 @@
+name: The coach got it wrong
+description: A plan, check-in, analysis or number that looks wrong to you
+title: "Coach got it wrong: "
+labels: [coaching]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Reports like this are how the coach gets better: each one
+        becomes a fix and, where it fits, a test case so the mistake doesn't come back.
+
+        Please leave out personal details, and don't paste raw TrainingPeaks or Strava exports:
+        they contain personal data and GPS positions. Rounded numbers are enough.
+  - type: textarea
+    id: asked
+    attributes:
+      label: What you asked
+      description: Your message, or a short summary of it.
+      placeholder: "Plan my week, I can run Tue, Thu, Sat and Sun."
+    validations:
+      required: true
+  - type: textarea
+    id: did
+    attributes:
+      label: What the coach did
+      description: The plan, verdict or numbers it gave you.
+      placeholder: "It put the long run on Friday and the intervals on Monday."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead, and why
+      placeholder: "The runs on the days I named. Friday and Monday are work days."
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where you talked to the coach
+      options:
+        - Claude chat (web or mobile)
+        - Claude desktop app
+        - Cowork
+        - Claude Code
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: data
+    attributes:
+      label: Data source
+      options:
+        - TrainingPeaks
+        - Strava
+        - None (conversation only)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: Customize → Plugins → Running Coach, or the zip you uploaded. "Don't know" is fine.
+      placeholder: "0.17.0"
+  - type: input
+    id: credit
+    attributes:
+      label: How should we credit you?
+      description: |
+        Fixes in the CHANGELOG name who reported them. Write your GitHub handle, a name, or
+        "anonymous". Leave empty and we'll use your GitHub handle.
+      placeholder: "@your-handle"
