@@ -16,7 +16,10 @@ jobs:
       - run: python3 -m unittest discover -s tests -v
 
   # A push to main whose plugin.json version has no release yet gets one: tag v<version> on
-  # this commit, notes from that version's CHANGELOG section. Runs only after the checks pass.
+  # this commit, notes from that version's CHANGELOG section, and running-coach.zip (the skill
+  # folder without evals/) for claude.ai uploads. A release that exists without the zip (made
+  # by hand, or by a run that failed half-way) gets the zip built from its own tag.
+  # Runs only after the checks pass.
   release:
     needs: skill
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -30,11 +33,26 @@ jobs:
       - name: Release the plugin.json version if it is new
         run: |
           v=$(python3 -c 'import json; print(json.load(open(".claude-plugin/plugin.json"))["version"])')
+          # running-coach.zip from the skills/ folder at a git ref, top folder running-coach/.
+          build_zip() {
+            rm -rf dist && mkdir dist
+            git archive "$1:skills" running-coach | tar -x -C dist
+            rm -rf dist/running-coach/evals
+            (cd dist && zip -qr -X running-coach.zip running-coach -x '*/__pycache__/*' '*.DS_Store')
+          }
           if gh release view "v$v" >/dev/null 2>&1; then
-            echo "v$v is already released"; exit 0
+            if gh release view "v$v" --json assets --jq '.assets[].name' | grep -qx running-coach.zip; then
+              echo "v$v is already released with running-coach.zip"; exit 0
+            fi
+            git fetch --depth=1 origin tag "v$v"
+            build_zip "v$v"
+            gh release upload "v$v" dist/running-coach.zip
+            echo "v$v was released without running-coach.zip; attached it"; exit 0
           fi
           awk -v h="## $v" '$0==h{f=1;next} /^## /{f=0} f' CHANGELOG.md | sed -e '/./,$!d' > notes.md
           if [ ! -s notes.md ]; then
             echo "::error::CHANGELOG.md has no '## $v' section"; exit 1
           fi
-          gh release create "v$v" --target "$GITHUB_SHA" --title "v$v" --notes-file notes.md
+          build_zip HEAD
+          gh release create "v$v" --target "$GITHUB_SHA" --title "v$v" --notes-file notes.md \
+            dist/running-coach.zip

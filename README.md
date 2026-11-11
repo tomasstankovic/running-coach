@@ -471,8 +471,10 @@ of the old assumption. A case with a history file runs only with the plugin.
 
 **Releasing:** add an entry to `CHANGELOG.md` and bump `version` in `.claude-plugin/plugin.json`
 (semver) with every change you want users to receive; installed copies update only when the
-version changes. Push to `main`, tag the version, and attach `running-coach.zip` (the skill
-folder without `evals/`) to the GitHub release. When a change comes from someone's report or
+version changes. Push to `main`: once the checks pass, CI tags `v<version>`, creates the GitHub
+release with that version's CHANGELOG section as notes, and attaches `running-coach.zip` (the
+skill folder without `evals/`). Check that the release is there; a CI run that never starts
+releases nothing. When a change comes from someone's report or
 suggestion, the entry says who and where, the way they asked to be credited ("Reported by
 @handle in #12", "Suggested on Reddit by u/name"), and the issue or thread gets a reply with
 the version that fixed it.
