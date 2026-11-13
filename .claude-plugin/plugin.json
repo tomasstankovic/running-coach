@@ -5,7 +5,8 @@
   "description": "Running coach for Claude: onboarding, weekly and season plans, HRV readiness check-ins, session analysis, reviews, strength and race-day plans, with research-backed load rules. Works with TrainingPeaks, Strava or manual input.",
   "icon": "./assets/logo.svg",
   "author": {
-    "name": "Tomas Stankovic"
+    "name": "Tomas Stankovic",
+    "url": "https://tomasstankovic.dev"
   },
   "homepage": "https://github.com/tomasstankovic/running-coach",
   "repository": "https://github.com/tomasstankovic/running-coach",

@@ -485,8 +485,9 @@ I'm **Tomáš Stankovič**, a software engineer and runner based in Prague. I co
 road races to multi-day runs across the mountains, and I built Running Coach because I wanted a
 coach that remembers my history, gives me honest numbers and puts the plan on my watch.
 
+- Website: [tomasstankovic.dev](https://tomasstankovic.dev)
 - Code: [github.com/tomasstankovic](https://github.com/tomasstankovic)
-- Running: [Na trase](https://sport-blog-livid.vercel.app), my blog about multi-day runs and
+- Running: [Na trase](https://www.natrase.sk), my blog about multi-day runs and
   mountain crossings (in Slovak)
 
 Did the coach get something wrong? [Tell me](https://github.com/tomasstankovic/running-coach/issues/new?template=coaching-problem.yml):
