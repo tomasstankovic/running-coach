@@ -37,7 +37,9 @@ runner reporting how they feel before a session.
 
 5. **Answer in 3–5 lines**: the verdict, what to do today exactly (paces/HR), and what happens to
    the rest of the week if something moves. If a change is made and TP is connected, offer to
-   update the workout (`tp_update_workout`) after confirmation.
+   update the workout (`tp_update_workout`) after confirmation, with a rebuilt structure
+   (`tp_structure.py`), not only a new description. If today's run has no structure yet, offer
+   to add one in the same update.
 
 One amber day is noise. The HRV 7-day mean below the normal band for 4+ days, or three or more
 amber or red days in a row, means the load is too high: −25 % volume and no quality for 3–4 days

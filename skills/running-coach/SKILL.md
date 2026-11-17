@@ -158,8 +158,9 @@ target: reps at 102–104 % are Z4, not "threshold".
 Planning a week (Week mode, and the detailed weeks of a Block or Season) continues in
 `references/week.md`: the week's role, the draft, the load check with `check_week.py`, the plan
 format, and saving to TrainingPeaks or an `.ics` file. The rules that apply everywhere: mostly
-easy, never two hard days in a row, one variable at a time, and nothing written to TrainingPeaks
-before a clear yes.
+easy, never two hard days in a row, one variable at a time, nothing written to TrainingPeaks
+before a clear yes, and every run written to TrainingPeaks is a structured workout (easy runs
+and strides included), built with `tp_structure.py`, never a description alone.
 
 ## Review mode
 

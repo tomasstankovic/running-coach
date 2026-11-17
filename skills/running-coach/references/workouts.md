@@ -48,6 +48,27 @@ sets the primary axis in TP. The script also returns the time-based `structure` 
 - Strides go into the structure, not only into the description: e.g. a 15' warm-up is
   12' easy + 3 × (20 s rovinka / 40 s klus). Strides inside a warm-up get class `warmUp`, so the
   session analysis doesn't count them as reps; in an "easy + strides" run they are `active`.
+  The same goes for anything else the description asks for on the way: "last 3 min faster",
+  a 3' jog at the end, a steady finish. If the text says it, the structure has a step for it.
+
+**Easy runs are structured too.** No run goes to TrainingPeaks as text only. An easy, recovery,
+optional or long run is one step; "easy + strides" is the easy part, a repeat of strides and
+jogs, and a short jog to finish:
+
+```json
+{"date": "2026-11-17", "title": "Ľahko 7 km + 6× rovinky", "description": "…", "steps": [
+  {"name": "Ľahko 35 min", "minutes": 35, "pct": [67, 72], "pace": "6:05"},
+  {"repeat": 6, "steps": [
+    {"name": "Rovinka 20 s", "seconds": 20, "pct": [110, 115]},
+    {"name": "Klus 70 s", "seconds": 70, "pct": [55, 66], "class": "rest", "pace": "6:40"}]},
+  {"name": "Výklus 3 min", "minutes": 3, "pct": [60, 68], "class": "coolDown", "pace": "6:20"}]}
+
+{"date": "2026-11-18", "title": "Ľahko 6 km", "description": "…", "steps": [
+  {"name": "Ľahko 6 km", "km": 6, "pct": [67, 72], "pace": "6:05"}]}
+```
+
+A long run with a steady or fast finish is two steps (easy km, then the finish at its own
+target). Hilly easy runs use `"metric": "hr"` with the HR cap as the top of the range.
 
 Give easy steps a `pace` from the runner's real easy runs on their terrain, because the % midpoint
 is a flat-road estimate. With `"metric": "hr"` (hilly ground, no flat option) the targets are

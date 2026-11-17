@@ -62,7 +62,7 @@ body:
     attributes:
       label: Plugin version
       description: Customize → Plugins → Running Coach, or the zip you uploaded. "Don't know" is fine.
-      placeholder: "0.17.0"
+      placeholder: "0.17.1"
   - type: input
     id: credit
     attributes:

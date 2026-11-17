@@ -302,6 +302,27 @@ class TpStructure(unittest.TestCase):
         self.assertEqual(sw["primaryLengthMetric"], "duration")
         self.assertEqual(sw["structure"][-1]["end"], 3608)
 
+    def test_week_gives_every_run_a_structure(self):
+        week = {"threshold_pace": "4:15", "unit": "km", "metric": "pace", "sessions": [
+            {"date": "2026-11-17", "title": "Easy 7 km + strides", "description": "d", "steps": [
+                {"name": "Easy", "minutes": 35, "pct": [67, 72], "pace": "6:05"},
+                {"repeat": 6, "steps": [{"name": "stride", "seconds": 20, "pct": [110, 115]},
+                                        {"name": "jog", "seconds": 70, "pct": [55, 66], "class": "rest", "pace": "6:40"}]}]},
+            {"date": "2026-11-18", "title": "Easy 6 km", "unit": "time", "steps": [
+                {"name": "Easy 6 km", "km": 6, "pct": [67, 72], "pace": "6:05"}]}]}
+        out = tp_structure.build_week(week)["workouts"]
+        self.assertEqual([w["date"] for w in out], ["2026-11-17", "2026-11-18"])
+        self.assertEqual(out[0]["sport"], "Run")
+        self.assertEqual(tp_structure.count_steps(out[0]["structured_workout"]), 13)
+        self.assertEqual(out[1]["structured_workout"]["primaryLengthMetric"], "duration")
+        self.assertEqual(out[1]["distance_km"], 6.0)
+        self.assertIn("steps", out[1]["structure"])
+
+    def test_week_refuses_a_run_without_steps(self):
+        week = {"threshold_pace": "4:15", "sessions": [{"date": "2026-11-21", "title": "Easy 5 km"}]}
+        with self.assertRaisesRegex(ValueError, "no steps"):
+            tp_structure.build_week(week)
+
     def test_hr_workout_needs_pace_for_km(self):
         with self.assertRaises(ValueError):
             tp_structure.build({"unit": "km", "metric": "hr",

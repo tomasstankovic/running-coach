@@ -12,6 +12,10 @@ watch shows as "1.00 km") need TP's native `structured_workout`. This script wri
 
 Usage:
   tp_structure.py spec.json [--out workout.json]
+  tp_structure.py week.json [--out workouts.json]     # every run of a week in one go
+
+Every run goes to TrainingPeaks structured, easy and long runs too (one step), so the watch
+shows a target and a run with strides counts them. A session without steps is an error.
 
 Spec:
 {
@@ -31,6 +35,25 @@ Spec:
     {"name": "Vyklus 2 km", "km": 2, "pct": [62, 70], "class": "coolDown", "pace": "6:10"}
   ]
 }
+
+Week file: the spec's shared fields plus "sessions", each with date, title, description and
+its own steps (a session may override unit, metric or threshold_pace):
+{
+  "threshold_pace": "4:10", "unit": "km", "metric": "pace",
+  "sessions": [
+    {"date": "2026-11-17", "title": "Lahko 7 km + 6x rovinky", "description": "...", "steps": [
+      {"name": "Lahko 6 km", "km": 6, "pct": [64, 72], "pace": "6:05"},
+      {"repeat": 6, "steps": [
+        {"name": "Rovinka 20 s", "seconds": 20, "pct": [110, 120]},
+        {"name": "Klus 70 s", "seconds": 70, "pct": [55, 66], "class": "rest", "pace": "6:40"}]},
+      {"name": "Vyklus 3 min", "minutes": 3, "pct": [60, 68], "class": "coolDown", "pace": "6:20"}]},
+    {"date": "2026-11-18", "title": "Lahko 6 km", "description": "...", "steps": [
+      {"name": "Lahko 6 km", "km": 6, "pct": [64, 72], "pace": "6:05"}]}
+  ]
+}
+It prints {"workouts": [...]}: per run, the tp_create_workout fields (date, sport, title,
+description, structured_workout, duration_minutes, distance_km) plus the `structure` for
+tp_validate_structure.
 
 A step's length is one of km, m, seconds or minutes, and it goes to TP in that unit. The other
 measure is estimated for the totals and the chart: from the "pace" field ("5:40") if given,
@@ -176,6 +199,42 @@ def build(spec):
             "distance_km": None if missing_distance else round(total_m / 1000, 1)}
 
 
+SHARED = ("threshold_pace", "unit", "metric")
+
+
+def build_week(week):
+    """One tp_create_workout payload per session; refuses a run without a structure."""
+    sessions = week.get("sessions")
+    if not sessions:
+        raise ValueError("week file needs a non-empty \"sessions\" list")
+    workouts = []
+    for i, ses in enumerate(sessions, 1):
+        label = f"session {i} ({ses.get('date', '?')} {ses.get('title', '')!r})"
+        for key in ("date", "title"):
+            if not ses.get(key):
+                raise ValueError(f"{label} needs {key!r}")
+        if not ses.get("steps"):
+            raise ValueError(f"{label} has no steps: every run goes to TrainingPeaks structured; "
+                             "an easy or long run is one step, strides are a repeat")
+        spec = {k: ses.get(k, week.get(k)) for k in SHARED if ses.get(k, week.get(k)) is not None}
+        spec["steps"] = ses["steps"]
+        try:
+            out = build(spec)
+        except ValueError as e:
+            raise ValueError(f"{label}: {e}") from None
+        workouts.append({"date": ses["date"], "sport": "Run", "title": ses["title"],
+                         "description": ses.get("description", ""),
+                         "structured_workout": out["structured_workout"],
+                         "duration_minutes": out["duration_minutes"],
+                         "distance_km": out["distance_km"], "structure": out["structure"]})
+    return {"workouts": workouts}
+
+
+def count_steps(structured):
+    return sum(len(b["steps"]) * b["length"]["value"] if b["type"] == "repetition" else 1
+               for b in structured["structure"])
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("spec")
@@ -184,15 +243,19 @@ def main():
     with open(args.spec) as f:
         spec = json.load(f)
     try:
-        result = build(spec)
+        result = build_week(spec) if "sessions" in spec else build(spec)
     except ValueError as e:
         sys.exit(f"error: {e}")
     text = json.dumps(result, ensure_ascii=False, indent=1)
     if args.out:
         with open(args.out, "w") as f:
             f.write(text)
-        print(f"wrote {args.out}: {result['duration_minutes']} min, "
-              f"{result['distance_km'] if result['distance_km'] is not None else '?'} km")
+        for w in result.get("workouts", [result]):
+            km = w["distance_km"] if w["distance_km"] is not None else "?"
+            head = f"{w['date']} {w['title']}: " if "date" in w else f"wrote {args.out}: "
+            print(f"{head}{count_steps(w['structured_workout'])} steps, {w['duration_minutes']} min, {km} km")
+        if "workouts" in result:
+            print(f"wrote {args.out}: {len(result['workouts'])} structured runs")
     else:
         print(text)
 

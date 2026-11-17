@@ -3,6 +3,18 @@
 All notable changes. Versions follow semver; installed copies update when the version in
 `.claude-plugin/plugin.json` changes.
 
+## 0.17.1
+
+- **Every run goes to TrainingPeaks structured, not as text.** The rule that easy and long runs
+  get a structure too sat at the end of a long step in `week.md`, and only the quality sessions
+  were written with one: "Ľahko 7 km + 6× rovinky" reached the calendar as a description, with
+  no target on the watch and strides that the analysis couldn't see. Now `tp_structure.py`
+  takes a whole week (`"sessions"`, each with date, title, description and steps), returns
+  one `tp_create_workout` payload per run, and refuses a run without steps. `workouts.md` shows
+  an easy run and an "easy + strides" run as specs, the check-in rebuilds the structure when it
+  changes a session, and the 0.17.1 check in `whats-new.md` offers to add structures to the
+  runs already planned. Reported by the author, whose easy runs had none.
+
 ## 0.17.0
 
 - **A session can mix kilometres and time.** `tp_structure.py` used to write every step in the

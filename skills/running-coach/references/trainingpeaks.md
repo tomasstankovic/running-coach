@@ -32,7 +32,7 @@ training matters for the plan.
 |---|---|
 | `tp_validate_structure` | validate a structure, get duration + estimated IF/TSS. Always run before creating. |
 | `tp_create_workout` | create a planned workout |
-| `tp_update_workout` | change a planned workout (moving a day, editing the description) |
+| `tp_update_workout` | change a planned workout (moving a day, editing the description). When the session itself changes (shorter, easier, strides added), rebuild its structure with `tp_structure.py` and pass the new `structured_workout`, `duration_minutes`, `distance_km` and `tss_planned` along with the description. |
 | `tp_delete_workout` | remove a *planned* workout. Ask first; never delete completed ones. |
 | `tp_create_event` | add a race, with `priority` A, B or C (defaults to C) |
 | `tp_update_speed_zones`, `tp_update_hr_zones`, `tp_update_ftp` | update threshold pace, LTHR / max / resting HR, rFTP (see "Zones"). Ask first. Test-based zone methods return `TEST_BASED_METHOD` and must be changed in the TP web UI. |
@@ -47,8 +47,14 @@ training matters for the plan.
 time-equivalent `structure` for validation:
 
 ```bash
-python scripts/tp_structure.py spec.json --out workout.json
+python scripts/tp_structure.py spec.json --out workout.json     # one session
+python scripts/tp_structure.py week.json --out workouts.json    # all runs of a week
 ```
+
+**Every run gets a structure**: easy, recovery, long and "easy + strides" too (`workouts.md`
+"Easy runs are structured too"). A run created or updated with only a description shows no
+target on the watch and its strides don't exist for the analysis. The week mode refuses a
+session without steps.
 
 ```json
 {

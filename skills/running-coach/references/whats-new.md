@@ -84,3 +84,16 @@ What changed for the runner:
 
 Checks: none; nothing in the plan, goals or predictions changes. Sessions already in the
 calendar stay as they are; new ones are written the new way.
+
+## 0.17.1
+
+What changed for the runner:
+- Every run in TrainingPeaks is now a structured workout, easy and long runs too: "Ľahko 7 km +
+  6× rovinky" is 35' easy, 6 × (20 s stride / 70 s jog) and a 3' jog on the watch, not a text.
+  When a check-in changes a session, its structure changes with it.
+
+Checks (TrainingPeaks only):
+- Planned runs from today to the end of next week: open each with `tp_get_workout`; list the
+  ones with `structured_workout: null` (date, title). Offer to add the structure, built from
+  their description with `tp_structure.py` (week mode); update them with `tp_update_workout`
+  only after a yes. Keep the title, description and date; don't touch completed workouts.

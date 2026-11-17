@@ -110,18 +110,25 @@ write the week to the calendar; without it, the calendar file.
 that calendar.
 1. Check the target days with `tp_get_workouts` (and `tp_get_strength_workouts`). If something is
    already planned there, ask whether to replace or keep it. Never touch completed workouts.
-2. Runs: write the session as a spec and run `scripts/tp_structure.py` with the runner's unit
-   (`km` or `time`) and intensity metric (`pace`, or `hr` for hilly runs without a flat option).
-   Each step keeps its own unit, so reps can be in km and recoveries or strides in seconds
-   (`workouts.md` "Structure format").
-   It returns a native `structured_workout`, a time-equivalent `structure`, `duration_minutes`
-   and `distance_km`. Run `tp_validate_structure` on the `structure` to get the TSS, then
-   `tp_create_workout` with sport `Run`, title, description, `structured_workout`,
-   `duration_minutes`, `distance_km` and `tss_planned`. Kilometre steps need the native payload;
-   the simplified `structure` is time-only. Easy and long runs get a one-step structure too, so
-   the watch shows a target. See `trainingpeaks.md`.
+2. Runs: **every run is a structured workout, never only a description.** That includes easy,
+   recovery, optional and long runs (one step, so the watch shows a target) and "easy + strides"
+   (the strides are a repeat of stride / jog steps, not a sentence in the text). Write all the
+   week's runs into one week file, each session with its date, title, description and steps,
+   and run
+   ```bash
+   python scripts/tp_structure.py week.json --out workouts.json
+   ```
+   with the runner's unit (`km` or `time`) and intensity metric (`pace`, or `hr` for hilly runs
+   without a flat option). Each step keeps its own unit, so reps can be in km and recoveries or
+   strides in seconds (`workouts.md` "Structure format"). The script refuses a session without
+   steps; fix the session, don't drop it. For each run in `workouts.json`, run
+   `tp_validate_structure` on its `structure` to get the TSS, then `tp_create_workout` with its
+   fields (sport `Run`, title, description, `structured_workout`, `duration_minutes`,
+   `distance_km`) and `tss_planned`. Never call `tp_create_workout` for a run with only a
+   description. See `trainingpeaks.md`.
 3. Strength: `tp_create_strength_workout`, as in `strength.md`.
-4. Report what was created (date, title, planned TSS) and anything that failed.
+4. Report what was created (date, title, steps, planned TSS) and anything that failed. Every
+   run in the report has its steps; a run with 0 steps is a failure to fix, not to report.
 
 **No TrainingPeaks.** Make an `.ics` file for Google, Apple or Outlook calendar. It uses the same
 `plan` list, each item with `date`, `title`, `description`, `minutes` and `km`:
